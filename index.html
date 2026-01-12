@@ -86,12 +86,13 @@ nav a:hover {
 }
 
 /* =========================
-   Specimen Section (Sheet)
+   Specimen Section (State)
    ========================= */
 
 section {
+    display: none; /* ← key change */
     max-width: 1040px;
-    margin: 0 auto 160px;
+    margin: 0 auto;
     background: rgba(255,255,255,0.97);
     padding: 42px 52px 48px;
 
@@ -99,6 +100,10 @@ section {
     box-shadow:
         1px 1px 0 rgba(92,75,153,0.4),
         6px 6px 0 rgba(92,75,153,0.18);
+}
+
+section.active {
+    display: block;
 }
 
 /* =========================
@@ -157,7 +162,6 @@ h2 {
         4px 4px 0 rgba(92,75,153,0.35);
 
     overflow: hidden;
-    overscroll-behavior: none;
 }
 
 .visualisation iframe {
@@ -165,12 +169,11 @@ h2 {
     height: 100%;
     border: none;
     display: block;
-    overflow: hidden;
     pointer-events: none;
 }
 
 /* =========================
-   Caption Line
+   Caption
    ========================= */
 
 .caption {
@@ -183,7 +186,7 @@ h2 {
 }
 
 /* =========================
-   Collage Reminder
+   Collage
    ========================= */
 
 .collage {
@@ -201,7 +204,6 @@ h2 {
     max-width: 320px;
     min-width: 180px;
     height: auto;
-
     border: 1px solid var(--violet);
     box-shadow: 2px 2px 0 rgba(230,180,34,0.25);
 }
@@ -228,12 +230,12 @@ h2 {
 <body>
 
 <nav>
-    <a href="#joy">Joy</a>
-    <a href="#sadness">Sadness</a>
-    <a href="#anger">Anger</a>
-    <a href="#fear">Fear</a>
-    <a href="#disgust">Disgust</a>
-    <a href="#surprise">Surprise</a>
+    <a href="#joy" data-target="joy">Joy</a>
+    <a href="#sadness" data-target="sadness">Sadness</a>
+    <a href="#anger" data-target="anger">Anger</a>
+    <a href="#fear" data-target="fear">Fear</a>
+    <a href="#disgust" data-target="disgust">Disgust</a>
+    <a href="#surprise" data-target="surprise">Surprise</a>
 </nav>
 
 <main>
@@ -248,7 +250,7 @@ h2 {
      JOY
      ========================= -->
 
-<section id="joy">
+<section id="joy" class="active">
 
     <header>
         <div class="marker">+</div>
@@ -257,11 +259,7 @@ h2 {
     </header>
 
     <div class="visualisation">
-        <iframe
-            src="joy-overlay.html"
-            scrolling="no"
-            sandbox="allow-scripts allow-same-origin">
-        </iframe>
+        <iframe src="joy-overlay.html" sandbox="allow-scripts allow-same-origin"></iframe>
     </div>
 
     <div class="caption">
@@ -294,32 +292,45 @@ h2 {
     </header>
 
     <div class="visualisation">
-        <iframe
-            src="sadness-overlay.html"
-            scrolling="no"
-            sandbox="allow-scripts allow-same-origin">
-        </iframe>
+        <iframe src="sadness-overlay.html" sandbox="allow-scripts allow-same-origin"></iframe>
     </div>
 
     <div class="caption">
-        A visualization of sadness as a downward flowing, weight-bearing emotional state
+        A visualization of sadness as a downward flowing, weight‑bearing emotional state
         <br><b>Analysis by Claude</b>
     </div>
 
     <div class="collage">
-        <img src="sadness-sketchbook.jpg" alt="Joy collage">
+        <img src="sadness-sketchbook.jpg" alt="Sadness collage">
         <span>Source collage</span>
     </div>
 
     <div class="notes">
-        The visualization represents sadness primarily through elements that drift downward—capturing the embodied experience of sadness as a feeling of heaviness and sinking. 
-        This aligns with research showing that sadness involves distinctive physiological changes, including slumped posture and decreased energy.
+        The visualization represents sadness through downward‑drifting elements, reflecting heaviness, withdrawal, and reduced energy.
         <br><b>Analysis by Claude</b>
     </div>
 
 </section>
 
 </main>
+
+<script>
+const links = document.querySelectorAll('nav a');
+const sections = document.querySelectorAll('section');
+
+links.forEach(link => {
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        const id = link.dataset.target;
+
+        sections.forEach(section => {
+            section.classList.toggle('active', section.id === id);
+        });
+
+        history.replaceState(null, '', `#${id}`);
+    });
+});
+</script>
 
 </body>
 </html>
