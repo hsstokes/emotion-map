@@ -1,0 +1,2207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Anger - Emotional Experience</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f7f7f7;
+            font-family: 'Roboto Mono', monospace;
+            -webkit-text-size-adjust: 100%;
+            touch-action: none;
+        }
+        
+        /* Landing screen that appears first */
+        #landing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(247, 247, 247, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            box-sizing: border-box;
+            padding: 20px;
+            transition: opacity 1s ease-in-out;
+        }
+        
+        .landing-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 40px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .emotion-name {
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #B22234;
+        }
+        
+        .emotion-description {
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .ai-disclaimer {
+           font-size: 13px;
+           max-width: 550px;
+           text-align: center;
+           margin-bottom: 40px;
+           margin-top: 10px;
+           padding: 15px 20px;
+           background-color: rgba(178, 34, 52, 0.1);
+           border-radius: 8px;
+           border-left: 3px solid #B22234;
+           line-height: 1.6;
+           color: #333;
+        }
+        
+        .start-button {
+            padding: 15px 35px;
+            background-color: rgba(178, 34, 52, 0.2);
+            color: #B22234;
+            border: 1px solid #B22234;
+            border-radius: 30px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .start-button:active {
+            transform: scale(0.98);
+        }
+        
+        /* Canvas for the animation */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        /* Anger resonance popup */
+        .anger-resonance {
+            position: fixed;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 250px;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            pointer-events: none;
+            z-index: 100;
+            text-align: center;
+            border-left: 3px solid #B22234;
+        }
+        
+        /* Controls panel */
+        .controls {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .control-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        
+        .control-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: #B22234;
+        }
+        
+        /* Hint message */
+        .hint {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 50;
+            color: #B22234;
+        }
+        
+        /* Timeline slider */
+        .timeline {
+            position: fixed;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            width: 70%;
+            max-width: 500px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            z-index: 40;
+            opacity: 0;
+            transition: opacity 0.5s;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+        }
+        
+        .timeline-bar {
+            width: 100%;
+            height: 4px;
+            background-color: rgba(178, 34, 52, 0.2);
+            border-radius: 2px;
+            position: relative;
+        }
+        
+        .timeline-progress {
+            height: 100%;
+            background-color: rgba(178, 34, 52, 0.8);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .timeline-handle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #B22234;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto !important;
+                height: auto !important;
+            }
+        
+            #landing-overlay {
+                position: absolute;
+                height: auto;
+                min-height: 100%;
+                overflow-y: auto;
+                padding: 40px 20px 120px 20px;
+                justify-content: flex-start;
+            }
+        
+            .landing-title {
+                margin-top: 40px;
+            }
+        
+            .start-button {
+                margin-bottom: 60px;
+                position: relative;
+            }
+        
+            .emotion-name {
+                font-size: 42px;
+            }
+        
+            .ai-disclaimer {
+                width: 90%;
+                font-size: 12px;
+                max-width: 90%;
+            }
+        }
+        
+        /* Orientation-specific styles */
+        @media screen and (orientation: portrait) {
+            .controls {
+                bottom: 70px;
+                right: 15px;
+            }
+            
+            .timeline {
+                bottom: 20px;
+                width: 80%;
+            }
+        }
+        
+        @media screen and (orientation: landscape) {
+            .controls {
+                bottom: 15px;
+                right: 100px;
+            }
+            
+            .timeline {
+                bottom: 20px;
+                width: 60%;
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Initial landing overlay -->
+    <div id="landing-overlay">
+        <h1 class="landing-title">Emotional Collage Experience</h1>
+        <h2 class="emotion-name" id="emotion-title">ANGER</h2>
+        <p class="emotion-description" id="emotion-description">
+            An exploration of anger as a boundary-defending force—where crimson violations tear through structured restraint, mobilizing energy to restore integrity.
+            <br><b>Analysis by Claude</b>
+        </p>
+
+        <!-- AI disclaimer -->
+        <div class="ai-disclaimer">
+            <strong>Note:</strong> This is a simulation of anger based on my analysis of human descriptions. As an AI, I don't experience emotions or feelings - this is just my interpretation of a human concept.
+        </div>
+        
+        <button class="start-button" id="start-experience">Begin Experience</button>
+    </div>
+    
+    <!-- Anger resonance popup that appears when interacting with elements -->
+    <div class="anger-resonance" id="anger-resonance"></div>
+    
+    <!-- Control buttons -->
+    <div class="controls" id="controls">
+        <div class="control-button" id="sound-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                <path id="sound-waves" d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+        </div>
+        <div class="control-button" id="reset-button">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <path d="M23 4v6h-6"></path>
+                <path d="M1 20v-6h6"></path>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+        </div>
+    </div>
+    
+    <!-- Hint for users -->
+    <div class="hint" id="hint">Touch elements to intensify anger</div>
+    
+    <!-- Timeline interface -->
+    <div class="timeline" id="timeline">
+        <div class="timeline-bar" id="timeline-bar">
+            <div class="timeline-progress" id="timeline-progress"></div>
+            <div class="timeline-handle" id="timeline-handle"></div>
+        </div>
+    </div>
+    
+    <script>
+        let isAnimating = true;
+        let soundEnabled = true;
+        let angerSound;
+        let soundLoaded = false;
+        let timelineActive = false;
+        let isDraggingTimeline = false;
+        let timePosition = 0;
+        let previousTimePosition = 0;
+        let activatedTimeline = false;
+        let pressurePhase = 0;
+        let pressureRate = 1.2; // Fast, aggressive for anger
+        
+        // Anger resonances - text snippets that appear when interacting with elements
+        const angerResonances = [
+            "The heat rising when boundaries are crossed",
+            "A surge of energy demanding action",
+            "The sharp edge of violated expectations",
+            "When restraint becomes unbearable pressure",
+            "The moment before the storm breaks",
+            "Force gathering against an obstacle",
+            "The body's alarm system in full activation",
+            "Narrowed vision locked onto the threat",
+            "Energy coiling tight, ready to strike",
+            "The righteous fire of injustice perceived",
+            "Pressure building against containment",
+            "When 'no' becomes a physical force",
+            "The electric charge before confrontation",
+            "Muscles tensing toward decisive action",
+            "The furnace of frustrated intention"
+        ];
+        
+        // Color palette for Anger
+        const colors = {
+            crimson: [178, 34, 52],       // Crimson Red - Recognition (boundary violations)
+            charcoal: [45, 45, 45],       // Charcoal Black - Evaluation (threat intensity)
+            gray: [168, 169, 173]         // Cool Gray - Response (containment)
+        };
+        
+        // Elements for each conceptual layer
+        let violationElements = [];      // Crimson elements - slashing forms, boundary breaks
+        let pressureElements = [];       // Charcoal elements - accumulating mass and tension
+        let containmentElements = [];    // Gray elements - structural restraint
+        
+        // Slash lines that cut across the composition
+        let slashLines = [];
+        
+        // Fragment particles from broken boundaries
+        let fragmentParticles = [];
+        
+        // Pressure zones that build intensity
+        let pressureZones = [];
+        
+        // Interactive anger centers
+        let angerCenters = [];
+        let activeAngerCenter = null;
+        let centerActivated = false;
+        
+        // Timeline tracking
+        let timelineProgress = 0;
+        
+        // Shake effect for intense anger
+        let shakeIntensity = 0;
+        let shakeDecay = 0.95;
+
+        function startExperience() {
+            document.getElementById('landing-overlay').style.opacity = '0';
+            
+            setTimeout(() => {
+                document.getElementById('landing-overlay').style.display = 'none';
+                
+                isAnimating = true;
+                loop();
+                
+                updateLayoutForOrientation();
+                
+                if (soundEnabled && soundLoaded) {
+                    try {
+                        angerSound.loop();
+                        angerSound.setVolume(0);
+                        angerSound.setVolume(0.6, 2);
+                    } catch(e) {
+                        console.error("Error playing sound:", e);
+                    }
+                }
+                
+                setTimeout(() => {
+                    document.getElementById('controls').style.opacity = '1';
+                    document.getElementById('hint').style.opacity = '1';
+                    
+                    setTimeout(() => {
+                        document.getElementById('hint').style.opacity = '0';
+                    }, 5000);
+                }, 2000);
+            }, 1000);
+        }
+        
+        function updateLayoutForOrientation() {
+            const controls = document.getElementById('controls');
+            const timeline = document.getElementById('timeline');
+            
+            if (window.matchMedia("(orientation: portrait)").matches) {
+                controls.style.bottom = "70px";
+                controls.style.right = "15px";
+                timeline.style.width = "80%";
+            } else {
+                controls.style.bottom = "15px";
+                controls.style.right = "100px"; 
+                timeline.style.width = "60%";
+            }
+        }
+        
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                resizeCanvas(windowWidth, windowHeight);
+                repositionElements();
+                updateLayoutForOrientation();
+            }, 100);
+        });
+        
+        document.getElementById('start-experience').addEventListener('click', startExperience);
+        document.getElementById('start-experience').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            startExperience();
+        });
+        
+        document.getElementById('sound-toggle').addEventListener('click', function() {
+            soundEnabled = !soundEnabled;
+            
+            document.getElementById('sound-waves').style.opacity = soundEnabled ? '1' : '0';
+            
+            if (soundEnabled && angerSound && !angerSound.isPlaying()) {
+                angerSound.loop();
+                angerSound.setVolume(0);
+                angerSound.setVolume(0.6, 1);
+            } else if (!soundEnabled && angerSound && angerSound.isPlaying()) {
+                angerSound.setVolume(0, 0.5);
+                setTimeout(() => {
+                    angerSound.pause();
+                }, 500);
+            }
+        });
+        
+        document.getElementById('reset-button').addEventListener('click', function() {
+            timePosition = 0;
+            previousTimePosition = 0;
+            shakeIntensity = 0;
+            
+            resetExperience();
+            updateTimelineUI();
+        });
+        
+        document.getElementById('timeline-bar').addEventListener('mousedown', startTimelineDrag);
+        document.getElementById('timeline-bar').addEventListener('touchstart', startTimelineDrag);
+        
+        function startTimelineDrag(e) {
+            if (e.type === 'touchstart') {
+                e.preventDefault();
+            }
+            
+            isDraggingTimeline = true;
+            updateTimelinePosition(e);
+            
+            document.addEventListener('mousemove', updateTimelinePosition);
+            document.addEventListener('touchmove', updateTimelinePosition, { passive: false });
+            document.addEventListener('mouseup', endTimelineDrag);
+            document.addEventListener('touchend', endTimelineDrag);
+        }
+        
+        function updateTimelinePosition(e) {
+            if (!isDraggingTimeline) return;
+            
+            if (e.type === 'touchmove') {
+                e.preventDefault();
+            }
+            
+            const timeline = document.getElementById('timeline-bar');
+            const rect = timeline.getBoundingClientRect();
+            
+            let clientX;
+            if (e.type.startsWith('touch')) {
+                clientX = e.touches[0].clientX;
+            } else {
+                clientX = e.clientX;
+            }
+            
+            let percentage = (clientX - rect.left) / rect.width;
+            percentage = Math.max(0, Math.min(1, percentage));
+            
+            document.getElementById('timeline-progress').style.width = `${percentage * 100}%`;
+            document.getElementById('timeline-handle').style.left = `${percentage * 100}%`;
+            
+            timePosition = percentage * 25000; // 25 seconds for anger (intense, shorter)
+            
+            setTimePosition(timePosition);
+        }
+        
+        function endTimelineDrag() {
+            isDraggingTimeline = false;
+            document.removeEventListener('mousemove', updateTimelinePosition);
+            document.removeEventListener('touchmove', updateTimelinePosition);
+            document.removeEventListener('mouseup', endTimelineDrag);
+            document.removeEventListener('touchend', endTimelineDrag);
+            
+            previousTimePosition = timePosition;
+        }
+        
+        function updateTimelineUI() {
+            const percentage = timePosition / 25000;
+            
+            document.getElementById('timeline-progress').style.width = `${percentage * 100}%`;
+            document.getElementById('timeline-handle').style.left = `${percentage * 100}%`;
+        }
+        
+        function preload() {
+            soundLoaded = false;
+            angerSound = loadSound('anger_soundscape.mp3', 
+                function() {
+                    console.log("Sound loaded successfully");
+                    soundLoaded = true;
+                },
+                function(err) {
+                    console.error("Error loading sound:", err);
+                    soundEnabled = false;
+                }
+            );
+        }
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            
+            createViolationElements();
+            createPressureElements();
+            createContainmentElements();
+            createSlashLines();
+            createPressureZones();
+            createAngerCenters();
+            
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            
+            isAnimating = false;
+            noLoop();
+        }
+        
+        function getRandomResonance() {
+            return angerResonances[floor(random(angerResonances.length))];
+        }
+        
+        function createViolationElements() {
+            // Create violation elements (crimson) - slashing, breaking boundary forms
+            
+            // Aggressive diagonal slashes
+            for (let i = 0; i < 8; i++) {
+                violationElements.push({
+                    type: 'slash',
+                    x: random(width * 0.2, width * 0.8),
+                    y: random(height * 0.2, height * 0.8),
+                    length: random(80, 200),
+                    width: random(3, 8),
+                    angle: random(-PI/3, -PI/6), // Aggressive diagonal
+                    opacity: random(180, 255),
+                    startTime: 500 + i * 400,
+                    visible: false,
+                    interactive: true,
+                    activated: false,
+                    activatedTime: 0,
+                    intensity: 0,
+                    maxIntensity: 100,
+                    intensityRate: random(0.08, 0.15),
+                    pulseRate: random(0.003, 0.006)
+                });
+            }
+            
+            // Burst/explosion points
+            for (let i = 0; i < 5; i++) {
+                violationElements.push({
+                    type: 'burst',
+                    x: random(width * 0.25, width * 0.75),
+                    y: random(height * 0.25, height * 0.75),
+                    size: random(30, 60),
+                    rays: floor(random(8, 16)),
+                    rayLength: random(20, 50),
+                    opacity: random(200, 255),
+                    startTime: 2000 + i * 600,
+                    visible: false,
+                    interactive: true,
+                    activated: false,
+                    activatedTime: 0,
+                    intensity: 0,
+                    maxIntensity: 100,
+                    intensityRate: random(0.1, 0.18),
+                    pulseRate: random(0.004, 0.008),
+                    rotation: random(TWO_PI)
+                });
+            }
+            
+            // Jagged tear forms
+            for (let i = 0; i < 4; i++) {
+                let points = [];
+                let numPoints = floor(random(6, 10));
+                let startX = random(width * 0.3, width * 0.7);
+                let startY = random(height * 0.3, height * 0.7);
+                
+                for (let j = 0; j < numPoints; j++) {
+                    points.push({
+                        x: startX + (j - numPoints/2) * random(15, 30),
+                        y: startY + random(-40, 40)
+                    });
+                }
+                
+                violationElements.push({
+                    type: 'tear',
+                    points: points,
+                    width: random(2, 5),
+                    opacity: random(180, 240),
+                    startTime: 4000 + i * 800,
+                    visible: false,
+                    interactive: true,
+                    activated: false,
+                    activatedTime: 0,
+                    intensity: 0,
+                    maxIntensity: 100,
+                    intensityRate: random(0.07, 0.12),
+                    pulseRate: random(0.003, 0.005)
+                });
+            }
+        }
+        
+        function createPressureElements() {
+            // Create pressure elements (charcoal) - dense, heavy accumulating forms
+            
+            // Dense geometric blocks
+            for (let i = 0; i < 6; i++) {
+                pressureElements.push({
+                    type: 'block',
+                    x: random(width * 0.2, width * 0.8),
+                    y: random(height * 0.2, height * 0.8),
+                    width: random(40, 100),
+                    height: random(30, 80),
+                    opacity: random(200, 255),
+                    startTime: 1000 + i * 500,
+                    visible: false,
+                    interactive: true,
+                    activated: false,
+                    activatedTime: 0,
+                    pressure: 0,
+                    maxPressure: 100,
+                    pressureRate: random(0.05, 0.1),
+                    pulseRate: random(0.002, 0.004),
+                    rotation: random(-0.2, 0.2)
+                });
+            }
+            
+            // Accumulating mass circles
+            for (let i = 0; i < 5; i++) {
+                pressureElements.push({
+                    type: 'mass',
+                    x: random(width * 0.25, width * 0.75),
+                    y: random(height * 0.25, height * 0.75),
+                    size: random(50, 100),
+                    layers: floor(random(3, 6)),
+                    opacity: random(180, 240),
+                    startTime: 3000 + i * 700,
+                    visible: false,
+                    interactive: true,
+                    activated: false,
+                    activatedTime: 0,
+                    pressure: 0,
+                    maxPressure: 100,
+                    pressureRate: random(0.06, 0.11),
+                    pulseRate: random(0.003, 0.005)
+                });
+            }
+            
+            // Grid fragments under stress
+            for (let i = 0; i < 4; i++) {
+                pressureElements.push({
+                    type: 'grid',
+                    x: random(width * 0.3, width * 0.7),
+                    y: random(height * 0.3, height * 0.7),
+                    size: random(60, 100),
+                    cells: floor(random(3, 5)),
+                    opacity: random(160, 220),
+                    startTime: 5000 + i * 600,
+                    visible: false,
+                    interactive: random() > 0.3,
+                    activated: false,
+                    activatedTime: 0,
+                    pressure: 0,
+                    maxPressure: 100,
+                    pressureRate: random(0.04, 0.09),
+                    pulseRate: random(0.002, 0.004),
+                    distortion: 0
+                });
+            }
+        }
+        
+        function createContainmentElements() {
+            // Create containment elements (gray) - structural restraint
+            
+            // Boundary lines
+            for (let i = 0; i < 6; i++) {
+                containmentElements.push({
+                    type: 'boundary',
+                    x: random(width * 0.15, width * 0.85),
+                    y: random(height * 0.15, height * 0.85),
+                    length: random(100, 250),
+                    width: random(2, 4),
+                    angle: random() > 0.5 ? 0 : HALF_PI, // Horizontal or vertical
+                    opacity: random(140, 200),
+                    startTime: 1500 + i * 400,
+                    visible: false,
+                    interactive: random() > 0.4,
+                    activated: false,
+                    activatedTime: 0,
+                    strain: 0,
+                    maxStrain: 100,
+                    strainRate: random(0.03, 0.07),
+                    pulseRate: random(0.001, 0.003)
+                });
+            }
+            
+            // Containing frames
+            for (let i = 0; i < 3; i++) {
+                containmentElements.push({
+                    type: 'frame',
+                    x: random(width * 0.25, width * 0.75),
+                    y: random(height * 0.25, height * 0.75),
+                    width: random(80, 150),
+                    height: random(60, 120),
+                    strokeWidth: random(2, 4),
+                    opacity: random(150, 210),
+                    startTime: 6000 + i * 800,
+                    visible: false,
+                    interactive: true,
+                    activated: false,
+                    activatedTime: 0,
+                    strain: 0,
+                    maxStrain: 100,
+                    strainRate: random(0.04, 0.08),
+                    pulseRate: random(0.002, 0.004)
+                });
+            }
+            
+            // Structural grid overlays
+            for (let i = 0; i < 3; i++) {
+                containmentElements.push({
+                    type: 'overlay',
+                    x: random(width * 0.2, width * 0.8),
+                    y: random(height * 0.2, height * 0.8),
+                    size: random(100, 180),
+                    lines: floor(random(4, 8)),
+                    opacity: random(100, 160),
+                    startTime: 7500 + i * 600,
+                    visible: false,
+                    interactive: random() > 0.5,
+                    activated: false,
+                    activatedTime: 0,
+                    strain: 0,
+                    maxStrain: 100,
+                    strainRate: random(0.03, 0.06),
+                    pulseRate: random(0.001, 0.002)
+                });
+            }
+        }
+        
+        function createSlashLines() {
+            // Create dramatic slash lines that cut across the entire composition
+            for (let i = 0; i < 4; i++) {
+                let startX, startY, endX, endY;
+                
+                if (random() > 0.5) {
+                    // Diagonal from top-left area to bottom-right area
+                    startX = random(0, width * 0.3);
+                    startY = random(0, height * 0.3);
+                    endX = random(width * 0.7, width);
+                    endY = random(height * 0.7, height);
+                } else {
+                    // Diagonal from top-right area to bottom-left area
+                    startX = random(width * 0.7, width);
+                    startY = random(0, height * 0.3);
+                    endX = random(0, width * 0.3);
+                    endY = random(height * 0.7, height);
+                }
+                
+                slashLines.push({
+                    startX: startX,
+                    startY: startY,
+                    endX: endX,
+                    endY: endY,
+                    width: random(2, 6),
+                    opacity: random(150, 220),
+                    progress: 0,
+                    startTime: 8000 + i * 1000,
+                    speed: random(0.015, 0.025),
+                    activated: false
+                });
+            }
+        }
+        
+        function createPressureZones() {
+            // Create pressure zones where intensity accumulates
+            for (let i = 0; i < 3; i++) {
+                pressureZones.push({
+                    x: random(width * 0.3, width * 0.7),
+                    y: random(height * 0.3, height * 0.7),
+                    radius: random(80, 150),
+                    pressure: 0,
+                    maxPressure: 100,
+                    startTime: 10000 + i * 2000,
+                    visible: false,
+                    pulseRate: random(0.003, 0.006)
+                });
+            }
+        }
+        
+        function createAngerCenters() {
+            // Create interactive anger centers - focal points of intensity
+            
+            // Main anger center
+            angerCenters.push({
+                x: width * 0.5, 
+                y: height * 0.5,
+                size: 100,
+                opacity: 0,
+                targetOpacity: 200,
+                pulseRate: 0.004,
+                activated: false,
+                activationProgress: 0,
+                startTime: 12000,
+                resonance: "The white-hot core where pressure becomes force",
+                elements: []
+            });
+            
+            // Secondary anger centers
+            for (let i = 0; i < 2; i++) {
+                angerCenters.push({
+                    x: random(width * 0.25, width * 0.75),
+                    y: random(height * 0.25, height * 0.75),
+                    size: random(60, 80),
+                    opacity: 0,
+                    targetOpacity: random(160, 200),
+                    pulseRate: random(0.003, 0.006),
+                    activated: false,
+                    activationProgress: 0,
+                    startTime: 15000 + i * 2500,
+                    resonance: getRandomResonance(),
+                    elements: []
+                });
+            }
+            
+            // Assign elements to anger centers based on proximity
+            assignElementsToCenters();
+        }
+        
+        function assignElementsToCenters() {
+            // Assign violation elements
+            for (let i = 0; i < violationElements.length; i++) {
+                let elem = violationElements[i];
+                let elemX = elem.type === 'tear' ? elem.points[0].x : elem.x;
+                let elemY = elem.type === 'tear' ? elem.points[0].y : elem.y;
+                
+                for (let j = 0; j < angerCenters.length; j++) {
+                    let d = dist(elemX, elemY, angerCenters[j].x, angerCenters[j].y);
+                    if (d < 180) {
+                        angerCenters[j].elements.push({
+                            type: 'violation',
+                            index: i
+                        });
+                        break;
+                    }
+                }
+            }
+            
+            // Assign pressure elements
+            for (let i = 0; i < pressureElements.length; i++) {
+                let elem = pressureElements[i];
+                
+                for (let j = 0; j < angerCenters.length; j++) {
+                    let d = dist(elem.x, elem.y, angerCenters[j].x, angerCenters[j].y);
+                    if (d < 200) {
+                        angerCenters[j].elements.push({
+                            type: 'pressure',
+                            index: i
+                        });
+                        break;
+                    }
+                }
+            }
+            
+            // Assign containment elements
+            for (let i = 0; i < containmentElements.length; i++) {
+                let elem = containmentElements[i];
+                
+                for (let j = 0; j < angerCenters.length; j++) {
+                    let d = dist(elem.x, elem.y, angerCenters[j].x, angerCenters[j].y);
+                    if (d < 220) {
+                        angerCenters[j].elements.push({
+                            type: 'containment',
+                            index: i
+                        });
+                        break;
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            // Apply shake effect
+            push();
+            if (shakeIntensity > 0.5) {
+                translate(random(-shakeIntensity, shakeIntensity), random(-shakeIntensity, shakeIntensity));
+                shakeIntensity *= shakeDecay;
+            }
+            
+            // Clear with slightly warm background
+            background(247, 245, 244);
+            
+            // Update time position
+            if (isAnimating && !isDraggingTimeline) {
+                timePosition += deltaTime * 1.2; // Faster progression for anger
+                
+                if (timePosition > 25000) {
+                    timePosition = 25000;
+                    
+                    if (!activatedTimeline) {
+                        showTimeline();
+                        activatedTimeline = true;
+                    }
+                }
+                
+                updateTimelineUI();
+                previousTimePosition = timePosition;
+            }
+
+            // Update pressure phase
+            pressurePhase += pressureRate * deltaTime * 0.001;
+            
+            // Draw layers in order
+            drawContainmentElements();    // Gray - structural restraint (background)
+            drawPressureZones();          // Pressure accumulation zones
+            drawPressureElements();       // Charcoal - mounting pressure
+            drawSlashLines();             // Dramatic cutting lines
+            drawViolationElements();      // Crimson - boundary violations (foreground)
+            drawAngerCenters();           // Interactive focal points
+            drawFragmentParticles();      // Broken boundary fragments
+            
+            // Update systems
+            updateActivatedElements();
+            updateElementPropagation();
+            updateFragmentParticles();
+            
+            pop();
+        }
+        
+        function showTimeline() {
+            document.getElementById('timeline').style.opacity = '1';
+            updateLayoutForOrientation();
+        }
+        
+        function drawViolationElements() {
+            for (let i = 0; i < violationElements.length; i++) {
+                let elem = violationElements[i];
+                
+                if (timePosition > elem.startTime) {
+                    elem.visible = true;
+                }
+                
+                if (elem.visible) {
+                    let intensityFactor = elem.intensity / elem.maxIntensity;
+                    let pulse = sin(millis() * elem.pulseRate) * 0.2;
+                    
+                    if (elem.type === 'slash') {
+                        drawSlashElement(elem, intensityFactor, pulse);
+                    } else if (elem.type === 'burst') {
+                        drawBurstElement(elem, intensityFactor, pulse);
+                    } else if (elem.type === 'tear') {
+                        drawTearElement(elem, intensityFactor, pulse);
+                    }
+                }
+            }
+        }
+        
+        function drawSlashElement(elem, intensityFactor, pulse) {
+            push();
+            translate(elem.x, elem.y);
+            rotate(elem.angle);
+            
+            // Glow effect when activated
+            if (intensityFactor > 0) {
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 80 * intensityFactor);
+                strokeWeight(elem.width + 10 * intensityFactor);
+                line(0, 0, elem.length * (1 + pulse), 0);
+            }
+            
+            // Main slash
+            stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                   elem.opacity * (0.8 + intensityFactor * 0.2));
+            strokeWeight(elem.width + intensityFactor * 4);
+            
+            // Add jagged quality when intense
+            if (intensityFactor > 0.5) {
+                beginShape();
+                let segments = 10;
+                for (let j = 0; j <= segments; j++) {
+                    let x = (j / segments) * elem.length;
+                    let y = random(-3, 3) * intensityFactor;
+                    vertex(x, y);
+                }
+                endShape();
+            } else {
+                line(0, 0, elem.length, 0);
+            }
+            
+            // Sharp endpoints
+            fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], elem.opacity);
+            noStroke();
+            
+            // Entry point
+            triangle(-5, -elem.width/2, -5, elem.width/2, 5, 0);
+            
+            // Exit point (sharper when intense)
+            push();
+            translate(elem.length, 0);
+            let exitSize = 8 + intensityFactor * 6;
+            triangle(-exitSize, -exitSize/2, -exitSize, exitSize/2, 0, 0);
+            pop();
+            
+            pop();
+            
+            // Interactive pulse
+            if (elem.interactive && !elem.activated) {
+                noFill();
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 40);
+                strokeWeight(1);
+                
+                let midX = elem.x + cos(elem.angle) * elem.length/2;
+                let midY = elem.y + sin(elem.angle) * elem.length/2;
+                ellipse(midX, midY, 20 + sin(millis() * 0.004) * 5);
+            }
+        }
+        
+        function drawBurstElement(elem, intensityFactor, pulse) {
+            push();
+            translate(elem.x, elem.y);
+            rotate(elem.rotation + (intensityFactor > 0 ? millis() * 0.002 * intensityFactor : 0));
+            
+            // Outer glow when activated
+            if (intensityFactor > 0) {
+                noFill();
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 60 * intensityFactor);
+                strokeWeight(3);
+                ellipse(0, 0, elem.size * (1.5 + intensityFactor));
+            }
+            
+            // Draw rays
+            for (let j = 0; j < elem.rays; j++) {
+                let angle = TWO_PI * j / elem.rays;
+                let rayLen = elem.rayLength * (1 + pulse + intensityFactor * 0.5);
+                
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                       elem.opacity * (0.7 + intensityFactor * 0.3));
+                strokeWeight(2 + intensityFactor * 2);
+                
+                let innerRadius = elem.size * 0.3;
+                line(
+                    cos(angle) * innerRadius, 
+                    sin(angle) * innerRadius,
+                    cos(angle) * (innerRadius + rayLen),
+                    sin(angle) * (innerRadius + rayLen)
+                );
+                
+                // Ray tips
+                if (intensityFactor > 0.3) {
+                    fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                         elem.opacity * intensityFactor);
+                    noStroke();
+                    
+                    let tipX = cos(angle) * (innerRadius + rayLen);
+                    let tipY = sin(angle) * (innerRadius + rayLen);
+                    ellipse(tipX, tipY, 4 + intensityFactor * 4);
+                }
+            }
+            
+            // Central core
+            fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                 elem.opacity * (0.8 + intensityFactor * 0.2));
+            noStroke();
+            ellipse(0, 0, elem.size * 0.4 * (1 + pulse));
+            
+            // Inner hot core
+            fill(255, 100, 100, elem.opacity * intensityFactor);
+            ellipse(0, 0, elem.size * 0.15 * (1 + intensityFactor));
+            
+            pop();
+            
+            // Interactive pulse
+            if (elem.interactive && !elem.activated) {
+                noFill();
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 40);
+                strokeWeight(1);
+                ellipse(elem.x, elem.y, elem.size + 20 + sin(millis() * 0.004) * 8);
+            }
+        }
+        
+        function drawTearElement(elem, intensityFactor, pulse) {
+            if (elem.points.length < 2) return;
+            
+            // Glow when activated
+            if (intensityFactor > 0) {
+                noFill();
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 60 * intensityFactor);
+                strokeWeight(elem.width + 8 * intensityFactor);
+                
+                beginShape();
+                for (let j = 0; j < elem.points.length; j++) {
+                    vertex(elem.points[j].x, elem.points[j].y);
+                }
+                endShape();
+            }
+            
+            // Main tear line
+            stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                   elem.opacity * (0.8 + intensityFactor * 0.2));
+            strokeWeight(elem.width + intensityFactor * 3);
+            noFill();
+            
+            beginShape();
+            for (let j = 0; j < elem.points.length; j++) {
+                let jitter = intensityFactor > 0.5 ? random(-2, 2) * intensityFactor : 0;
+                vertex(elem.points[j].x + jitter, elem.points[j].y + jitter);
+            }
+            endShape();
+            
+            // Fragment points at vertices when intense
+            if (intensityFactor > 0.4) {
+                fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                     elem.opacity * intensityFactor);
+                noStroke();
+                
+                for (let j = 0; j < elem.points.length; j++) {
+                    if (random() > 0.5) {
+                        ellipse(elem.points[j].x, elem.points[j].y, 3 + random(4) * intensityFactor);
+                    }
+                }
+            }
+            
+            // Interactive pulse
+            if (elem.interactive && !elem.activated) {
+                noFill();
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 40);
+                strokeWeight(1);
+                ellipse(elem.points[0].x, elem.points[0].y, 15 + sin(millis() * 0.004) * 5);
+            }
+        }
+        
+        function drawPressureElements() {
+            for (let i = 0; i < pressureElements.length; i++) {
+                let elem = pressureElements[i];
+                
+                if (timePosition > elem.startTime) {
+                    elem.visible = true;
+                }
+                
+                if (elem.visible) {
+                    let pressureFactor = elem.pressure / elem.maxPressure;
+                    let pulse = sin(millis() * elem.pulseRate) * 0.15;
+                    
+                    if (elem.type === 'block') {
+                        drawBlockElement(elem, pressureFactor, pulse);
+                    } else if (elem.type === 'mass') {
+                        drawMassElement(elem, pressureFactor, pulse);
+                    } else if (elem.type === 'grid') {
+                        drawGridElement(elem, pressureFactor, pulse);
+                    }
+                }
+            }
+        }
+        
+        function drawBlockElement(elem, pressureFactor, pulse) {
+            push();
+            translate(elem.x, elem.y);
+            rotate(elem.rotation + pressureFactor * 0.1);
+            
+            // Shadow/pressure effect
+            if (pressureFactor > 0) {
+                fill(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 50 * pressureFactor);
+                noStroke();
+                
+                let shadowOffset = 5 + pressureFactor * 10;
+                rect(shadowOffset, shadowOffset, 
+                     elem.width * (1 + pulse), 
+                     elem.height * (1 + pulse));
+            }
+            
+            // Main block
+            fill(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 
+                 elem.opacity * (0.8 + pressureFactor * 0.2));
+            
+            if (pressureFactor > 0.3) {
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                       100 * pressureFactor);
+                strokeWeight(1);
+            } else {
+                noStroke();
+            }
+            
+            rect(-elem.width/2, -elem.height/2, 
+                 elem.width * (1 + pulse + pressureFactor * 0.1), 
+                 elem.height * (1 + pulse + pressureFactor * 0.1));
+            
+            // Stress lines when under pressure
+            if (pressureFactor > 0.5) {
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                       120 * pressureFactor);
+                strokeWeight(1);
+                
+                // Diagonal stress fractures
+                line(-elem.width/2, -elem.height/2, elem.width/2, elem.height/2);
+                line(elem.width/2, -elem.height/2, -elem.width/2, elem.height/2);
+            }
+            
+            pop();
+            
+            // Interactive pulse
+            if (elem.interactive && !elem.activated) {
+                noFill();
+                stroke(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 40);
+                strokeWeight(1);
+                
+                rect(elem.x - elem.width/2 - 5, elem.y - elem.height/2 - 5,
+                     elem.width + 10, elem.height + 10);
+            }
+        }
+        
+        function drawMassElement(elem, pressureFactor, pulse) {
+            push();
+            translate(elem.x, elem.y);
+            
+            // Draw concentric layers from outside in
+            for (let j = elem.layers - 1; j >= 0; j--) {
+                let layerRatio = (j + 1) / elem.layers;
+                let layerSize = elem.size * layerRatio * (1 + pulse);
+                
+                // Layers get denser (darker) toward center
+                let layerOpacity = elem.opacity * (0.4 + 0.6 * (1 - layerRatio));
+                
+                if (pressureFactor > 0) {
+                    layerOpacity *= (0.8 + pressureFactor * 0.2);
+                    layerSize *= (1 + pressureFactor * 0.1);
+                }
+                
+                fill(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], layerOpacity);
+                
+                // Add red tinge when highly pressurized
+                if (pressureFactor > 0.6 && j === 0) {
+                    fill(
+                        lerp(colors.charcoal[0], colors.crimson[0], pressureFactor * 0.3),
+                        lerp(colors.charcoal[1], colors.crimson[1], pressureFactor * 0.3),
+                        lerp(colors.charcoal[2], colors.crimson[2], pressureFactor * 0.3),
+                        layerOpacity
+                    );
+                }
+                
+                noStroke();
+                ellipse(0, 0, layerSize);
+            }
+            
+            // Pressure ring when activated
+            if (pressureFactor > 0) {
+                noFill();
+                stroke(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 
+                       100 * pressureFactor);
+                strokeWeight(2 + pressureFactor * 2);
+                
+                ellipse(0, 0, elem.size * (1.2 + pressureFactor * 0.3));
+            }
+            
+            pop();
+            
+            // Interactive pulse
+            if (elem.interactive && !elem.activated) {
+                noFill();
+                stroke(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 40);
+                strokeWeight(1);
+                ellipse(elem.x, elem.y, elem.size + 15 + sin(millis() * 0.003) * 5);
+            }
+        }
+        
+        function drawGridElement(elem, pressureFactor, pulse) {
+            push();
+            translate(elem.x, elem.y);
+            
+            let cellSize = elem.size / elem.cells;
+            let distortAmount = pressureFactor * 8;
+            
+            stroke(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 
+                   elem.opacity * (0.7 + pressureFactor * 0.3));
+            strokeWeight(1.5 + pressureFactor);
+            noFill();
+            
+            // Draw distorted grid
+            for (let row = 0; row <= elem.cells; row++) {
+                beginShape();
+                for (let col = 0; col <= elem.cells; col++) {
+                    let x = -elem.size/2 + col * cellSize;
+                    let y = -elem.size/2 + row * cellSize;
+                    
+                    // Add distortion based on pressure
+                    if (pressureFactor > 0.2) {
+                        x += random(-distortAmount, distortAmount);
+                        y += random(-distortAmount, distortAmount);
+                    }
+                    
+                    vertex(x, y);
+                }
+                endShape();
+            }
+            
+            // Vertical lines
+            for (let col = 0; col <= elem.cells; col++) {
+                beginShape();
+                for (let row = 0; row <= elem.cells; row++) {
+                    let x = -elem.size/2 + col * cellSize;
+                    let y = -elem.size/2 + row * cellSize;
+                    
+                    if (pressureFactor > 0.2) {
+                        x += random(-distortAmount, distortAmount);
+                        y += random(-distortAmount, distortAmount);
+                    }
+                    
+                    vertex(x, y);
+                }
+                endShape();
+            }
+            
+            pop();
+            
+            // Interactive pulse
+            if (elem.interactive && !elem.activated) {
+                noFill();
+                stroke(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 40);
+                strokeWeight(1);
+                rect(elem.x - elem.size/2 - 5, elem.y - elem.size/2 - 5,
+                     elem.size + 10, elem.size + 10);
+            }
+        }
+        
+        function drawContainmentElements() {
+            for (let i = 0; i < containmentElements.length; i++) {
+                let elem = containmentElements[i];
+                
+                if (timePosition > elem.startTime) {
+                    elem.visible = true;
+                }
+                
+                if (elem.visible) {
+                    let strainFactor = elem.strain / elem.maxStrain;
+                    let pulse = sin(millis() * elem.pulseRate) * 0.1;
+                    
+                    if (elem.type === 'boundary') {
+                        drawBoundaryElement(elem, strainFactor, pulse);
+                    } else if (elem.type === 'frame') {
+                        drawFrameElement(elem, strainFactor, pulse);
+                    } else if (elem.type === 'overlay') {
+                        drawOverlayElement(elem, strainFactor, pulse);
+                    }
+                }
+            }
+        }
+        
+        function drawBoundaryElement(elem, strainFactor, pulse) {
+            push();
+            translate(elem.x, elem.y);
+            rotate(elem.angle);
+            
+            // Main boundary line
+            stroke(colors.gray[0], colors.gray[1], colors.gray[2], 
+                   elem.opacity * (0.8 + strainFactor * 0.2));
+            strokeWeight(elem.width + strainFactor * 2);
+            
+            // Add wavering when under strain
+            if (strainFactor > 0.4) {
+                beginShape();
+                let segments = 15;
+                for (let j = 0; j <= segments; j++) {
+                    let x = (j / segments) * elem.length - elem.length/2;
+                    let y = sin(j * 0.8 + millis() * 0.003) * strainFactor * 4;
+                    vertex(x, y);
+                }
+                endShape();
+            } else {
+                line(-elem.length/2, 0, elem.length/2, 0);
+            }
+            
+            // Break points when highly strained
+            if (strainFactor > 0.7) {
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                       150 * strainFactor);
+                strokeWeight(2);
+                
+                // Random break indicators
+                let breaks = floor(strainFactor * 3);
+                for (let j = 0; j < breaks; j++) {
+                    let breakX = random(-elem.length/2, elem.length/2);
+                    line(breakX, -5, breakX, 5);
+                }
+            }
+            
+            pop();
+            
+            // Interactive pulse
+            if (elem.interactive && !elem.activated) {
+                noFill();
+                stroke(colors.gray[0], colors.gray[1], colors.gray[2], 40);
+                strokeWeight(1);
+                
+                let midX = elem.x + cos(elem.angle) * 0;
+                let midY = elem.y + sin(elem.angle) * 0;
+                ellipse(midX, midY, 15 + sin(millis() * 0.003) * 4);
+            }
+        }
+        
+        function drawFrameElement(elem, strainFactor, pulse) {
+            push();
+            translate(elem.x, elem.y);
+            
+            noFill();
+            stroke(colors.gray[0], colors.gray[1], colors.gray[2], 
+                   elem.opacity * (0.8 + strainFactor * 0.2));
+            strokeWeight(elem.strokeWidth + strainFactor * 2);
+            
+            // Distort frame corners when under strain
+            let distort = strainFactor * 8;
+            
+            beginShape();
+            vertex(-elem.width/2 + random(-distort, distort), 
+                   -elem.height/2 + random(-distort, distort));
+            vertex(elem.width/2 + random(-distort, distort), 
+                   -elem.height/2 + random(-distort, distort));
+            vertex(elem.width/2 + random(-distort, distort), 
+                   elem.height/2 + random(-distort, distort));
+            vertex(-elem.width/2 + random(-distort, distort), 
+                   elem.height/2 + random(-distort, distort));
+            endShape(CLOSE);
+            
+            // Internal pressure indicators
+            if (strainFactor > 0.5) {
+                stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                       80 * strainFactor);
+                strokeWeight(1);
+                
+                // Diagonal pressure lines
+                line(-elem.width/2, -elem.height/2, elem.width/2, elem.height/2);
+                line(elem.width/2, -elem.height/2, -elem.width/2, elem.height/2);
+            }
+            
+            pop();
+            
+            // Interactive pulse
+            if (elem.interactive && !elem.activated) {
+                noFill();
+                stroke(colors.gray[0], colors.gray[1], colors.gray[2], 40);
+                strokeWeight(1);
+                rect(elem.x - elem.width/2 - 8, elem.y - elem.height/2 - 8,
+                     elem.width + 16, elem.height + 16);
+            }
+        }
+        
+        function drawOverlayElement(elem, strainFactor, pulse) {
+            push();
+            translate(elem.x, elem.y);
+            
+            stroke(colors.gray[0], colors.gray[1], colors.gray[2], 
+                   elem.opacity * (0.7 + strainFactor * 0.3));
+            strokeWeight(1 + strainFactor);
+            
+            let spacing = elem.size / elem.lines;
+            let distort = strainFactor * 6;
+            
+            // Horizontal lines
+            for (let j = 0; j <= elem.lines; j++) {
+                let y = -elem.size/2 + j * spacing;
+                let x1 = -elem.size/2 + random(-distort, distort);
+                let x2 = elem.size/2 + random(-distort, distort);
+                line(x1, y + random(-distort, distort), x2, y + random(-distort, distort));
+            }
+            
+            // Vertical lines
+            for (let j = 0; j <= elem.lines; j++) {
+                let x = -elem.size/2 + j * spacing;
+                let y1 = -elem.size/2 + random(-distort, distort);
+                let y2 = elem.size/2 + random(-distort, distort);
+                line(x + random(-distort, distort), y1, x + random(-distort, distort), y2);
+            }
+            
+            pop();
+        }
+        
+        function drawSlashLines() {
+            for (let slash of slashLines) {
+                if (timePosition > slash.startTime) {
+                    if (slash.progress < 1) {
+                        slash.progress = min(1, slash.progress + slash.speed);
+                    }
+                    
+                    if (slash.progress > 0) {
+                        let currentX = lerp(slash.startX, slash.endX, slash.progress);
+                        let currentY = lerp(slash.startY, slash.endY, slash.progress);
+                        
+                        // Trail glow
+                        stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 60);
+                        strokeWeight(slash.width + 8);
+                        line(slash.startX, slash.startY, currentX, currentY);
+                        
+                        // Main slash
+                        stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], slash.opacity);
+                        strokeWeight(slash.width);
+                        line(slash.startX, slash.startY, currentX, currentY);
+                        
+                        // Leading edge spark
+                        if (slash.progress < 1) {
+                            fill(255, 150, 150, 200);
+                            noStroke();
+                            ellipse(currentX, currentY, slash.width * 2);
+                            
+                            // Spawn fragment particles
+                            if (random() > 0.7) {
+                                spawnFragment(currentX, currentY);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawPressureZones() {
+            for (let zone of pressureZones) {
+                if (timePosition > zone.startTime) {
+                    zone.visible = true;
+                    
+                    // Calculate pressure based on nearby activated elements
+                    zone.pressure = calculateZonePressure(zone);
+                    
+                    if (zone.pressure > 10) {
+                        let pulse = sin(millis() * zone.pulseRate) * 0.2;
+                        let pressureFactor = zone.pressure / zone.maxPressure;
+                        
+                        // Pressure field visualization
+                        noFill();
+                        
+                        // Outer rings
+                        for (let i = 0; i < 3; i++) {
+                            let ringSize = zone.radius * (0.6 + i * 0.3) * (1 + pulse);
+                            let ringOpacity = 40 * pressureFactor * (1 - i * 0.25);
+                            
+                            stroke(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], ringOpacity);
+                            strokeWeight(2 - i * 0.5);
+                            ellipse(zone.x, zone.y, ringSize * 2);
+                        }
+                        
+                        // Inner pressure core
+                        if (pressureFactor > 0.5) {
+                            fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                                 30 * pressureFactor);
+                            noStroke();
+                            ellipse(zone.x, zone.y, zone.radius * 0.4 * pressureFactor);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function calculateZonePressure(zone) {
+            let totalPressure = 0;
+            
+            // Check violation elements
+            for (let elem of violationElements) {
+                if (elem.visible && elem.intensity > 0) {
+                    let elemX = elem.type === 'tear' ? elem.points[0].x : elem.x;
+                    let elemY = elem.type === 'tear' ? elem.points[0].y : elem.y;
+                    let d = dist(elemX, elemY, zone.x, zone.y);
+                    
+                    if (d < zone.radius) {
+                        totalPressure += elem.intensity * (1 - d/zone.radius) * 0.5;
+                    }
+                }
+            }
+            
+            // Check pressure elements
+            for (let elem of pressureElements) {
+                if (elem.visible && elem.pressure > 0) {
+                    let d = dist(elem.x, elem.y, zone.x, zone.y);
+                    
+                    if (d < zone.radius) {
+                        totalPressure += elem.pressure * (1 - d/zone.radius) * 0.7;
+                    }
+                }
+            }
+            
+            return min(zone.maxPressure, totalPressure);
+        }
+        
+        function drawAngerCenters() {
+            for (let i = 0; i < angerCenters.length; i++) {
+                let center = angerCenters[i];
+                
+                if (timePosition > center.startTime) {
+                    if (center.opacity < center.targetOpacity) {
+                        center.opacity = min(center.targetOpacity, center.opacity + 2);
+                    }
+                    
+                    let pulse = sin(millis() * center.pulseRate) * 0.2;
+                    let pulseSize = center.size * (1 + pulse);
+                    
+                    // Active anger center effects
+                    if (i === activeAngerCenter && center.activationProgress > 0) {
+                        // Explosive rings
+                        for (let j = 0; j < 4; j++) {
+                            let ringSize = pulseSize * (1 + j * 0.3) * center.activationProgress;
+                            let ringOpacity = (100 - j * 20) * center.activationProgress;
+                            
+                            noFill();
+                            stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], ringOpacity);
+                            strokeWeight(3 - j * 0.5);
+                            ellipse(center.x, center.y, ringSize);
+                        }
+                        
+                        // Radiating anger lines
+                        let numLines = 12;
+                        for (let j = 0; j < numLines; j++) {
+                            let angle = TWO_PI * j / numLines + millis() * 0.002;
+                            let lineLen = pulseSize * 0.6 * center.activationProgress;
+                            
+                            stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                                   150 * center.activationProgress);
+                            strokeWeight(2);
+                            
+                            line(
+                                center.x + cos(angle) * pulseSize * 0.3,
+                                center.y + sin(angle) * pulseSize * 0.3,
+                                center.x + cos(angle) * (pulseSize * 0.3 + lineLen),
+                                center.y + sin(angle) * (pulseSize * 0.3 + lineLen)
+                            );
+                        }
+                    }
+                    
+                    // Main center boundary
+                    noFill();
+                    stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], center.opacity);
+                    strokeWeight(3);
+                    ellipse(center.x, center.y, pulseSize);
+                    
+                    // Inner core
+                    fill(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], center.opacity * 0.3);
+                    noStroke();
+                    ellipse(center.x, center.y, pulseSize * 0.4);
+                    
+                    // Hot center
+                    fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], center.opacity * 0.5);
+                    ellipse(center.x, center.y, pulseSize * 0.15);
+                    
+                    // Interactive indicator
+                    if (!center.activated) {
+                        fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
+                             60 + 40 * sin(millis() * 0.006));
+                        noStroke();
+                        
+                        // Exclamation mark
+                        push();
+                        translate(center.x, center.y);
+                        rect(-3, -15, 6, 20);
+                        ellipse(0, 12, 6);
+                        pop();
+                    }
+                }
+            }
+        }
+        
+        function spawnFragment(x, y) {
+            if (fragmentParticles.length < 100) {
+                fragmentParticles.push({
+                    x: x,
+                    y: y,
+                    vx: random(-5, 5),
+                    vy: random(-5, 5),
+                    size: random(2, 6),
+                    opacity: random(150, 255),
+                    life: 1,
+                    decay: random(0.01, 0.03)
+                });
+            }
+        }
+        
+        function drawFragmentParticles() {
+            noStroke();
+            
+            for (let p of fragmentParticles) {
+                fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], p.opacity * p.life);
+                
+                // Sharp angular fragment
+                push();
+                translate(p.x, p.y);
+                rotate(atan2(p.vy, p.vx));
+                
+                beginShape();
+                vertex(-p.size, 0);
+                vertex(0, -p.size/2);
+                vertex(p.size, 0);
+                vertex(0, p.size/2);
+                endShape(CLOSE);
+                
+                pop();
+            }
+        }
+        
+        function updateFragmentParticles() {
+            for (let i = fragmentParticles.length - 1; i >= 0; i--) {
+                let p = fragmentParticles[i];
+                
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1; // Gravity
+                p.life -= p.decay;
+                
+                if (p.life <= 0 || p.y > height + 50) {
+                    fragmentParticles.splice(i, 1);
+                }
+            }
+        }
+        
+        function updateActivatedElements() {
+            // Update violation elements
+            for (let elem of violationElements) {
+                if (elem.activated) {
+                    if (elem.intensity > 0) {
+                        elem.intensity = max(0, elem.intensity - 0.8);
+                    }
+                    
+                    if (millis() - elem.activatedTime > 2500) {
+                        elem.activated = false;
+                    }
+                }
+            }
+            
+            // Update pressure elements
+            for (let elem of pressureElements) {
+                if (elem.activated) {
+                    if (elem.pressure > 0) {
+                        elem.pressure = max(0, elem.pressure - 0.6);
+                    }
+                    
+                    if (millis() - elem.activatedTime > 2500) {
+                        elem.activated = false;
+                    }
+                }
+            }
+            
+            // Update containment elements
+            for (let elem of containmentElements) {
+                if (elem.activated) {
+                    if (elem.strain > 0) {
+                        elem.strain = max(0, elem.strain - 0.5);
+                    }
+                    
+                    if (millis() - elem.activatedTime > 2500) {
+                        elem.activated = false;
+                    }
+                }
+            }
+            
+            // Update anger centers
+            for (let center of angerCenters) {
+                if (center.activated) {
+                    center.activationProgress = min(1, center.activationProgress + 0.015);
+                }
+            }
+            
+            if (activeAngerCenter !== null && !angerCenters[activeAngerCenter].activated) {
+                if (angerCenters[activeAngerCenter].activationProgress > 0) {
+                    angerCenters[activeAngerCenter].activationProgress = max(0, 
+                        angerCenters[activeAngerCenter].activationProgress - 0.03);
+                } else {
+                    activeAngerCenter = null;
+                    centerActivated = false;
+                }
+            }
+        }
+        
+        function updateElementPropagation() {
+            // Violation elements intensify pressure elements
+            for (let vElem of violationElements) {
+                if (vElem.activated && vElem.intensity > 40) {
+                    let vX = vElem.type === 'tear' ? vElem.points[0].x : vElem.x;
+                    let vY = vElem.type === 'tear' ? vElem.points[0].y : vElem.y;
+                    
+                    for (let pElem of pressureElements) {
+                        let d = dist(vX, vY, pElem.x, pElem.y);
+                        
+                        if (d < 150) {
+                            let transfer = vElem.intensity * (1 - d/150) * 0.25;
+                            pElem.pressure = min(pElem.maxPressure, pElem.pressure + transfer);
+                            
+                            if (pElem.pressure > 30 && !pElem.activated) {
+                                pElem.activated = true;
+                                pElem.activatedTime = millis();
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Pressure elements strain containment elements
+            for (let pElem of pressureElements) {
+                if (pElem.activated && pElem.pressure > 50) {
+                    for (let cElem of containmentElements) {
+                        let d = dist(pElem.x, pElem.y, cElem.x, cElem.y);
+                        
+                        if (d < 180) {
+                            let transfer = pElem.pressure * (1 - d/180) * 0.2;
+                            cElem.strain = min(cElem.maxStrain, cElem.strain + transfer);
+                            
+                            if (cElem.strain > 25 && !cElem.activated) {
+                                cElem.activated = true;
+                                cElem.activatedTime = millis();
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // High strain containment feeds back to violation (anger breaking through)
+            for (let cElem of containmentElements) {
+                if (cElem.activated && cElem.strain > 70) {
+                    for (let vElem of violationElements) {
+                        let vX = vElem.type === 'tear' ? vElem.points[0].x : vElem.x;
+                        let vY = vElem.type === 'tear' ? vElem.points[0].y : vElem.y;
+                        
+                        let d = dist(cElem.x, cElem.y, vX, vY);
+                        
+                        if (d < 160) {
+                            let transfer = cElem.strain * (1 - d/160) * 0.15;
+                            vElem.intensity = min(vElem.maxIntensity, vElem.intensity + transfer);
+                            
+                            if (vElem.intensity > 30 && !vElem.activated) {
+                                vElem.activated = true;
+                                vElem.activatedTime = millis();
+                                
+                                // Spawn fragments when anger breaks through
+                                spawnFragment(vX, vY);
+                                shakeIntensity = min(15, shakeIntensity + 3);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function setTimePosition(time) {
+            const previousMillis = previousTimePosition;
+            const timeDiff = time - previousMillis;
+            
+            if (timeDiff < -2000) {
+                resetExperience();
+            }
+        }
+        
+        function resetExperience() {
+            for (let elem of violationElements) {
+                elem.visible = timePosition > elem.startTime;
+                elem.activated = false;
+                elem.intensity = 0;
+            }
+            
+            for (let elem of pressureElements) {
+                elem.visible = timePosition > elem.startTime;
+                elem.activated = false;
+                elem.pressure = 0;
+            }
+            
+            for (let elem of containmentElements) {
+                elem.visible = timePosition > elem.startTime;
+                elem.activated = false;
+                elem.strain = 0;
+            }
+            
+            for (let slash of slashLines) {
+                slash.progress = timePosition > slash.startTime ? 
+                    min(1, (timePosition - slash.startTime) * slash.speed / 16.67) : 0;
+            }
+            
+            for (let zone of pressureZones) {
+                zone.visible = timePosition > zone.startTime;
+                zone.pressure = 0;
+            }
+            
+            for (let center of angerCenters) {
+                center.opacity = timePosition > center.startTime ? center.targetOpacity : 0;
+                center.activated = false;
+                center.activationProgress = 0;
+            }
+            
+            fragmentParticles = [];
+            shakeIntensity = 0;
+            activeAngerCenter = null;
+            centerActivated = false;
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            repositionElements();
+            updateLayoutForOrientation();
+        }
+        
+        function repositionElements() {
+            // Reposition all elements based on new dimensions
+            for (let elem of violationElements) {
+                elem.x = (elem.x / width) * windowWidth;
+                elem.y = (elem.y / height) * windowHeight;
+                
+                if (elem.type === 'slash') {
+                    elem.length = (elem.length / width) * windowWidth;
+                } else if (elem.type === 'burst') {
+                    elem.size = (elem.size / width) * windowWidth;
+                    elem.rayLength = (elem.rayLength / width) * windowWidth;
+                } else if (elem.type === 'tear') {
+                    for (let p of elem.points) {
+                        p.x = (p.x / width) * windowWidth;
+                        p.y = (p.y / height) * windowHeight;
+                    }
+                }
+            }
+            
+            for (let elem of pressureElements) {
+                elem.x = (elem.x / width) * windowWidth;
+                elem.y = (elem.y / height) * windowHeight;
+                
+                if (elem.type === 'block') {
+                    elem.width = (elem.width / width) * windowWidth;
+                    elem.height = (elem.height / height) * windowHeight;
+                } else {
+                    elem.size = (elem.size / width) * windowWidth;
+                }
+            }
+            
+            for (let elem of containmentElements) {
+                elem.x = (elem.x / width) * windowWidth;
+                elem.y = (elem.y / height) * windowHeight;
+                
+                if (elem.type === 'boundary') {
+                    elem.length = (elem.length / width) * windowWidth;
+                } else if (elem.type === 'frame') {
+                    elem.width = (elem.width / width) * windowWidth;
+                    elem.height = (elem.height / height) * windowHeight;
+                } else {
+                    elem.size = (elem.size / width) * windowWidth;
+                }
+            }
+            
+            for (let slash of slashLines) {
+                slash.startX = (slash.startX / width) * windowWidth;
+                slash.startY = (slash.startY / height) * windowHeight;
+                slash.endX = (slash.endX / width) * windowWidth;
+                slash.endY = (slash.endY / height) * windowHeight;
+            }
+            
+            for (let zone of pressureZones) {
+                zone.x = (zone.x / width) * windowWidth;
+                zone.y = (zone.y / height) * windowHeight;
+                zone.radius = (zone.radius / width) * windowWidth;
+            }
+            
+            for (let center of angerCenters) {
+                center.x = (center.x / width) * windowWidth;
+                center.y = (center.y / height) * windowHeight;
+                center.size = (center.size / width) * windowWidth;
+            }
+        }
+        
+        function showAngerResonance(message, x, y) {
+            const resonance = document.getElementById('anger-resonance');
+            resonance.innerHTML = message;
+            
+            let posX = x;
+            let posY = y - 60;
+            
+            if (posX < 20) posX = 20;
+            if (posX > window.innerWidth - 270) posX = window.innerWidth - 270;
+            if (posY < 20) posY = 20;
+            if (posY > window.innerHeight - 100) posY = window.innerHeight - 100;
+            
+            resonance.style.left = posX + 'px';
+            resonance.style.top = posY + 'px';
+            resonance.style.transform = 'translateY(0)';
+            resonance.style.opacity = '1';
+            
+            setTimeout(() => {
+                resonance.style.opacity = '0';
+                resonance.style.transform = 'translateY(20px)';
+            }, 3500);
+        }
+        
+        function mousePressed() {
+            if (document.getElementById('landing-overlay').style.display === 'none') {
+                
+                // Check anger centers first
+                for (let i = 0; i < angerCenters.length; i++) {
+                    let center = angerCenters[i];
+                    
+                    if (timePosition > center.startTime) {
+                        let d = dist(mouseX, mouseY, center.x, center.y);
+                        
+                        if (d < center.size / 2) {
+                            center.activated = !center.activated;
+                            
+                            if (center.activated) {
+                                activeAngerCenter = i;
+                                centerActivated = true;
+                                
+                                showAngerResonance(center.resonance, center.x, center.y);
+                                
+                                // Trigger shake
+                                shakeIntensity = 10;
+                                
+                                // Activate associated elements
+                                for (let element of center.elements) {
+                                    if (element.type === 'violation') {
+                                        violationElements[element.index].activated = true;
+                                        violationElements[element.index].activatedTime = millis();
+                                        violationElements[element.index].intensity = 
+                                            violationElements[element.index].maxIntensity * 0.9;
+                                    } else if (element.type === 'pressure') {
+                                        pressureElements[element.index].activated = true;
+                                        pressureElements[element.index].activatedTime = millis();
+                                        pressureElements[element.index].pressure = 
+                                            pressureElements[element.index].maxPressure * 0.85;
+                                    } else {
+                                        containmentElements[element.index].activated = true;
+                                        containmentElements[element.index].activatedTime = millis();
+                                        containmentElements[element.index].strain = 
+                                            containmentElements[element.index].maxStrain * 0.8;
+                                    }
+                                }
+                                
+                                // Spawn explosion of fragments
+                                for (let j = 0; j < 10; j++) {
+                                    spawnFragment(center.x + random(-20, 20), center.y + random(-20, 20));
+                                }
+                            } else {
+                                activeAngerCenter = null;
+                                centerActivated = false;
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check violation elements
+                for (let i = 0; i < violationElements.length; i++) {
+                    let elem = violationElements[i];
+                    
+                    if (elem.visible && elem.interactive) {
+                        let hitTest = false;
+                        let elemX, elemY;
+                        
+                        if (elem.type === 'slash') {
+                            let midX = elem.x + cos(elem.angle) * elem.length/2;
+                            let midY = elem.y + sin(elem.angle) * elem.length/2;
+                            hitTest = dist(mouseX, mouseY, midX, midY) < elem.length/2;
+                            elemX = midX;
+                            elemY = midY;
+                        } else if (elem.type === 'burst') {
+                            hitTest = dist(mouseX, mouseY, elem.x, elem.y) < elem.size;
+                            elemX = elem.x;
+                            elemY = elem.y;
+                        } else if (elem.type === 'tear') {
+                            hitTest = dist(mouseX, mouseY, elem.points[0].x, elem.points[0].y) < 40;
+                            elemX = elem.points[0].x;
+                            elemY = elem.points[0].y;
+                        }
+                        
+                        if (hitTest) {
+                            elem.activated = !elem.activated;
+                            elem.activatedTime = millis();
+                            
+                            if (elem.activated) {
+                                elem.intensity = elem.maxIntensity * 0.9;
+                                showAngerResonance(getRandomResonance(), elemX, elemY);
+                                shakeIntensity = min(12, shakeIntensity + 4);
+                                
+                                // Spawn fragments
+                                for (let j = 0; j < 5; j++) {
+                                    spawnFragment(elemX, elemY);
+                                }
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check pressure elements
+                for (let i = 0; i < pressureElements.length; i++) {
+                    let elem = pressureElements[i];
+                    
+                    if (elem.visible && elem.interactive) {
+                        let testSize = elem.type === 'block' ? max(elem.width, elem.height)/2 : elem.size/2;
+                        let hitTest = dist(mouseX, mouseY, elem.x, elem.y) < testSize;
+                        
+                        if (hitTest) {
+                            elem.activated = !elem.activated;
+                            elem.activatedTime = millis();
+                            
+                            if (elem.activated) {
+                                elem.pressure = elem.maxPressure * 0.85;
+                                showAngerResonance(getRandomResonance(), elem.x, elem.y);
+                                shakeIntensity = min(8, shakeIntensity + 2);
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check containment elements
+                for (let i = 0; i < containmentElements.length; i++) {
+                    let elem = containmentElements[i];
+                    
+                    if (elem.visible && elem.interactive) {
+                        let hitTest = false;
+                        
+                        if (elem.type === 'boundary') {
+                            let midX = elem.x;
+                            let midY = elem.y;
+                            hitTest = dist(mouseX, mouseY, midX, midY) < elem.length/2;
+                        } else {
+                            let testSize = elem.type === 'frame' ? max(elem.width, elem.height)/2 : elem.size/2;
+                            hitTest = dist(mouseX, mouseY, elem.x, elem.y) < testSize;
+                        }
+                        
+                        if (hitTest) {
+                            elem.activated = !elem.activated;
+                            elem.activatedTime = millis();
+                            
+                            if (elem.activated) {
+                                elem.strain = elem.maxStrain * 0.8;
+                                showAngerResonance(getRandomResonance(), elem.x, elem.y);
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Toggle animation
+                isAnimating = !isAnimating;
+                
+                if (!isAnimating && soundEnabled && soundLoaded && angerSound.isPlaying()) {
+                    angerSound.setVolume(0.3, 1);
+                } else if (isAnimating && soundEnabled && soundLoaded) {
+                    angerSound.setVolume(0.6, 1);
+                }
+            }
+            
+            return false;
+        }
+        
+        function touchStarted() {
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            
+            return mousePressed();
+        }
+    </script>
+</body>
+</html>
