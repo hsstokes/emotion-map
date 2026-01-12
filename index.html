@@ -315,20 +315,30 @@ h2 {
 </main>
 
 <script>
-const links = document.querySelectorAll('nav a');
-const sections = document.querySelectorAll('section');
+document.addEventListener('DOMContentLoaded', () => {
 
-links.forEach(link => {
-    link.addEventListener('click', e => {
-        e.preventDefault();
-        const id = link.dataset.target;
+    const links = document.querySelectorAll('nav a');
+    const sections = document.querySelectorAll('section');
 
+    function showSection(id) {
         sections.forEach(section => {
             section.classList.toggle('active', section.id === id);
         });
+    }
 
-        history.replaceState(null, '', `#${id}`);
+    links.forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const id = link.dataset.target;
+            showSection(id);
+            history.replaceState(null, '', `#${id}`);
+        });
     });
+
+    /* Handle direct hash loads (or refreshes) */
+    const initial = location.hash.replace('#', '') || 'joy';
+    showSection(initial);
+
 });
 </script>
 
