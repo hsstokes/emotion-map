@@ -90,20 +90,17 @@ nav a:hover {
    ========================= */
 
 section {
-    display: none; /* ← key change */
-    max-width: 1040px;
-    margin: 0 auto;
-    background: rgba(255,255,255,0.97);
-    padding: 42px 52px 48px;
-
-    border: 1px solid rgba(92,75,153,0.35);
-    box-shadow:
-        1px 1px 0 rgba(92,75,153,0.4),
-        6px 6px 0 rgba(92,75,153,0.18);
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    left: 0;
+    right: 0;
 }
 
 section.active {
-    display: block;
+    opacity: 1;
+    pointer-events: auto;
+    position: relative;
 }
 
 /* =========================
@@ -232,10 +229,6 @@ h2 {
 <nav>
     <a href="#joy" data-target="joy">Joy</a>
     <a href="#sadness" data-target="sadness">Sadness</a>
-    <a href="#anger" data-target="anger">Anger</a>
-    <a href="#fear" data-target="fear">Fear</a>
-    <a href="#disgust" data-target="disgust">Disgust</a>
-    <a href="#surprise" data-target="surprise">Surprise</a>
 </nav>
 
 <main>
@@ -319,28 +312,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const links = document.querySelectorAll('nav a');
     const sections = document.querySelectorAll('section');
-    const sectionIds = Array.from(sections).map(s => s.id);
 
     function showSection(id) {
-        if (!sectionIds.includes(id)) return; // ✅ ignore future tabs
-
         sections.forEach(section => {
-            section.classList.toggle('active', section.id === id);
+            section.classList.remove('active');
+            if (section.id === id) {
+                section.classList.add('active');
+            }
         });
     }
 
     links.forEach(link => {
         link.addEventListener('click', e => {
             e.preventDefault();
-            const id = link.dataset.target;
-            showSection(id);
-            history.replaceState(null, '', `#${id}`);
+            showSection(link.dataset.target);
         });
     });
-
-    /* Handle direct hash loads safely */
-    const initial = location.hash.replace('#', '');
-    showSection(initial || 'joy');
 
 });
 </script>
