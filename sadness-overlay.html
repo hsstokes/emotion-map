@@ -1,0 +1,3524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Sadness - Emotional Experience</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f7f7f7;
+            font-family: 'Roboto Mono', monospace;
+            -webkit-text-size-adjust: 100%;
+            touch-action: none;
+            height: 100vh;
+            height: -webkit-fill-available;
+        }
+        
+        /* Landing screen that appears first */
+        #landing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(240, 240, 245, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            box-sizing: border-box;
+            padding: 20px;
+            transition: opacity 1s ease-in-out;
+        }
+        
+        .landing-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 40px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .emotion-name {
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #616161; /* Grey for sadness */
+        }
+        
+        .emotion-description {
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .ai-disclaimer {
+           font-size: 13px;
+           max-width: 550px;
+           text-align: center;
+           margin-bottom: 40px;
+           margin-top: 10px;
+           padding: 15px 20px;
+           background-color: rgba(97, 97, 97, 0.1);
+           border-radius: 8px;
+           border-left: 3px solid #616161;
+           line-height: 1.6;
+           color: #333;
+        }
+        
+        .start-button {
+            padding: 15px 35px;
+            background-color: rgba(97, 97, 97, 0.2);
+            color: #616161;
+            border: 1px solid #616161;
+            border-radius: 30px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .start-button:active {
+            transform: scale(0.98);
+        }
+        
+        /* Canvas for the animation */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            display: block;
+        }
+        
+        /* Sadness resonance popup */
+        .sadness-resonance {
+            position: fixed;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 250px;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            pointer-events: none;
+            z-index: 100;
+            text-align: center;
+            border-left: 3px solid #616161;
+        }
+        
+        /* Controls panel */
+        .controls {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .control-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        
+        .control-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: #616161;
+        }
+        
+        /* Hint message */
+        .hint {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 50;
+            color: #616161;
+        }
+        
+        /* Timeline slider */
+        .timeline {
+            position: fixed;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            width: 70%;
+            max-width: 500px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            z-index: 40;
+            opacity: 0;
+            transition: opacity 0.5s;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+        }
+        
+        .timeline-bar {
+            width: 100%;
+            height: 4px;
+            background-color: rgba(97, 97, 97, 0.2);
+            border-radius: 2px;
+            position: relative;
+        }
+        
+        .timeline-progress {
+            height: 100%;
+            background-color: rgba(97, 97, 97, 0.8);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .timeline-handle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #616161;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto !important; /* Allow scrolling on mobile */
+                height: auto !important;
+            }
+        
+            #landing-overlay {
+                position: absolute; /* Change from fixed to absolute */
+                height: auto;
+                min-height: 100%;
+                overflow-y: auto;
+                padding: 40px 20px 120px 20px; /* More padding at top and bottom */
+                justify-content: flex-start; /* Start content from the top */
+            }
+            
+            .landing-title {
+                margin-top: 40px;
+            }
+            
+            .start-button {
+                margin-bottom: 60px; /* Ensure button isn't at the very bottom */
+                position: relative;
+            }
+            
+            .emotion-name {
+                font-size: 42px; /* Slightly larger on mobile */
+            }
+            
+            .ai-disclaimer {
+                width: 90%;
+                font-size: 12px;
+                max-width: 90%;
+            }
+        }
+        
+        /* Orientation-specific styles */
+        @media screen and (orientation: portrait) {
+            .controls {
+                bottom: 70px; /* Move controls above timeline in portrait mode */
+                right: 15px;
+            }
+            
+            .timeline {
+                bottom: 20px;
+                width: 80%; /* Wider in portrait */
+            }
+            
+            .hint {
+                bottom: 70px;
+            }
+        }
+        
+        @media screen and (orientation: landscape) {
+            .controls {
+                bottom: 15px;
+                right: 100px; /* Move away from edge and timeline handle */
+            }
+            
+            .timeline {
+                bottom: 20px;
+                width: 60%; /* Narrower in landscape to leave room for controls */
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Initial landing overlay -->
+    <div id="landing-overlay">
+        <h1 class="landing-title">Emotional Collage Experience</h1>
+        <h2 class="emotion-name" id="emotion-title">SADNESS</h2>
+        <p class="emotion-description" id="emotion-description">
+            An exploration of sadness through fragmentation, distance, and the tension between structure and emotion.
+            <br><b>Analysis by Claude</b>
+        </p>
+
+        <!-- AI disclaimer -->
+        <div class="ai-disclaimer">
+            <strong>Note:</strong> This is a visualization of sadness based on my analysis of human descriptions and visual collage elements. As an AI, I don't experience emotions or feelings - this is just my interpretation of a human concept.
+        </div>
+        
+        <button class="start-button" id="start-experience">Begin Experience</button>
+    </div>
+    
+    <!-- Sadness resonance popup that appears when interacting with elements -->
+    <div class="sadness-resonance" id="sadness-resonance"></div>
+    
+    <!-- Hint for users -->
+    <div class="hint" id="hint">Touch elements to deepen sadness experience</div>
+    
+    <!-- Control buttons -->
+    <div class="controls" id="controls">
+        <div class="control-button" id="sound-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                <path id="sound-waves" d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+        </div>
+        <div class="control-button" id="reset-button">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <path d="M23 4v6h-6"></path>
+                <path d="M1 20v-6h6"></path>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+        </div>
+    </div>
+    
+    <!-- Timeline interface -->
+    <div class="timeline" id="timeline">
+        <div class="timeline-bar" id="timeline-bar">
+            <div class="timeline-progress" id="timeline-progress"></div>
+            <div class="timeline-handle" id="timeline-handle"></div>
+        </div>
+    </div>
+    
+    <script>
+        let isAnimating = true;
+        let soundEnabled = true;
+        let sadnessSound;
+        let soundLoaded = false;
+        let timelineActive = false;
+        let isDraggingTimeline = false;
+        let timePosition = 0;
+        let previousTimePosition = 0;
+        let activatedTimeline = false;
+        let fadePhase = 0;
+        let fadeRate = 0.4; // Slower for sadness
+        let sketchbookImage;
+        let graphPaperTexture;
+        
+        // Sadness resonances - text snippets that appear when interacting with elements
+        const sadnessResonances = [
+            "The weight of absence, heavy as stone",
+            "A quiet emptiness that fills every corner",
+            "The slow descent of a falling teardrop",
+            "The hollow space where something cherished once lived",
+            "A shadow stretching longer as light fades",
+            "The faint echo of what has been lost",
+            "The gathering weight of memories in still waters",
+            "The gentle dissolution of certainty",
+            "Time passing in slow motion through grief",
+            "A fracture line running through familiar things",
+            "The space between reaching and holding",
+            "The gentle weight of carrying what cannot be changed",
+            "The muffled sound of a world at a distance",
+            "A slow exhalation with no returning breath",
+            "The recognition of something precious, already gone"
+        ];
+        
+        // Color palette for Sadness
+        const colors = {
+            greyBlack: [50, 50, 50],      // Grey to black - Recognition of boundaries
+            ochraYellow: [190, 150, 80],  // Light browns to ochra yellows - Evaluation of temporal markers
+            purpleBlue: [100, 100, 200]   // Hints of purple blues - Response that honors distance
+        };
+        
+        // Hand outline elements
+        let handOutlinePoints = [];
+        let palmLines = [];
+        let handProgress = 0;
+        
+        // Framework elements (grid/structure - greyBlack)
+        let frameworkElements = [];
+        
+        // Memory elements (fragments/paper - ochraYellow)
+        let memoryElements = [];
+        
+        // Isolation elements (circles/distance - purpleBlue)
+        let isolationElements = [];
+        
+        // Connection lines between elements (showing descent/flow)
+        let connectionLines = [];
+        
+        // Interactive centers of sadness - focal points
+        let sadnessCenters = [];
+        let activeSadnessCenter = null;
+        let centerActivated = false;
+        
+        // Dotted line elements 
+        let dottedLineElements = [];
+        
+        // Paperclip elements
+        let paperclipElements = [];
+        
+        // Photo/collage elements
+        let collageElements = [];
+        
+        // Adjust for mobile viewport
+        function adjustForMobileViewport() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        window.addEventListener('resize', adjustForMobileViewport);
+        adjustForMobileViewport();
+        
+        // Function that contains the button action logic
+        function startExperience() {
+            // Initialize audio context for better mobile support
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            
+            // Fade out landing overlay
+            document.getElementById('landing-overlay').style.opacity = '0';
+            
+            // After fading out, remove from DOM
+            setTimeout(() => {
+                document.getElementById('landing-overlay').style.display = 'none';
+                
+                // Start animation
+                isAnimating = true;
+                loop();
+                
+                // Position controls based on orientation
+                updateLayoutForOrientation();
+                
+                // Start sound if enabled
+                if (soundEnabled && soundLoaded) {
+                    try {
+                        sadnessSound.loop();
+                        sadnessSound.setVolume(0);
+                        sadnessSound.setVolume(0.6, 5); // Fade in slowly for sadness
+                    } catch(e) {
+                        console.error("Error playing sound:", e);
+                    }
+                }
+                
+                // Show controls and hint
+                setTimeout(() => {
+                    document.getElementById('controls').style.opacity = '1';
+                    document.getElementById('hint').style.opacity = '1';
+                    
+                    // Hide hint after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('hint').style.opacity = '0';
+                    }, 5000);
+                }, 2000);
+            }, 1000);
+        }
+        
+        // Function to update layout based on orientation
+        function updateLayoutForOrientation() {
+            const controls = document.getElementById('controls');
+            const timeline = document.getElementById('timeline');
+            const hint = document.getElementById('hint');
+            
+            if (window.matchMedia("(orientation: portrait)").matches) {
+                controls.style.bottom = "70px";
+                controls.style.right = "15px";
+                timeline.style.width = "80%";
+                hint.style.bottom = "70px";
+            } else {
+                controls.style.bottom = "15px";
+                controls.style.right = "100px"; 
+                timeline.style.width = "60%";
+                hint.style.bottom = "15px";
+            }
+        }
+        
+        // Listen for orientation changes
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                resizeCanvas(windowWidth, windowHeight);
+                repositionElements();
+                updateLayoutForOrientation();
+            }, 300);
+        });
+        
+        // Setup for landing page interaction
+        document.getElementById('start-experience').addEventListener('click', startExperience);
+        document.getElementById('start-experience').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            startExperience();
+        });
+        
+        // Sound toggle
+        document.getElementById('sound-toggle').addEventListener('click', function() {
+            soundEnabled = !soundEnabled;
+            
+            document.getElementById('sound-waves').style.opacity = soundEnabled ? '1' : '0';
+            
+            if (soundEnabled && sadnessSound && !sadnessSound.isPlaying()) {
+                sadnessSound.loop();
+                sadnessSound.setVolume(0);
+                sadnessSound.setVolume(0.6, 3);
+            } else if (!soundEnabled && sadnessSound && sadnessSound.isPlaying()) {
+                sadnessSound.setVolume(0, 3);
+                setTimeout(() => {
+                    sadnessSound.pause();
+                }, 3000);
+            }
+        });
+        
+        // Reset button
+        document.getElementById('reset-button').addEventListener('click', function() {
+            timePosition = 0;
+            previousTimePosition = 0;
+            
+            resetExperience();
+            updateTimelineUI();
+        });
+        
+        // Timeline interaction
+        document.getElementById('timeline-bar').addEventListener('mousedown', startTimelineDrag);
+        document.getElementById('timeline-bar').addEventListener('touchstart', startTimelineDrag, { passive: false });
+        
+        function startTimelineDrag(e) {
+            if (e.type === 'touchstart') {
+                e.preventDefault();
+            }
+            
+            isDraggingTimeline = true;
+            updateTimelinePosition(e);
+            
+            document.addEventListener('mousemove', updateTimelinePosition);
+            document.addEventListener('touchmove', updateTimelinePosition, { passive: false });
+            document.addEventListener('mouseup', endTimelineDrag);
+            document.addEventListener('touchend', endTimelineDrag);
+        }
+        
+        function updateTimelinePosition(e) {
+            if (!isDraggingTimeline) return;
+            
+            // Prevent scrolling when dragging on mobile
+            if (e.type === 'touchmove') {
+                e.preventDefault();
+            }
+            
+            const timeline = document.getElementById('timeline-bar');
+            const rect = timeline.getBoundingClientRect();
+            
+            let clientX;
+            if (e.type.startsWith('touch')) {
+                clientX = e.touches[0].clientX;
+            } else {
+                clientX = e.clientX;
+            }
+            
+            // Calculate percentage with boundary handling
+            let percentage = (clientX - rect.left) / rect.width;
+            percentage = Math.max(0, Math.min(1, percentage));
+            
+            document.getElementById('timeline-progress').style.width = `${percentage * 100}%`;
+            document.getElementById('timeline-handle').style.left = `${percentage * 100}%`;
+            
+            timePosition = percentage * 40000; // 40 seconds for sadness (longer for contemplation)
+            
+            setTimePosition(timePosition);
+        }
+        
+        function endTimelineDrag() {
+            isDraggingTimeline = false;
+            document.removeEventListener('mousemove', updateTimelinePosition);
+            document.removeEventListener('touchmove', updateTimelinePosition);
+            document.removeEventListener('mouseup', endTimelineDrag);
+            document.removeEventListener('touchend', endTimelineDrag);
+            
+            previousTimePosition = timePosition;
+        }
+        
+        function updateTimelineUI() {
+            const percentage = timePosition / 40000;
+            
+            document.getElementById('timeline-progress').style.width = `${percentage * 100}%`;
+            document.getElementById('timeline-handle').style.left = `${percentage * 100}%`;
+        }
+        
+        function getRandomResonance() {
+            return sadnessResonances[floor(random(sadnessResonances.length))];
+        }
+        
+        function preload() {
+            // Pre-load sound
+            soundLoaded = false;
+            sadnessSound = loadSound('sadness_soundscape.mp3',
+                function() {
+                    console.log("Sound loaded successfully");
+                    soundLoaded = true;
+                },
+                function(err) {
+                    console.error("Error loading sound:", err);
+                    soundEnabled = false;
+                }
+            );
+            
+            // Load sketchbook image
+            sketchbookImage = loadImage('sadness-sketchbook.jpg');
+            
+            // Create graph paper texture
+            graphPaperTexture = createGraphics(200, 200);
+            graphPaperTexture.background(248, 248, 252);
+            graphPaperTexture.stroke(220, 220, 230);
+            graphPaperTexture.strokeWeight(1);
+            
+            // Draw small grid lines
+            for (let i = 0; i < 200; i += 10) {
+                graphPaperTexture.line(i, 0, i, 200);
+                graphPaperTexture.line(0, i, 200, i);
+            }
+            
+            // Draw darker grid lines every 50 pixels
+            graphPaperTexture.stroke(200, 200, 210);
+            graphPaperTexture.strokeWeight(1.5);
+            for (let i = 0; i < 200; i += 50) {
+                graphPaperTexture.line(i, 0, i, 200);
+                graphPaperTexture.line(0, i, 200, i);
+            }
+        }
+
+        function setup() {
+            // Create canvas with explicit dimensions
+            let canvas = createCanvas(windowWidth, windowHeight);
+            canvas.style('display', 'block');
+            
+            // Create detailed hand outline based on the collage
+            createDetailedHandOutline();
+            
+            // Create framework elements (grid structure - greyBlack)
+            createFrameworkElements();
+            
+            // Create memory elements (fragments - ochraYellow)
+            createMemoryElements();
+            
+            // Create isolation elements (circles - purpleBlue)
+            createIsolationElements();
+            
+            // Create connection lines
+            createConnectionLines();
+            
+            // Create sadness centers (interactive focal points)
+            createSadnessCenters();
+            
+            // Create dotted line elements
+            createDottedLineElements();
+            
+            // Create paperclip elements
+            createPaperclipElements();
+            
+            // Create collage elements
+            createCollageElements();
+            
+            // Initialize audio context for better mobile support
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            
+            // Initially pause animation while on landing page
+            isAnimating = false;
+            noLoop();
+        }
+        
+        function createDetailedHandOutline() {
+            // Create a detailed hand outline matching the one in the collage
+            handOutlinePoints = [];
+            
+            // Main hand outline points - matching the sketch in the collage
+            handOutlinePoints.push({x: 0.49, y: 0.35, type: "outline"});
+            handOutlinePoints.push({x: 0.53, y: 0.33, type: "outline"});
+            handOutlinePoints.push({x: 0.57, y: 0.33, type: "outline"});
+            handOutlinePoints.push({x: 0.61, y: 0.36, type: "outline"});
+            handOutlinePoints.push({x: 0.63, y: 0.40, type: "outline"});
+            handOutlinePoints.push({x: 0.64, y: 0.45, type: "outline"});
+            handOutlinePoints.push({x: 0.61, y: 0.50, type: "outline"});
+            handOutlinePoints.push({x: 0.56, y: 0.52, type: "outline"});
+            handOutlinePoints.push({x: 0.51, y: 0.51, type: "outline"});
+            handOutlinePoints.push({x: 0.47, y: 0.47, type: "outline"});
+            handOutlinePoints.push({x: 0.45, y: 0.43, type: "outline"});
+            handOutlinePoints.push({x: 0.46, y: 0.38, type: "outline"});
+            handOutlinePoints.push({x: 0.49, y: 0.35, type: "outline"}); // Close the shape
+            
+            // Add palm lines based on the collage
+            palmLines = [];
+            
+            // Life line
+            palmLines.push([
+                {x: 0.50, y: 0.36},
+                {x: 0.48, y: 0.41},
+                {x: 0.47, y: 0.45}
+            ]);
+            
+            // Heart line
+            palmLines.push([
+                {x: 0.48, y: 0.38},
+                {x: 0.53, y: 0.37},
+                {x: 0.58, y: 0.38}
+            ]);
+            
+            // Convert relative coordinates to absolute
+            for (let i = 0; i < handOutlinePoints.length; i++) {
+                handOutlinePoints[i].x *= width;
+                handOutlinePoints[i].y *= height;
+            }
+            
+            for (let i = 0; i < palmLines.length; i++) {
+                for (let j = 0; j < palmLines[i].length; j++) {
+                    palmLines[i][j].x *= width;
+                    palmLines[i][j].y *= height;
+                }
+            }
+        }
+
+        function createFrameworkElements() {
+            // Create framework elements (grid structure - greyBlack)
+            
+            // Central structural grid area
+            let gridStartX = width * 0.35;
+            let gridStartY = height * 0.3;
+            let gridWidth = width * 0.35;
+            let gridHeight = height * 0.35;
+            let gridSize = min(width, height) * 0.02;
+            
+            // Create vertical grid lines
+            for (let x = 0; x <= gridWidth; x += gridSize) {
+                frameworkElements.push({
+                    type: 'line',
+                    x1: gridStartX + x,
+                    y1: gridStartY,
+                    x2: gridStartX + x,
+                    y2: gridStartY + gridHeight,
+                    thickness: x % (gridSize * 5) === 0 ? 1.5 : 0.8,
+                    opacity: 0,
+                    targetOpacity: x % (gridSize * 5) === 0 ? 120 : 80,
+                    startTime: 1000 + x * 3,
+                    visible: false,
+                    interactive: x % (gridSize * 3) === 0,
+                    activated: false,
+                    activatedTime: 0,
+                    weight: 0,
+                    maxWeight: random(70, 100),
+                    weightRate: random(0.01, 0.02), // Slower for sadness
+                    fadeRate: random(0.0001, 0.0003),
+                    flowDirection: 1 // Downward flow for sadness
+                });
+            }
+            
+            // Create horizontal grid lines
+            for (let y = 0; y <= gridHeight; y += gridSize) {
+                frameworkElements.push({
+                    type: 'line',
+                    x1: gridStartX,
+                    y1: gridStartY + y,
+                    x2: gridStartX + gridWidth,
+                    y2: gridStartY + y,
+                    thickness: y % (gridSize * 5) === 0 ? 1.5 : 0.8,
+                    opacity: 0,
+                    targetOpacity: y % (gridSize * 5) === 0 ? 120 : 80,
+                    startTime: 1000 + y * 3,
+                    visible: false,
+                    interactive: y % (gridSize * 3) === 0,
+                    activated: false,
+                    activatedTime: 0,
+                    weight: 0,
+                    maxWeight: random(70, 100),
+                    weightRate: random(0.01, 0.02),
+                    fadeRate: random(0.0001, 0.0003),
+                    flowDirection: 0 // Horizontal flow for sadness
+                });
+            }
+            
+            // Add some structural geometric elements
+            for (let i = 0; i < 5; i++) {
+                frameworkElements.push({
+                    type: 'geo',
+                    x: width * (0.3 + random(0.4)),
+                    y: height * (0.3 + random(0.4)),
+                    size: random(20, 40),
+                    sides: floor(random(3, 6)), // Triangle to pentagon
+                    opacity: 0,
+                    targetOpacity: random(100, 150),
+                    startTime: 3000 + i * 500,
+                    visible: false,
+                    interactive: random() > 0.4,
+                    activated: false,
+                    activatedTime: 0,
+                    weight: 0,
+                    maxWeight: random(70, 100),
+                    weightRate: random(0.01, 0.02),
+                    fadeRate: random(0.0001, 0.0002),
+                    rotation: random(TWO_PI),
+                    flowDirection: 1 // Downward flow for sadness
+                });
+            }
+        }
+        
+        function createMemoryElements() {
+            // Create memory elements (fragments/paper - ochraYellow)
+            
+            // Create torn paper fragment elements
+            for (let i = 0; i < 12; i++) {
+                let x = width * (0.3 + random(0, 0.4));
+                let y = height * (0.3 + random(0, 0.4));
+                
+                memoryElements.push({
+                    type: 'fragment',
+                    x: x,
+                    y: y,
+                    width: random(30, 80),
+                    height: random(20, 60),
+                    rotation: random(-0.3, 0.3),
+                    opacity: 0,
+                    targetOpacity: random(180, 220),
+                    startTime: 4000 + i * 600,
+                    visible: false,
+                    interactive: random() > 0.5,
+                    activated: false,
+                    activatedTime: 0,
+                    weight: 0,
+                    maxWeight: random(70, 100),
+                    weightRate: random(0.01, 0.03),
+                    fadeRate: random(0.0001, 0.0002),
+                    vertices: [],
+                    flowDirection: 1, // Downward flow for sadness
+                    flowSpeed: random(0.05, 0.15) // Slow movement for sadness
+                });
+                
+                // Create irregular vertices for torn paper effect
+                let fragment = memoryElements[memoryElements.length - 1];
+                let numVertices = floor(random(6, 10));
+                
+                for (let j = 0; j < numVertices; j++) {
+                    let angle = TWO_PI * j / numVertices;
+                    let radius = (j % 2 === 0) ? 
+                        random(0.8, 1) * (fragment.width < fragment.height ? fragment.width/2 : fragment.height/2) :
+                        random(0.6, 0.9) * (fragment.width < fragment.height ? fragment.width/2 : fragment.height/2);
+                    
+                    fragment.vertices.push({
+                        x: cos(angle) * radius * (fragment.width / fragment.height),
+                        y: sin(angle) * radius
+                    });
+                }
+            }
+            
+            // Add trace elements - small marks that represent fading memories
+            for (let i = 0; i < 15; i++) {
+                memoryElements.push({
+                    type: 'trace',
+                    x: width * (0.2 + random(0.6)),
+                    y: height * (0.2 + random(0.6)),
+                    size: random(3, 8),
+                    opacity: 0,
+                    targetOpacity: random(120, 180),
+                    startTime: 6000 + i * 400,
+                    visible: false,
+                    interactive: random() > 0.7,
+                    activated: false,
+                    activatedTime: 0,
+                    weight: 0,
+                    maxWeight: random(60, 90),
+                    weightRate: random(0.01, 0.02),
+                    fadeRate: random(0.0002, 0.0004),
+                    flowDirection: 1, // Downward flow for sadness
+                    flowSpeed: random(0.1, 0.3) // Slow movement for sadness
+                });
+            }
+            
+            // Add blurred segments representing fading boundaries
+            for (let i = 0; i < 8; i++) {
+                memoryElements.push({
+                    type: 'blur',
+                    x: width * (0.3 + random(0.4)),
+                    y: height * (0.3 + random(0.4)),
+                    width: random(40, 100),
+                    height: random(10, 30),
+                    rotation: random(-0.5, 0.5),
+                    opacity: 0,
+                    targetOpacity: random(80, 140),
+                    startTime: 8000 + i * 500,
+                    visible: false,
+                    interactive: random() > 0.6,
+                    activated: false,
+                    activatedTime: 0,
+                    weight: 0,
+                    maxWeight: random(60, 90),
+                    weightRate: random(0.01, 0.02),
+                    fadeRate: random(0.0001, 0.0003),
+                    flowDirection: 1, // Downward flow for sadness
+                    flowSpeed: random(0.05, 0.2) // Slow movement for sadness
+                });
+            }
+        }
+        
+        function createIsolationElements() {
+            // Create isolation elements (circles - purpleBlue)
+            
+            // Main large circle containing the hand
+            isolationElements.push({
+                type: 'circle',
+                x: width * 0.53,
+                y: height * 0.42,
+                radius: min(width, height) * 0.15,
+                thickness: 1.5,
+                opacity: 0,
+                targetOpacity: 240,
+                startTime: 500,
+                visible: false,
+                interactive: true,
+                activated: false,
+                activatedTime: 0,
+                distance: 0,
+                maxDistance: 100,
+                distanceRate: random(0.01, 0.02),
+                pulseRate: random(0.0001, 0.0002),
+                phase: 0,
+                flowSpeed: 0
+            });
+            
+            // Secondary circles - representing isolation
+            for (let i = 0; i < 5; i++) {
+                isolationElements.push({
+                    type: 'circle',
+                    x: width * (0.3 + random(0.4)),
+                    y: height * (0.3 + random(0.4)),
+                    radius: random(20, 50),
+                    thickness: random(0.8, 1.5),
+                    opacity: 0,
+                    targetOpacity: random(150, 200),
+                    startTime: 3000 + i * 800,
+                    visible: false,
+                    interactive: random() > 0.5,
+                    activated: false,
+                    activatedTime: 0,
+                    distance: 0,
+                    maxDistance: random(60, 90),
+                    distanceRate: random(0.01, 0.02),
+                    pulseRate: random(0.0001, 0.0003),
+                    phase: random(0, TWO_PI),
+                    flowDirection: 1, // Downward flow for sadness
+                    flowSpeed: random(0.02, 0.1) // Slow movement for sadness
+                });
+            }
+            
+            // Add empty spaces (hollow areas representing absence)
+            for (let i = 0; i < 3; i++) {
+                isolationElements.push({
+                    type: 'void',
+                    x: width * (0.3 + random(0.4)),
+                    y: height * (0.3 + random(0.4)),
+                    size: random(60, 100),
+                    opacity: 0,
+                    targetOpacity: random(120, 180),
+                    startTime: 10000 + i * 1000,
+                    visible: false,
+                    interactive: true,
+                    activated: false,
+                    activatedTime: 0,
+                    distance: 0,
+                    maxDistance: random(70, 90),
+                    distanceRate: random(0.01, 0.02),
+                    fadeRate: random(0.0001, 0.0003),
+                    flowDirection: 1, // Downward flow for sadness
+                    flowSpeed: random(0.05, 0.15) // Slow movement for sadness
+                });
+            }
+            
+            // Add echo elements (faint repetitions showing diminishing presence)
+            for (let i = 0; i < 6; i++) {
+                isolationElements.push({
+                    type: 'echo',
+                    x: width * (0.3 + random(0.4)),
+                    y: height * (0.3 + random(0.4)),
+                    radius: random(15, 35),
+                    thickness: random(0.5, 1),
+                    spacing: random(5, 15),
+                    echoes: floor(random(2, 4)),
+                    opacity: 0,
+                    targetOpacity: random(100, 160),
+                    startTime: 12000 + i * 700,
+                    visible: false,
+                    interactive: random() > 0.6,
+                    activated: false,
+                    activatedTime: 0,
+                    distance: 0,
+                    maxDistance: random(60, 80),
+                    distanceRate: random(0.01, 0.02),
+                    fadeRate: random(0.0001, 0.0003),
+                    phase: random(0, TWO_PI),
+                    flowDirection: 1, // Downward flow for sadness
+                    flowSpeed: random(0.05, 0.15) // Slow movement for sadness
+                });
+            }
+        }
+        
+        function createConnectionLines() {
+            // Create connection lines between elements
+            
+            // Connect framework elements to memory elements
+            for (let i = 0; i < frameworkElements.length; i++) {
+                let framework = frameworkElements[i];
+                
+                // Get framework center point
+                let frameworkX, frameworkY;
+                if (framework.type === 'line') {
+                    frameworkX = (framework.x1 + framework.x2) / 2;
+                    frameworkY = (framework.y1 + framework.y2) / 2;
+                } else {
+                    frameworkX = framework.x;
+                    frameworkY = framework.y;
+                }
+                
+                // Find closest memory elements
+                for (let j = 0; j < memoryElements.length; j++) {
+                    let memory = memoryElements[j];
+                    let d = dist(frameworkX, frameworkY, memory.x, memory.y);
+                    
+                    if (d < 120 && random() > 0.7) {
+                        connectionLines.push({
+                            startElement: 'framework',
+                            startIndex: i,
+                            endElement: 'memory',
+                            endIndex: j,
+                            opacity: 0,
+                            targetOpacity: random(70, 120),
+                            dotSize: random(1, 2),
+                            dotSpacing: random(7, 12),
+                            progress: 0,
+                            startTime: max(framework.startTime, memory.startTime) + 800,
+                            activated: false,
+                            weight: 0,
+                            flowSpeed: random(0.005, 0.01)
+                        });
+                    }
+                }
+                
+                // Connect to isolation elements
+                for (let j = 0; j < isolationElements.length; j++) {
+                    let isolation = isolationElements[j];
+                    let d = dist(frameworkX, frameworkY, isolation.x, isolation.y);
+                    
+                    if (d < 150 && random() > 0.6) {
+                        connectionLines.push({
+                            startElement: 'framework',
+                            startIndex: i,
+                            endElement: 'isolation',
+                            endIndex: j,
+                            opacity: 0,
+                            targetOpacity: random(60, 100),
+                            dotSize: random(1, 2),
+                            dotSpacing: random(8, 15),
+                            progress: 0,
+                            startTime: max(framework.startTime, isolation.startTime) + 1000,
+                            activated: false,
+                            weight: 0,
+                            flowSpeed: random(0.005, 0.01)
+                        });
+                    }
+                }
+            }
+            
+            // Connect memory elements to isolation elements
+            for (let i = 0; i < memoryElements.length; i++) {
+                let memory = memoryElements[i];
+                
+                for (let j = 0; j < isolationElements.length; j++) {
+                    let isolation = isolationElements[j];
+                    let d = dist(memory.x, memory.y, isolation.x, isolation.y);
+                    
+                    if (d < 180 && random() > 0.7) {
+                        connectionLines.push({
+                            startElement: 'memory',
+                            startIndex: i,
+                            endElement: 'isolation',
+                            endIndex: j,
+                            opacity: 0,
+                            targetOpacity: random(60, 100),
+                            dotSize: random(1, 2),
+                            dotSpacing: random(8, 15),
+                            progress: 0,
+                            startTime: max(memory.startTime, isolation.startTime) + 1200,
+                            activated: false,
+                            weight: 0,
+                            flowSpeed: random(0.005, 0.01)
+                        });
+                    }
+                }
+            }
+        }
+        
+        function createSadnessCenters() {
+            // Create interactive sadness centers - focal points of the experience
+            
+            // Main sadness center around the hand
+            sadnessCenters.push({
+                x: width * 0.53, 
+                y: height * 0.42,
+                size: 70,
+                opacity: 0,
+                targetOpacity: 180,
+                pulseRate: 0.001, // Slower for sadness
+                activated: false,
+                activationProgress: 0,
+                startTime: 15000,
+                resonance: "The quiet weight that gathers in absence",
+                elements: []
+            });
+            
+            // Secondary sadness centers
+            for (let i = 0; i < 2; i++) {
+                sadnessCenters.push({
+                    x: random(width * 0.3, width * 0.7),
+                    y: random(height * 0.3, height * 0.7),
+                    size: random(40, 60),
+                    opacity: 0,
+                    targetOpacity: random(120, 160),
+                    pulseRate: random(0.0005, 0.001), // Slower for sadness
+                    activated: false,
+                    activationProgress: 0,
+                    startTime: 20000 + i * 3000,
+                    resonance: getRandomResonance(),
+                    elements: []
+                });
+            }
+            
+            // Assign elements to sadness centers
+            // For framework elements
+            for (let i = 0; i < frameworkElements.length; i++) {
+                // Get framework center point
+                let frameworkX, frameworkY;
+                if (frameworkElements[i].type === 'line') {
+                    frameworkX = (frameworkElements[i].x1 + frameworkElements[i].x2) / 2;
+                    frameworkY = (frameworkElements[i].y1 + frameworkElements[i].y2) / 2;
+                } else {
+                    frameworkX = frameworkElements[i].x;
+                    frameworkY = frameworkElements[i].y;
+                }
+                
+                // Find the closest sadness center
+                let closestCenter = null;
+                let closestDistance = Infinity;
+                
+                for (let j = 0; j < sadnessCenters.length; j++) {
+                    let d = dist(frameworkX, frameworkY, sadnessCenters[j].x, sadnessCenters[j].y);
+                    if (d < closestDistance && d < 200) {
+                        closestDistance = d;
+                        closestCenter = j;
+                    }
+                }
+                
+                // Assign to sadness center if close enough
+                if (closestCenter !== null) {
+                    sadnessCenters[closestCenter].elements.push({
+                        type: 'framework',
+                        index: i
+                    });
+                }
+            }
+            
+            // For memory elements
+            for (let i = 0; i < memoryElements.length; i++) {
+                let memory = memoryElements[i];
+                
+                // Find the closest sadness center
+                let closestCenter = null;
+                let closestDistance = Infinity;
+                
+                for (let j = 0; j < sadnessCenters.length; j++) {
+                    let d = dist(memory.x, memory.y, sadnessCenters[j].x, sadnessCenters[j].y);
+                    if (d < closestDistance && d < 170) {
+                        closestDistance = d;
+                        closestCenter = j;
+                    }
+                }
+                
+                // Assign to sadness center if close enough
+                if (closestCenter !== null) {
+                    sadnessCenters[closestCenter].elements.push({
+                        type: 'memory',
+                        index: i
+                    });
+                }
+            }
+            
+            // For isolation elements
+            for (let i = 0; i < isolationElements.length; i++) {
+                let isolation = isolationElements[i];
+                
+                // Find the closest sadness center
+                let closestCenter = null;
+                let closestDistance = Infinity;
+                
+                for (let j = 0; j < sadnessCenters.length; j++) {
+                    let d = dist(isolation.x, isolation.y, sadnessCenters[j].x, sadnessCenters[j].y);
+                    if (d < closestDistance && d < 180) {
+                        closestDistance = d;
+                        closestCenter = j;
+                    }
+                }
+                
+                // Assign to sadness center if close enough
+                if (closestCenter !== null) {
+                    sadnessCenters[closestCenter].elements.push({
+                        type: 'isolation',
+                        index: i
+                    });
+                }
+            }
+        }
+        
+        function createDottedLineElements() {
+            // Create dotted line elements similar to those in the collage
+            
+            // Curved dotted line around the main circle
+            let centerX = width * 0.53;
+            let centerY = height * 0.42;
+            let radius = min(width, height) * 0.18;
+            
+            for (let a = 0; a < TWO_PI; a += PI/15) {
+                let x = centerX + cos(a) * radius;
+                let y = centerY + sin(a) * radius;
+                
+                dottedLineElements.push({
+                    x: x,
+                    y: y,
+                    size: 2,
+                    opacity: 0,
+                    targetOpacity: 180,
+                    startTime: 3000 + a * 300,
+                    visible: false,
+                    interactive: a % 5 === 0,
+                    activated: false,
+                    activatedTime: 0,
+                    weight: 0,
+                    maxWeight: random(60, 90),
+                    weightRate: random(0.01, 0.02)
+                });
+            }
+            
+            // Additional smaller dotted lines/patterns
+            let startX = width * 0.65;
+            let startY = height * 0.6;
+            
+            for (let i = 0; i < 12; i++) {
+                dottedLineElements.push({
+                    x: startX + i * 5,
+                    y: startY + sin(i * 0.5) * 10,
+                    size: 2.5,
+                    opacity: 0,
+                    targetOpacity: 160,
+                    startTime: 8000 + i * 150,
+                    visible: false,
+                    interactive: i % 4 === 0,
+                    activated: false,
+                    activatedTime: 0,
+                    weight: 0,
+                    maxWeight: random(60, 90),
+                    weightRate: random(0.01, 0.02)
+                });
+            }
+        }
+        
+        function createPaperclipElements() {
+            // Create paperclip elements as seen in the collage
+            
+            // Add paperclips based on their position in the collage
+            paperclipElements.push({
+                x: width * 0.45,
+                y: height * 0.52,
+                rotation: -0.2,
+                width: 30,
+                height: 10,
+                opacity: 0,
+                targetOpacity: 220,
+                startTime: 5000,
+                visible: false,
+                interactive: true,
+                activated: false,
+                activatedTime: 0,
+                weight: 0,
+                maxWeight: 80,
+                weightRate: 0.015
+            });
+            
+            paperclipElements.push({
+                x: width * 0.6,
+                y: height * 0.5,
+                rotation: 0.1,
+                width: 25,
+                height: 8,
+                opacity: 0,
+                targetOpacity: 200,
+                startTime: 5500,
+                visible: false,
+                interactive: true,
+                activated: false,
+                activatedTime: 0,
+                weight: 0,
+                maxWeight: 80,
+                weightRate: 0.015
+            });
+        }
+        
+        function createCollageElements() {
+            // Create collage elements that represent fragments of the sketchbook image
+            
+            // Create elements representing fragments of images/textures
+            collageElements.push({
+                x: width * 0.4,
+                y: height * 0.3,
+                width: 100,
+                height: 80,
+                rotation: -0.1,
+                imgSection: { x: 0, y: 0, w: 150, h: 120 },
+                opacity: 0,
+                targetOpacity: 220,
+                startTime: 3500,
+                visible: false,
+                interactive: true,
+                activated: false,
+                activatedTime: 0,
+                weight: 0,
+                maxWeight: 80,
+                weightRate: 0.015,
+                flowDirection: 1,
+                flowSpeed: 0.05
+            });
+            
+            collageElements.push({
+                x: width * 0.65,
+                y: height * 0.35,
+                width: 120,
+                height: 90,
+                rotation: 0.05,
+                imgSection: { x: 180, y: 0, w: 170, h: 130 },
+                opacity: 0,
+                targetOpacity: 200,
+                startTime: 4000,
+                visible: false,
+                interactive: true,
+                activated: false,
+                activatedTime: 0,
+                weight: 0,
+                maxWeight: 80,
+                weightRate: 0.015,
+                flowDirection: 1,
+                flowSpeed: 0.04
+            });
+            
+            collageElements.push({
+                x: width * 0.55,
+                y: height * 0.6,
+                width: 90,
+                height: 70,
+                rotation: -0.08,
+                imgSection: { x: 50, y: 150, w: 140, h: 110 },
+                opacity: 0,
+                targetOpacity: 180,
+                startTime: 4500,
+                visible: false,
+                interactive: true,
+                activated: false,
+                activatedTime: 0,
+                weight: 0,
+                maxWeight: 80,
+                weightRate: 0.015,
+                flowDirection: 1,
+                flowSpeed: 0.06
+            });
+        }
+
+        function draw() {
+            // Clear canvas with a soft background similar to the collage
+            background(245, 245, 248);
+            
+            // If animating, update time position
+            if (isAnimating && !isDraggingTimeline) {
+                timePosition += deltaTime;
+                
+                if (timePosition > 40000) {
+                    timePosition = 40000;
+                    
+                    if (!activatedTimeline) {
+                        showTimeline();
+                        activatedTimeline = true;
+                    }
+                }
+                
+                updateTimelineUI();
+                previousTimePosition = timePosition;
+            }
+            
+            // Update fade phase (slower for sadness)
+            fadePhase += fadeRate * deltaTime * 0.001;
+            
+            // Draw elements in layers
+            drawGridBackground();       // Draw grid background texture
+            drawFrameworkElements();    // Structure/containment (greyBlack)
+            drawConnectionLines();      // Connection lines between elements
+            drawMemoryElements();       // Memory fragments (ochraYellow)
+            drawCollageElements();      // Photo/image fragments
+            drawIsolationElements();    // Isolation circles (purpleBlue)
+            drawHandOutline();          // Incomplete hand (greyBlack)
+            drawDottedLineElements();   // Dotted curved lines
+            drawPaperclipElements();    // Paperclips
+            drawSadnessCenters();       // Interactive sadness centers
+            
+            // Update hand outline progress
+            if (isAnimating) {
+                handProgress = min(1, handProgress + 0.0003); // Slower for sadness
+            }
+            
+            // Update activated elements
+            updateActivatedElements();
+            
+            // Update element propagation (sadness flow effect)
+            updateElementPropagation();
+        }
+        
+        function showTimeline() {
+            document.getElementById('timeline').style.opacity = '1';
+            updateLayoutForOrientation();
+        }
+        
+        function updateActivatedElements() {
+            // Update activated framework elements
+            for (let framework of frameworkElements) {
+                if (framework.activated) {
+                    // Decrease weight over time (slowly for sadness)
+                    if (framework.weight > 0) {
+                        framework.weight = max(0, framework.weight - 0.2);
+                    }
+                    
+                    if (millis() - framework.activatedTime > 5000) { // Longer duration for sadness
+                        framework.activated = false;
+                    }
+                }
+                
+                // Update position for elements that flow downward
+                if (framework.flowDirection === 1 && isAnimating && framework.weight > 20) {
+                    if (framework.type === 'line') {
+                        // Move vertical lines downward
+                        if (framework.x1 === framework.x2) {
+                            framework.y1 += 0.1 * (framework.weight / framework.maxWeight);
+                            framework.y2 += 0.1 * (framework.weight / framework.maxWeight);
+                        }
+                    } else if (framework.type === 'geo') {
+                        framework.y += 0.1 * (framework.weight / framework.maxWeight);
+                    }
+                }
+            }
+            
+            // Update activated memory elements
+            for (let memory of memoryElements) {
+                if (memory.activated) {
+                    // Decrease weight over time (slowly for sadness)
+                    if (memory.weight > 0) {
+                        memory.weight = max(0, memory.weight - 0.15); // Slower decay for sadness
+                    }
+                    
+                    if (millis() - memory.activatedTime > 6000) { // Longer duration for sadness
+                        memory.activated = false;
+                    }
+                }
+                
+                // Update position for elements that flow downward
+                if (memory.flowDirection === 1 && isAnimating && (memory.weight > 20 || memory.activated)) {
+                    memory.y += memory.flowSpeed * (memory.weight > 0 ? memory.weight / memory.maxWeight : 0.2);
+                    
+                    // Reset position if moved out of view
+                    if (memory.y > height + 50) {
+                        memory.y = -50;
+                    }
+                }
+            }
+            
+            // Update activated isolation elements
+            for (let isolation of isolationElements) {
+                if (isolation.activated) {
+                    // Decrease distance over time (slowly for sadness)
+                    if (isolation.distance > 0) {
+                        isolation.distance = max(0, isolation.distance - 0.15); // Slower decay for sadness
+                    }
+                    
+                    if (millis() - isolation.activatedTime > 7000) { // Longer duration for sadness
+                        isolation.activated = false;
+                    }
+                }
+                
+                // Update position for elements that flow downward
+                if (isolation.flowDirection === 1 && isAnimating && isolation.distance > 20) {
+                    isolation.y += isolation.flowSpeed * (isolation.distance / isolation.maxDistance);
+                    
+                    // Reset position if moved out of view
+                    if (isolation.y > height + 100) {
+                        isolation.y = -50;
+                    }
+                }
+            }
+            
+            // Update dotted line elements
+            for (let dot of dottedLineElements) {
+                if (dot.activated) {
+                    // Decrease weight over time
+                    if (dot.weight > 0) {
+                        dot.weight = max(0, dot.weight - 0.2);
+                    }
+                    
+                    if (millis() - dot.activatedTime > 5000) {
+                        dot.activated = false;
+                    }
+                }
+            }
+            
+            // Update paperclip elements
+            for (let clip of paperclipElements) {
+                if (clip.activated) {
+                    // Decrease weight over time
+                    if (clip.weight > 0) {
+                        clip.weight = max(0, clip.weight - 0.2);
+                    }
+                    
+                    if (millis() - clip.activatedTime > 5000) {
+                        clip.activated = false;
+                    }
+                }
+            }
+            
+            // Update collage elements
+            for (let elem of collageElements) {
+                if (elem.activated) {
+                    // Decrease weight over time
+                    if (elem.weight > 0) {
+                        elem.weight = max(0, elem.weight - 0.15);
+                    }
+                    
+                    if (millis() - elem.activatedTime > 6000) {
+                        elem.activated = false;
+                    }
+                }
+                
+                // Update position for elements that flow downward
+                if (elem.flowDirection === 1 && isAnimating && elem.weight > 20) {
+                    elem.y += elem.flowSpeed * (elem.weight / elem.maxWeight);
+                    
+                    // Reset position if moved out of view
+                    if (elem.y > height + 100) {
+                        elem.y = -50;
+                    }
+                }
+            }
+            
+            // Update activated sadness centers
+            for (let center of sadnessCenters) {
+                if (center.activated) {
+                    center.activationProgress = min(1, center.activationProgress + 0.005); // Slower for sadness
+                }
+            }
+            
+            // If we have an active sadness center but it's no longer activated
+            if (activeSadnessCenter !== null && !sadnessCenters[activeSadnessCenter].activated) {
+                if (sadnessCenters[activeSadnessCenter].activationProgress > 0) {
+                    sadnessCenters[activeSadnessCenter].activationProgress = max(0, sadnessCenters[activeSadnessCenter].activationProgress - 0.01); // Slower fade for sadness
+                } else {
+                    activeSadnessCenter = null;
+                    centerActivated = false;
+                }
+            }
+        }
+        
+        function updateElementPropagation() {
+            // Implement the sadness effect - spreading heaviness/weight between elements
+            
+            // From activated framework elements to nearby memory elements
+            for (let i = 0; i < frameworkElements.length; i++) {
+                let framework = frameworkElements[i];
+                
+                if (framework.activated && framework.weight > 30) {
+                    // Get framework center point
+                    let frameworkX, frameworkY;
+                    if (framework.type === 'line') {
+                        frameworkX = (framework.x1 + framework.x2) / 2;
+                        frameworkY = (framework.y1 + framework.y2) / 2;
+                    } else {
+                        frameworkX = framework.x;
+                        frameworkY = framework.y;
+                    }
+                    
+                    // Spread to nearby memory elements
+                    for (let j = 0; j < memoryElements.length; j++) {
+                        let memory = memoryElements[j];
+                        let d = dist(frameworkX, frameworkY, memory.x, memory.y);
+                        
+                        if (d < 150) {
+                            // Transfer weight (influenced by distance)
+                            let weightTransfer = max(0, framework.weight * (1 - d/150) * 0.1); // Slower transfer for sadness
+                            memory.weight = min(memory.maxWeight, memory.weight + weightTransfer);
+                            
+                            // Mark as activated if significant weight
+                            if (memory.weight > 25 && !memory.activated) {
+                                memory.activated = true;
+                                memory.activatedTime = millis();
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // From activated memory elements to nearby isolation elements
+            for (let i = 0; i < memoryElements.length; i++) {
+                let memory = memoryElements[i];
+                
+                if (memory.activated && memory.weight > 35) {
+                    // Spread to nearby isolation elements
+                    for (let j = 0; j < isolationElements.length; j++) {
+                        let isolation = isolationElements[j];
+                        let d = dist(memory.x, memory.y, isolation.x, isolation.y);
+                        
+                        if (d < 170) {
+                            // Transfer distance (influenced by weight)
+                            let distanceTransfer = max(0, memory.weight * (1 - d/170) * 0.1); // Slower transfer for sadness
+                            isolation.distance = min(isolation.maxDistance, isolation.distance + distanceTransfer);
+                            
+                            // Mark as activated if significant distance
+                            if (isolation.distance > 30 && !isolation.activated) {
+                                isolation.activated = true;
+                                isolation.activatedTime = millis();
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Special feedback: Isolation elements can intensify framework elements (feedback loop for sadness)
+            for (let i = 0; i < isolationElements.length; i++) {
+                let isolation = isolationElements[i];
+                
+                if (isolation.activated) {
+                    let distanceValue = isolation.distance;
+                    
+                    if (distanceValue > 40) {
+                        // Spread to nearby framework elements
+                        for (let j = 0; j < frameworkElements.length; j++) {
+                            let framework = frameworkElements[j];
+                            
+                            // Get framework center point
+                            let frameworkX, frameworkY;
+                            if (framework.type === 'line') {
+                                frameworkX = (framework.x1 + framework.x2) / 2;
+                                frameworkY = (framework.y1 + framework.y2) / 2;
+                            } else {
+                                frameworkX = framework.x;
+                                frameworkY = framework.y;
+                            }
+                            
+                            let d = dist(isolation.x, isolation.y, frameworkX, frameworkY);
+                            
+                            if (d < 160) {
+                                // Transfer weight (influenced by distance)
+                                let weightTransfer = max(0, distanceValue * (1 - d/160) * 0.08); // Slower for sadness
+                                framework.weight = min(framework.maxWeight, framework.weight + weightTransfer);
+                                
+                                // Mark as activated if significant weight
+                                if (framework.weight > 25 && !framework.activated) {
+                                    framework.activated = true;
+                                    framework.activatedTime = millis();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Update connection lines based on connected elements' activation
+            for (let i = 0; i < connectionLines.length; i++) {
+                let line = connectionLines[i];
+                
+                // Check if start element is activated
+                let startActivated = false;
+                let startActivationLevel = 0;
+                
+                if (line.startElement === 'framework') {
+                    let framework = frameworkElements[line.startIndex];
+                    startActivated = framework.activated;
+                    startActivationLevel = framework.weight / framework.maxWeight;
+                } else if (line.startElement === 'memory') {
+                    let memory = memoryElements[line.startIndex];
+                    startActivated = memory.activated;
+                    startActivationLevel = memory.weight / memory.maxWeight;
+                } else if (line.startElement === 'isolation') {
+                    let isolation = isolationElements[line.startIndex];
+                    startActivated = isolation.activated;
+                    startActivationLevel = isolation.distance / isolation.maxDistance;
+                }
+                
+                // Check if end element is activated
+                let endActivated = false;
+                let endActivationLevel = 0;
+                
+                if (line.endElement === 'framework') {
+                    let framework = frameworkElements[line.endIndex];
+                    endActivated = framework.activated;
+                    endActivationLevel = framework.weight / framework.maxWeight;
+                } else if (line.endElement === 'memory') {
+                    let memory = memoryElements[line.endIndex];
+                    endActivated = memory.activated;
+                    endActivationLevel = memory.weight / memory.maxWeight;
+                } else if (line.endElement === 'isolation') {
+                    let isolation = isolationElements[line.endIndex];
+                    endActivated = isolation.activated;
+                    endActivationLevel = isolation.distance / isolation.maxDistance;
+                }
+                
+                // Activate line if either element is activated
+                line.activated = startActivated || endActivated;
+                line.weight = max(startActivationLevel, endActivationLevel) * 100;
+                
+                // Update flow animation along connection lines
+                if (line.activated && line.weight > 20) {
+                    line.progress = min(1, line.progress + line.flowSpeed * (line.weight / 100));
+                } else if (isAnimating) {
+                    // Gradual progress for non-activated lines
+                    line.progress = min(1, line.progress + 0.002);
+                }
+            }
+        }
+        
+        function drawGridBackground() {
+            // Draw grid paper texture as background
+            if (timePosition > 1000) {
+                let opacity = map(min(timePosition - 1000, 1000), 0, 1000, 0, 100);
+                
+                push();
+                tint(255, opacity);
+                
+                // Draw the graph paper texture in specific regions
+                let gridStartX = width * 0.35;
+                let gridStartY = height * 0.3;
+                let gridWidth = width * 0.35;
+                let gridHeight = height * 0.35;
+                
+                image(graphPaperTexture, gridStartX, gridStartY, gridWidth, gridHeight);
+                noTint();
+                pop();
+            }
+        }
+        
+        function drawHandOutline() {
+            // Only start drawing hand after initial elements appear
+            if (timePosition < 6000) return;
+            
+            // Calculate how many points to show based on progress
+            let pointsToShow = floor(handOutlinePoints.length * handProgress);
+            
+            if (pointsToShow < 2) return;
+            
+            // Draw the hand outline - matching the sketch in the collage
+            noFill();
+            stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 200);
+            strokeWeight(1.5);
+            
+            beginShape();
+            for (let i = 0; i < pointsToShow; i++) {
+                vertex(handOutlinePoints[i].x, handOutlinePoints[i].y);
+            }
+            endShape();
+            
+            // Draw palm lines if hand is more than half complete
+            if (handProgress > 0.5) {
+                stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 150);
+                strokeWeight(1);
+                
+                // Draw each palm line
+                for (let line of palmLines) {
+                    noFill();
+                    beginShape();
+                    for (let point of line) {
+                        vertex(point.x, point.y);
+                    }
+                    endShape();
+                }
+            }
+            
+            // Add some subtle shading to the palm area if hand is mostly complete
+            if (handProgress > 0.8) {
+                // Calculate center of palm
+                let palmCenterX = 0, palmCenterY = 0;
+                for (let pt of handOutlinePoints) {
+                    palmCenterX += pt.x;
+                    palmCenterY += pt.y;
+                }
+                palmCenterX /= handOutlinePoints.length;
+                palmCenterY /= handOutlinePoints.length;
+                
+                // Add shaded areas with cross-hatching
+                push();
+                translate(palmCenterX, palmCenterY);
+                rotate(PI/8);
+                
+                stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 30);
+                strokeWeight(0.5);
+                
+                // Draw cross-hatched pattern
+                for (let i = -40; i <= 40; i += 8) {
+                    line(i, -50, i, 50);
+                }
+                
+                rotate(PI/2);
+                for (let i = -40; i <= 40; i += 12) {
+                    line(i, -50, i, 50);
+                }
+                pop();
+                
+                // Special sadness symbol in palm when activated
+                if (activeSadnessCenter !== null && sadnessCenters[activeSadnessCenter].activationProgress > 0.5) {
+                    let centerX = (handOutlinePoints[0].x + handOutlinePoints[7].x) / 2;
+                    let centerY = (handOutlinePoints[0].y + handOutlinePoints[7].y) / 2;
+                    
+                    // Subtle fade effect
+                    let fadeFactor = sin(fadePhase) * 0.1 + 0.9; // Subtle oscillation for sadness
+                    
+                    // Draw sadness symbol (teardrop/weight symbol)
+                    push();
+                    translate(centerX, centerY);
+                    
+                    // Draw a teardrop shape
+                    fill(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 
+                          120 * sadnessCenters[activeSadnessCenter].activationProgress * fadeFactor);
+                    noStroke();
+                    
+                    beginShape();
+                    for (let i = 0; i < 20; i++) {
+                        let angle = PI + i * PI / 10;
+                        let radius = 8 * sadnessCenters[activeSadnessCenter].activationProgress;
+                        
+                        if (i < 10) {
+                            // Top half of teardrop (round)
+                            vertex(cos(angle) * radius, sin(angle) * radius);
+                        } else {
+                            // Bottom half (pointed)
+                            let yStretch = map(i, 10, 19, 1, 2);
+                            vertex(cos(angle) * radius, sin(angle) * radius * yStretch);
+                        }
+                    }
+                    endShape(CLOSE);
+                    
+                    // Ripple effect
+                    for (let j = 0; j < 2; j++) {
+                        noFill();
+                        stroke(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 
+                              80 * sadnessCenters[activeSadnessCenter].activationProgress * fadeFactor * (1 - j * 0.3));
+                        strokeWeight(1);
+                        
+                        let rippleSize = (10 + j * 5) * sadnessCenters[activeSadnessCenter].activationProgress;
+                        ellipse(0, 15, rippleSize, rippleSize * 0.7);
+                    }
+                    
+                    pop();
+                }
+            }
+        }
+        
+        function drawFrameworkElements() {
+            // Draw framework elements (greyBlack - structure)
+            for (let framework of frameworkElements) {
+                // Check timing
+                if (timePosition > framework.startTime) {
+                    // Make visible
+                    framework.visible = true;
+                    
+                    // Fade in opacity
+                    if (framework.opacity < framework.targetOpacity) {
+                        framework.opacity = min(framework.targetOpacity, framework.opacity + 0.3);
+                    }
+                    
+                    if (framework.visible) {
+                        // Enhanced appearance for activated elements
+                        let weightFactor = 0;
+                        if (framework.activated || framework.weight > 0) {
+                            weightFactor = framework.weight / framework.maxWeight;
+                            
+                            // Draw weight glow
+                            if (framework.type === 'line') {
+                                stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 
+                                      60 * weightFactor);
+                                strokeWeight(framework.thickness + 2 * weightFactor);
+                                line(framework.x1, framework.y1, framework.x2, framework.y2);
+                            } else if (framework.type === 'geo') {
+                                noFill();
+                                stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 
+                                      60 * weightFactor);
+                                strokeWeight(1.5);
+                                
+                                push();
+                                translate(framework.x, framework.y);
+                                rotate(framework.rotation);
+                                
+                                beginShape();
+                                for (let i = 0; i < framework.sides; i++) {
+                                    let angle = TWO_PI * i / framework.sides;
+                                    vertex(cos(angle) * (framework.size + 5 * weightFactor), 
+                                          sin(angle) * (framework.size + 5 * weightFactor));
+                                }
+                                endShape(CLOSE);
+                                
+                                pop();
+                            }
+                        }
+                        
+                        // Draw the element
+                        if (framework.type === 'line') {
+                            // Draw grid line
+                            stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 
+                                  framework.opacity * (1 - weightFactor * 0.3));
+                            strokeWeight(framework.thickness);
+                            
+                            if (framework.activated || framework.weight > 30) {
+                                // Add subtle wave for weight effect
+                                if (framework.x1 === framework.x2) { // Vertical line
+                                    // Wavy vertical line
+                                    beginShape();
+                                    noFill();
+                                    
+                                    let segments = 20;
+                                    for (let i = 0; i <= segments; i++) {
+                                        let y = framework.y1 + (framework.y2 - framework.y1) * (i / segments);
+                                        let x = framework.x1 + sin(i * 0.5 + millis() * 0.001) * weightFactor * 3;
+                                        vertex(x, y);
+                                    }
+                                    
+                                    endShape();
+                                } else { // Horizontal line
+                                    // Draw weighted horizontal line
+                                    beginShape();
+                                    noFill();
+                                    
+                                    let segments = 20;
+                                    for (let i = 0; i <= segments; i++) {
+                                        let x = framework.x1 + (framework.x2 - framework.x1) * (i / segments);
+                                        let y = framework.y1 + sin(i * 0.5 + millis() * 0.001) * weightFactor * 3;
+                                        vertex(x, y);
+                                    }
+                                    
+                                    endShape();
+                                }
+                            } else {
+                                // Just a straight line
+                                line(framework.x1, framework.y1, framework.x2, framework.y2);
+                            }
+                        } else if (framework.type === 'geo') {
+                            // Draw geometric shape
+                            if (framework.activated || framework.weight > 0) {
+                                fill(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 
+                                    framework.opacity * (0.7 + weightFactor * 0.3));
+                            } else {
+                                fill(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], framework.opacity);
+                            }
+                            
+                            noStroke();
+                            
+                            push();
+                            translate(framework.x, framework.y);
+                            rotate(framework.rotation + (weightFactor > 0 ? sin(millis() * 0.001) * 0.1 : 0));
+                            
+                            beginShape();
+                            for (let i = 0; i < framework.sides; i++) {
+                                let angle = TWO_PI * i / framework.sides;
+                                // Add weight effect - corners pull inward for sadness
+                                let radius = framework.size;
+                                if (weightFactor > 0) {
+                                    radius -= sin(angle * 2 + millis() * 0.001) * weightFactor * 3;
+                                }
+                                vertex(cos(angle) * radius, sin(angle) * radius);
+                            }
+                            endShape(CLOSE);
+                            
+                            pop();
+                        }
+                        
+                        // Add subtle pulse for interactive elements
+                        if (framework.interactive && !framework.activated) {
+                            noFill();
+                            stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 30);
+                            strokeWeight(0.8);
+                            
+                            if (framework.type === 'line') {
+                                // Find midpoint of line
+                                let midX = (framework.x1 + framework.x2) / 2;
+                                let midY = (framework.y1 + framework.y2) / 2;
+                                
+                                ellipse(midX, midY, 
+                                       10 + sin(millis() * 0.001) * 3, // Slower pulse for sadness
+                                       10 + sin(millis() * 0.001) * 3);
+                            } else {
+                                ellipse(framework.x, framework.y, 
+                                       framework.size + 8 + sin(millis() * 0.001) * 3, // Slower pulse for sadness
+                                       framework.size + 8 + sin(millis() * 0.001) * 3);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawMemoryElements() {
+            // Draw memory elements (ochraYellow - evaluation of temporal markers)
+            for (let memory of memoryElements) {
+                // Check timing
+                if (timePosition > memory.startTime) {
+                    // Make visible
+                    memory.visible = true;
+                    
+                    // Fade in opacity
+                    if (memory.opacity < memory.targetOpacity) {
+                        memory.opacity = min(memory.targetOpacity, memory.opacity + 0.4);
+                    }
+                    
+                    if (memory.visible) {
+                        if (memory.type === 'fragment') {
+                            drawMemoryFragment(memory);
+                        } else if (memory.type === 'trace') {
+                            drawMemoryTrace(memory);
+                        } else if (memory.type === 'blur') {
+                            drawMemoryBlur(memory);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawMemoryFragment(memory) {
+            // Enhanced appearance for activated fragments
+            let weightFactor = 0;
+            if (memory.activated || memory.weight > 0) {
+                weightFactor = memory.weight / memory.maxWeight;
+            }
+            
+            push();
+            translate(memory.x, memory.y);
+            rotate(memory.rotation);
+            
+            // Draw fragment
+            if (memory.activated || memory.weight > 0) {
+                fill(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 
+                    memory.opacity * (0.7 + weightFactor * 0.3));
+            } else {
+                fill(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], memory.opacity);
+            }
+            
+            if (weightFactor > 0.3) {
+                // Add subtle border when weighted
+                stroke(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 
+                      memory.opacity * 0.7);
+                strokeWeight(0.5);
+            } else {
+                noStroke();
+            }
+            
+            // Draw the torn paper shape
+            beginShape();
+            for (let vertex of memory.vertices) {
+                // Add slight waviness to vertices when weighted
+                let xOffset = weightFactor > 0 ? sin(millis() * 0.001) * weightFactor * 3 : 0;
+                let yOffset = weightFactor > 0 ? sin(millis() * 0.001 + 1) * weightFactor * 2 : 0;
+                vertex(vertex.x + xOffset, vertex.y + yOffset);
+            }
+            endShape(CLOSE);
+            
+            // Add texture to larger fragments
+            if (memory.width > 40 || memory.height > 40) {
+                stroke(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 
+                    memory.opacity * 0.4);
+                strokeWeight(0.3);
+                
+                // Draw a few lines across fragment - drooping when weighted
+                for (let i = 0; i < 3; i++) {
+                    let y = map(i, 0, 2, -memory.height/3, memory.height/3);
+                    
+                    if (weightFactor > 0.3) {
+                        // Drooping curve when weighted
+                        beginShape();
+                        for (let j = 0; j < 5; j++) {
+                            let x = map(j, 0, 4, -memory.width/2, memory.width/2);
+                            let yDroop = y + sin(map(j, 0, 4, 0, PI)) * weightFactor * 10;
+                            vertex(x, yDroop);
+                        }
+                        endShape();
+                    } else {
+                        // Straight line when not weighted
+                        line(-memory.width/2, y, memory.width/2, y);
+                    }
+                }
+            }
+            
+            pop();
+            
+            // Add subtle pulse for interactive elements
+            if (memory.interactive && !memory.activated) {
+                noFill();
+                stroke(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 40);
+                strokeWeight(0.8);
+                
+                push();
+                translate(memory.x, memory.y);
+                rotate(memory.rotation);
+                rect(-memory.width/2 - 5, -memory.height/2 - 5, 
+                     memory.width + 10 + sin(millis() * 0.001) * 3, 
+                     memory.height + 10 + sin(millis() * 0.001) * 3,
+                     3);
+                pop();
+            }
+        }
+        
+        function drawMemoryTrace(memory) {
+            // Enhanced appearance for activated traces
+            let weightFactor = 0;
+            if (memory.activated || memory.weight > 0) {
+                weightFactor = memory.weight / memory.maxWeight;
+            }
+            
+            // Calculate fade effect
+            let fadeEffect = sin(millis() * memory.fadeRate) * 0.2 + 0.8; // Slower pulse for sadness
+            
+            if (memory.activated || memory.weight > 0) {
+                fill(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 
+                    memory.opacity * fadeEffect * (0.7 + weightFactor * 0.3));
+            } else {
+                fill(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 
+                    memory.opacity * fadeEffect);
+            }
+            
+            noStroke();
+            
+            // Draw the trace - small dot/mark
+            ellipse(memory.x, memory.y, memory.size * (1 + weightFactor * 0.5));
+            
+            // Add a fading trail when weighted
+            if (weightFactor > 0.3) {
+                for (let i = 1; i <= 3; i++) {
+                    let trailOpacity = memory.opacity * fadeEffect * (0.7 + weightFactor * 0.3) * (1 - i/4);
+                    fill(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], trailOpacity);
+                    
+                    // Trail moves upward (against the downward flow of sadness)
+                    ellipse(memory.x, memory.y - i * 4 * weightFactor, 
+                           memory.size * (1 + weightFactor * 0.5) * (1 - i/5));
+                }
+            }
+            
+            // Add subtle pulse for interactive elements
+            if (memory.interactive && !memory.activated) {
+                noFill();
+                stroke(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 40);
+                strokeWeight(0.8);
+                
+                ellipse(memory.x, memory.y, 
+                       memory.size + 12 + sin(millis() * 0.001) * 3, 
+                       memory.size + 12 + sin(millis() * 0.001) * 3);
+            }
+        }
+        
+        function drawMemoryBlur(memory) {
+            // Enhanced appearance for activated blur elements
+            let weightFactor = 0;
+            if (memory.activated || memory.weight > 0) {
+                weightFactor = memory.weight / memory.maxWeight;
+            }
+            
+            push();
+            translate(memory.x, memory.y);
+            rotate(memory.rotation);
+            
+            // Draw blurred rectangle
+            noStroke();
+            
+            // Draw multiple layers with decreasing opacity for blur effect
+            for (let i = 3; i >= 0; i--) {
+                let blurSize = i * 3;
+                let fadeOpacity = map(i, 0, 3, 1, 0.3);
+                
+                if (memory.activated || memory.weight > 0) {
+                    fill(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 
+                        memory.opacity * fadeOpacity * (0.7 + weightFactor * 0.3));
+                } else {
+                    fill(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 
+                        memory.opacity * fadeOpacity);
+                }
+                
+                // Add distortion when weighted
+                if (weightFactor > 0.3) {
+                    // Distorted rectangle for weighted blur
+                    beginShape();
+                    let wave = weightFactor * 5;
+                    
+                    vertex(-memory.width/2 - blurSize + sin(millis() * 0.001) * wave, 
+                           -memory.height/2 - blurSize);
+                    vertex(memory.width/2 + blurSize + sin(millis() * 0.001 + 1) * wave, 
+                           -memory.height/2 - blurSize);
+                    vertex(memory.width/2 + blurSize + sin(millis() * 0.001 + 2) * wave, 
+                           memory.height/2 + blurSize);
+                    vertex(-memory.width/2 - blurSize + sin(millis() * 0.001 + 3) * wave, 
+                           memory.height/2 + blurSize);
+                    
+                    endShape(CLOSE);
+                } else {
+                    // Simple rectangle when not weighted
+                    rect(-memory.width/2 - blurSize, -memory.height/2 - blurSize, 
+                         memory.width + blurSize * 2, memory.height + blurSize * 2,
+                         blurSize);
+                }
+            }
+            
+            pop();
+            
+            // Add subtle pulse for interactive elements
+            if (memory.interactive && !memory.activated) {
+                noFill();
+                stroke(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 40);
+                strokeWeight(0.8);
+                
+                push();
+                translate(memory.x, memory.y);
+                rotate(memory.rotation);
+                rect(-memory.width/2 - 8, -memory.height/2 - 8, 
+                     memory.width + 16 + sin(millis() * 0.001) * 3, 
+                     memory.height + 16 + sin(millis() * 0.001) * 3,
+                     5);
+                pop();
+            }
+        }
+        
+        function drawIsolationElements() {
+            // Draw isolation elements (purpleBlue - response with distance)
+            for (let isolation of isolationElements) {
+                // Check timing
+                if (timePosition > isolation.startTime) {
+                    // Make visible
+                    isolation.visible = true;
+                    
+                    // Fade in opacity
+                    if (isolation.opacity < isolation.targetOpacity) {
+                        isolation.opacity = min(isolation.targetOpacity, isolation.opacity + 0.3);
+                    }
+                    
+                    if (isolation.visible) {
+                        if (isolation.type === 'circle') {
+                            drawIsolationCircle(isolation);
+                        } else if (isolation.type === 'void') {
+                            drawIsolationVoid(isolation);
+                        } else if (isolation.type === 'echo') {
+                            drawIsolationEcho(isolation);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawIsolationCircle(isolation) {
+            // Calculate subtle pulse effect
+            let pulseAmount = sin(millis() * isolation.pulseRate + isolation.phase) * 0.08; // Subtle for sadness
+            
+            // Enhanced appearance for activated circles
+            let distanceFactor = 0;
+            if (isolation.activated || isolation.distance > 0) {
+                distanceFactor = isolation.distance / isolation.maxDistance;
+                
+                // Draw distance glow
+                noFill();
+                stroke(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 
+                      80 * distanceFactor);
+                strokeWeight(isolation.thickness + 1.5 * distanceFactor);
+                
+                ellipse(isolation.x, isolation.y, 
+                       (isolation.radius * 2 + 10 * distanceFactor) * (1 + pulseAmount),
+                       (isolation.radius * 2 + 10 * distanceFactor) * (1 + pulseAmount));
+            }
+            
+            // Draw main circle
+            noFill();
+            stroke(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 
+                  isolation.opacity * (distanceFactor > 0 ? 0.7 + distanceFactor * 0.3 : 1));
+            strokeWeight(isolation.thickness);
+            
+            if (distanceFactor > 0.3) {
+                // Draw disconnected circle segments when distance is high
+                let segments = 36;
+                let gapSize = floor(map(distanceFactor, 0.3, 1, 1, 5));
+                
+                for (let i = 0; i < segments; i++) {
+                    if (i % gapSize !== 0) { // Skip some segments to create gaps
+                        let startAngle = TWO_PI * i / segments;
+                        let endAngle = TWO_PI * (i + 1) / segments;
+                        
+                        arc(isolation.x, isolation.y, 
+                           isolation.radius * 2 * (1 + pulseAmount), 
+                           isolation.radius * 2 * (1 + pulseAmount),
+                           startAngle, endAngle);
+                    }
+                }
+            } else {
+                // Draw complete circle
+                ellipse(isolation.x, isolation.y, 
+                       isolation.radius * 2 * (1 + pulseAmount), 
+                       isolation.radius * 2 * (1 + pulseAmount));
+            }
+            
+            // Add translucent fill for the main container circle
+            if (isolation.radius > 60) {
+                fill(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 
+                    isolation.opacity * 0.08);
+                noStroke();
+                ellipse(isolation.x, isolation.y, 
+                       isolation.radius * 2 * (1 + pulseAmount),
+                       isolation.radius * 2 * (1 + pulseAmount));
+            }
+            
+            // Add subtle pulse for interactive elements
+            if (isolation.interactive && !isolation.activated) {
+                noFill();
+                stroke(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 40);
+                strokeWeight(0.8);
+                
+                ellipse(isolation.x, isolation.y, 
+                       isolation.radius * 2 + 15 + sin(millis() * 0.001) * 3, // Slower pulse for sadness
+                       isolation.radius * 2 + 15 + sin(millis() * 0.001) * 3);
+            }
+        }
+        
+        function drawIsolationVoid(isolation) {
+            // Enhanced appearance for activated voids
+            let distanceFactor = 0;
+            if (isolation.activated || isolation.distance > 0) {
+                distanceFactor = isolation.distance / isolation.maxDistance;
+            }
+            
+            // Calculate fade effect
+            let fadeEffect = sin(millis() * isolation.fadeRate) * 0.15 + 0.85; // Subtle for sadness
+            
+            push();
+            translate(isolation.x, isolation.y);
+            
+            // Draw void - a dark space representing absence
+            // Create masked area by first drawing a white shape
+            fill(255);
+            noStroke();
+            ellipse(0, 0, isolation.size, isolation.size);
+            
+            // Then use blendMode to cut out from background
+            blendMode(DIFFERENCE);
+            
+            // Draw inner shape that removes from background
+            fill(255);
+            ellipse(0, 0, isolation.size - 2, isolation.size - 2);
+            
+            // Reset blend mode
+            blendMode(BLEND);
+            
+            // Draw edge of void
+            noFill();
+            stroke(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 
+                  isolation.opacity * fadeEffect * (distanceFactor > 0 ? 0.7 + distanceFactor * 0.3 : 1));
+            strokeWeight(1.5);
+            
+            if (distanceFactor > 0.3) {
+                // Draw distorted void when distance is high
+                beginShape();
+                let segments = 36;
+                
+                for (let i = 0; i <= segments; i++) {
+                    let angle = TWO_PI * i / segments;
+                    let radius = isolation.size / 2;
+                    
+                    // Add distortion waves
+                    radius += sin(angle * 5 + millis() * 0.001) * distanceFactor * 8;
+                    
+                    let x = cos(angle) * radius;
+                    let y = sin(angle) * radius;
+                    
+                    vertex(x, y);
+                }
+                
+                endShape(CLOSE);
+                
+                // Add distance ripples
+                for (let i = 1; i <= 3; i++) {
+                    stroke(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 
+                          isolation.opacity * fadeEffect * 0.3 * distanceFactor * (1 - i/4));
+                    strokeWeight(0.5);
+                    
+                    let rippleSize = isolation.size + i * 15 * distanceFactor;
+                    
+                    beginShape();
+                    for (let j = 0; j <= segments; j++) {
+                        let angle = TWO_PI * j / segments;
+                        let radius = rippleSize / 2;
+                        
+                        // Add subtle distortion to ripples
+                        radius += sin(angle * 3 + millis() * 0.0008) * distanceFactor * 5;
+                        
+                        let x = cos(angle) * radius;
+                        let y = sin(angle) * radius;
+                        
+                        vertex(x, y);
+                    }
+                    endShape(CLOSE);
+                }
+            } else {
+                // Draw simple void circle
+                ellipse(0, 0, isolation.size, isolation.size);
+            }
+            
+            pop();
+            
+            // Add subtle pulse for interactive elements
+            if (isolation.interactive && !isolation.activated) {
+                noFill();
+                stroke(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 40);
+                strokeWeight(0.8);
+                
+                ellipse(isolation.x, isolation.y, 
+                       isolation.size + 15 + sin(millis() * 0.001) * 3, // Slower pulse for sadness
+                       isolation.size + 15 + sin(millis() * 0.001) * 3);
+            }
+        }
+        
+        function drawIsolationEcho(isolation) {
+            // Calculate subtle pulse effect
+            let pulseAmount = sin(millis() * isolation.pulseRate + isolation.phase) * 0.1; // Subtle for sadness
+            
+            // Enhanced appearance for activated echoes
+            let distanceFactor = 0;
+            if (isolation.activated || isolation.distance > 0) {
+                distanceFactor = isolation.distance / isolation.maxDistance;
+            }
+            
+            push();
+            translate(isolation.x, isolation.y);
+            
+            // Draw echo rings - decreasing opacity from center outward
+            for (let i = 0; i < isolation.echoes; i++) {
+                let ringRadius = isolation.radius + i * isolation.spacing;
+                let ringOpacity = map(i, 0, isolation.echoes - 1, 1, 0.2);
+                
+                noFill();
+                stroke(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 
+                      isolation.opacity * ringOpacity * (distanceFactor > 0 ? 0.7 + distanceFactor * 0.3 : 1));
+                strokeWeight(isolation.thickness * (1 - i * 0.2));
+                
+                if (distanceFactor > 0.3) {
+                    // Draw disconnected echo segments when distance is high
+                    let segments = 24;
+                    let gapSize = floor(map(distanceFactor, 0.3, 1, 1, 4));
+                    
+                    for (let j = 0; j < segments; j++) {
+                        if (j % gapSize !== 0) { // Skip some segments to create gaps
+                            let startAngle = TWO_PI * j / segments;
+                            let endAngle = TWO_PI * (j + 1) / segments;
+                            
+                            // Add subtle waviness for distance effect
+                            let waveRadius = ringRadius * (1 + pulseAmount) + 
+                                             sin(startAngle * 3 + millis() * 0.001) * distanceFactor * 5;
+                            
+                            arc(0, 0, waveRadius * 2, waveRadius * 2, startAngle, endAngle);
+                        }
+                    }
+                } else {
+                    // Draw complete echo rings
+                    ellipse(0, 0, ringRadius * 2 * (1 + pulseAmount), ringRadius * 2 * (1 + pulseAmount));
+                }
+            }
+            
+            // Add central point for echoes
+            fill(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 
+                isolation.opacity * (distanceFactor > 0 ? 0.7 + distanceFactor * 0.3 : 1));
+            noStroke();
+            
+            // Central point grows with distance
+            ellipse(0, 0, isolation.thickness * 2 + distanceFactor * 5, 
+                        isolation.thickness * 2 + distanceFactor * 5);
+            
+            pop();
+            
+            // Add subtle pulse for interactive elements
+            if (isolation.interactive && !isolation.activated) {
+                noFill();
+                stroke(colors.purpleBlue[0], colors.purpleBlue[1], colors.purpleBlue[2], 40);
+                strokeWeight(0.8);
+                
+                ellipse(isolation.x, isolation.y, 
+                       (isolation.radius + isolation.echoes * isolation.spacing) * 2 + 
+                       sin(millis() * 0.001) * 3, // Slower pulse for sadness
+                       (isolation.radius + isolation.echoes * isolation.spacing) * 2 + 
+                       sin(millis() * 0.001) * 3);
+            }
+        }
+        
+        function drawDottedLineElements() {
+            // Draw dotted line elements
+            for (let dot of dottedLineElements) {
+                // Check timing
+                if (timePosition > dot.startTime) {
+                    // Make visible
+                    dot.visible = true;
+                    
+                    // Fade in opacity
+                    if (dot.opacity < dot.targetOpacity) {
+                        dot.opacity = min(dot.targetOpacity, dot.opacity + 0.8);
+                    }
+                    
+                    if (dot.visible) {
+                        // Enhanced appearance for activated dots
+                        let weightFactor = 0;
+                        if (dot.activated || dot.weight > 0) {
+                            weightFactor = dot.weight / dot.maxWeight;
+                            
+                            // Add subtle glow for activated dots
+                            fill(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 
+                                 40 * weightFactor);
+                            noStroke();
+                            ellipse(dot.x, dot.y, dot.size * 2.5);
+                        }
+                        
+                        // Draw dot
+                        fill(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 
+                             dot.opacity * (weightFactor > 0 ? 0.7 + weightFactor * 0.3 : 1));
+                        noStroke();
+                        ellipse(dot.x, dot.y, dot.size * (1 + weightFactor * 0.5));
+                        
+                        // Add subtle pulse for interactive elements
+                        if (dot.interactive && !dot.activated) {
+                            noFill();
+                            stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 30);
+                            strokeWeight(0.5);
+                            
+                            ellipse(dot.x, dot.y, 
+                                   dot.size + 8 + sin(millis() * 0.001) * 2, // Slower pulse for sadness
+                                   dot.size + 8 + sin(millis() * 0.001) * 2);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawPaperclipElements() {
+            // Draw paperclip elements
+            for (let clip of paperclipElements) {
+                // Check timing
+                if (timePosition > clip.startTime) {
+                    // Make visible
+                    clip.visible = true;
+                    
+                    // Fade in opacity
+                    if (clip.opacity < clip.targetOpacity) {
+                        clip.opacity = min(clip.targetOpacity, clip.opacity + 0.8);
+                    }
+                    
+                    if (clip.visible) {
+                        // Enhanced appearance for activated paperclips
+                        let weightFactor = 0;
+                        if (clip.activated || clip.weight > 0) {
+                            weightFactor = clip.weight / clip.maxWeight;
+                            
+                            // Add subtle glow for activated clips
+                            push();
+                            translate(clip.x, clip.y);
+                            rotate(clip.rotation);
+                            
+                            stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 
+                                  60 * weightFactor);
+                            strokeWeight(3);
+                            noFill();
+                            
+                            // Paperclip shape (simplified)
+                            beginShape();
+                            vertex(-clip.width/2, 0);
+                            vertex(-clip.width/2, -clip.height/2);
+                            vertex(-clip.width/2 + clip.height, -clip.height/2);
+                            vertex(-clip.width/2 + clip.height, clip.height/2);
+                            vertex(-clip.width/2, clip.height/2);
+                            vertex(-clip.width/2, 0);
+                            vertex(clip.width/2, 0);
+                            endShape();
+                            
+                            pop();
+                        }
+                        
+                        // Draw paperclip
+                        push();
+                        translate(clip.x, clip.y);
+                        rotate(clip.rotation + (weightFactor > 0.3 ? sin(millis() * 0.001) * 0.1 : 0));
+                        
+                        stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 
+                              clip.opacity * (weightFactor > 0 ? 0.7 + weightFactor * 0.3 : 1));
+                        strokeWeight(2);
+                        noFill();
+                        
+                        // Paperclip shape (simplified)
+                        beginShape();
+                        vertex(-clip.width/2, 0);
+                        vertex(-clip.width/2, -clip.height/2);
+                        vertex(-clip.width/2 + clip.height, -clip.height/2);
+                        vertex(-clip.width/2 + clip.height, clip.height/2);
+                        vertex(-clip.width/2, clip.height/2);
+                        vertex(-clip.width/2, 0);
+                        vertex(clip.width/2, 0);
+                        endShape();
+                        
+                        pop();
+                        
+                        // Add subtle pulse for interactive elements
+                        if (clip.interactive && !clip.activated) {
+                            noFill();
+                            stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], 30);
+                            strokeWeight(0.5);
+                            
+                            push();
+                            translate(clip.x, clip.y);
+                            rotate(clip.rotation);
+                            rect(-clip.width/2 - 5, -clip.height - 5, 
+                                 clip.width + 10 + sin(millis() * 0.001) * 2, // Slower pulse for sadness
+                                 clip.height * 2 + 10 + sin(millis() * 0.001) * 2,
+                                 5);
+                            pop();
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawCollageElements() {
+            // Draw collage elements as fragments of the sketchbook image
+            if (!sketchbookImage.width) return; // Skip if image not loaded
+            
+            push();
+            imageMode(CENTER);
+            
+            for (let elem of collageElements) {
+                // Check timing
+                if (timePosition > elem.startTime) {
+                    // Make visible
+                    elem.visible = true;
+                    
+                    // Fade in opacity
+                    if (elem.opacity < elem.targetOpacity) {
+                        elem.opacity = min(elem.targetOpacity, elem.opacity + 0.5);
+                    }
+                    
+                    if (elem.visible) {
+                        // Enhanced appearance for activated collage elements
+                        let weightFactor = 0;
+                        if (elem.activated || elem.weight > 0) {
+                            weightFactor = elem.weight / elem.maxWeight;
+                            
+                            // Add subtle glow for activated elements
+                            push();
+                            translate(elem.x, elem.y);
+                            rotate(elem.rotation);
+                            
+                            // Subtle background glow
+                            noStroke();
+                            fill(220, 220, 230, 50 * weightFactor);
+                            rect(-elem.width/2 - 5, -elem.height/2 - 5, 
+                                 elem.width + 10, elem.height + 10, 3);
+                            
+                            pop();
+                        }
+                        
+                        // Draw image fragment
+                        push();
+                        translate(elem.x, elem.y);
+                        rotate(elem.rotation + (weightFactor > 0.3 ? sin(millis() * 0.001) * 0.05 : 0));
+                        
+                        // Create irregular shape for fragment
+                        let fragWidth = elem.width * (1 + weightFactor * 0.1);
+                        let fragHeight = elem.height * (1 + weightFactor * 0.1);
+                        
+                        // Draw image with opacity
+                        tint(255, elem.opacity * (weightFactor > 0 ? 0.8 + weightFactor * 0.2 : 1));
+                        image(
+                            sketchbookImage, 
+                            0, 0, 
+                            fragWidth, fragHeight,
+                            elem.imgSection.x, elem.imgSection.y, 
+                            elem.imgSection.w, elem.imgSection.h
+                        );
+                        
+                        // Add a subtle border/edge to the fragment
+                        noFill();
+                        stroke(200, 200, 200, elem.opacity * 0.5);
+                        strokeWeight(1);
+                        rect(-fragWidth/2, -fragHeight/2, fragWidth, fragHeight);
+                        
+                        // Add subtle shadow when weighted
+                        if (weightFactor > 0.3) {
+                            noFill();
+                            stroke(100, 100, 100, 40 * weightFactor);
+                            strokeWeight(1);
+                            rect(-fragWidth/2 - 2, -fragHeight/2 - 2, fragWidth + 4, fragHeight + 4);
+                        }
+                        
+                        pop();
+                        
+                        // Add subtle pulse for interactive elements
+                        if (elem.interactive && !elem.activated) {
+                            noFill();
+                            stroke(120, 120, 150, 40);
+                            strokeWeight(0.8);
+                            
+                            push();
+                            translate(elem.x, elem.y);
+                            rotate(elem.rotation);
+                            rect(-elem.width/2 - 5, -elem.height/2 - 5, 
+                                 elem.width + 10 + sin(millis() * 0.001) * 2, // Slower pulse for sadness
+                                 elem.height + 10 + sin(millis() * 0.001) * 2,
+                                 3);
+                            pop();
+                        }
+                    }
+                }
+            }
+            
+            pop();
+        }
+        
+        function drawConnectionLines() {
+            // Draw connection lines between elements
+            for (let line of connectionLines) {
+                // Only start drawing after the delay
+                if (timePosition > line.startTime) {
+                    // Fade in opacity
+                    if (line.opacity < line.targetOpacity) {
+                        line.opacity = min(line.targetOpacity, line.opacity + 0.2);
+                    }
+                    
+                    // Get start and end points based on element types
+                    let startX, startY, endX, endY;
+                    
+                    // Start point
+                    if (line.startElement === 'framework') {
+                        let framework = frameworkElements[line.startIndex];
+                        
+                        if (framework.type === 'line') {
+                            startX = (framework.x1 + framework.x2) / 2;
+                            startY = (framework.y1 + framework.y2) / 2;
+                        } else {
+                            startX = framework.x;
+                            startY = framework.y;
+                        }
+                    } else if (line.startElement === 'memory') {
+                        startX = memoryElements[line.startIndex].x;
+                        startY = memoryElements[line.startIndex].y;
+                    } else {
+                        startX = isolationElements[line.startIndex].x;
+                        startY = isolationElements[line.startIndex].y;
+                    }
+                    
+                    // End point
+                    if (line.endElement === 'framework') {
+                        let framework = frameworkElements[line.endIndex];
+                        
+                        if (framework.type === 'line') {
+                            endX = (framework.x1 + framework.x2) / 2;
+                            endY = (framework.y1 + framework.y2) / 2;
+                        } else {
+                            endX = framework.x;
+                            endY = framework.y;
+                        }
+                    } else if (line.endElement === 'memory') {
+                        endX = memoryElements[line.endIndex].x;
+                        endY = memoryElements[line.endIndex].y;
+                    } else {
+                        endX = isolationElements[line.endIndex].x;
+                        endY = isolationElements[line.endIndex].y;
+                    }
+                    
+                    // Check if elements are visible
+                    let startVisible = false;
+                    let endVisible = false;
+                    
+                    if (line.startElement === 'framework') {
+                        startVisible = frameworkElements[line.startIndex].visible;
+                    } else if (line.startElement === 'memory') {
+                        startVisible = memoryElements[line.startIndex].visible;
+                    } else {
+                        startVisible = isolationElements[line.startIndex].visible;
+                    }
+                    
+                    if (line.endElement === 'framework') {
+                        endVisible = frameworkElements[line.endIndex].visible;
+                    } else if (line.endElement === 'memory') {
+                        endVisible = memoryElements[line.endIndex].visible;
+                    } else {
+                        endVisible = isolationElements[line.endIndex].visible;
+                    }
+                    
+                    if (startVisible && endVisible) {
+                        // Get color based on end element
+                        let lineColor;
+                        if (line.endElement === 'framework') {
+                            lineColor = colors.greyBlack;
+                        } else if (line.endElement === 'memory') {
+                            lineColor = colors.ochraYellow;
+                        } else {
+                            lineColor = colors.purpleBlue;
+                        }
+                        
+                        // Check if line is activated (based on connected elements)
+                        let weightFactor = line.weight / 100;
+                        
+                        // Draw dotted line with downward curve (sadness flow direction)
+                        let distance = dist(startX, startY, endX, endY);
+                        let numDots = floor(distance / line.dotSpacing);
+                        
+                        // Draw dots along the path
+                        for (let i = 0; i <= numDots * line.progress; i++) {
+                            let t = i / numDots;
+                            
+                            // Add curve for sadness (drooping downward)
+                            let midX = (startX + endX) / 2;
+                            let midY = (startY + endY) / 2 + 15; // Drop in the middle for sadness
+                            
+                            let x, y;
+                            
+                            if (line.activated && weightFactor > 0.3) {
+                                // More pronounced drooping curve when weighted
+                                let ctrlX = midX;
+                                let ctrlY = midY + 20 * weightFactor;
+                                
+                                // Quadratic interpolation for curved path
+                                let u = 1 - t;
+                                x = u*u*startX + 2*u*t*ctrlX + t*t*endX;
+                                y = u*u*startY + 2*u*t*ctrlY + t*t*endY;
+                                
+                                // Add slight waviness for weight effect
+                                let waveAmount = weightFactor * 3 * sin(t * PI * 3 + millis() * 0.001);
+                                let perpX = -(endY - startY);
+                                let perpY = (endX - startX);
+                                let perpLen = sqrt(perpX*perpX + perpY*perpY);
+                                
+                                if (perpLen > 0) {
+                                    x += (perpX / perpLen) * waveAmount;
+                                    y += (perpY / perpLen) * waveAmount;
+                                }
+                                
+                            } else {
+                                // Simpler drooping curve when not weighted
+                                x = lerp(startX, endX, t);
+                                // Parabolic drop
+                                y = lerp(startY, endY, t) + sin(t * PI) * 10;
+                            }
+                            
+                            // Draw dot
+                            noStroke();
+                            
+                            if (line.activated && weightFactor > 0) {
+                                // Enhanced appearance for activated lines
+                                fill(lineColor[0], lineColor[1], lineColor[2], 
+                                    line.opacity * (0.7 + weightFactor * 0.3));
+                                
+                                // Make dots larger when activated
+                                let dotSize = line.dotSize * (1 + weightFactor * 0.5);
+                                ellipse(x, y, dotSize);
+                                
+                                // Add flow effect for higher activation
+                                if (weightFactor > 0.5 && i % 3 === 0) {
+                                    fill(lineColor[0], lineColor[1], lineColor[2], 
+                                        line.opacity * 0.3 * weightFactor);
+                                    
+                                    ellipse(x, y - 2 * weightFactor, dotSize * 1.5 * weightFactor);
+                                }
+                            } else {
+                                fill(lineColor[0], lineColor[1], lineColor[2], line.opacity);
+                                ellipse(x, y, line.dotSize);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawSadnessCenters() {
+            // Draw sadness centers
+            for (let i = 0; i < sadnessCenters.length; i++) {
+                let center = sadnessCenters[i];
+                
+                // Check timing
+                if (timePosition > center.startTime) {
+                    // Fade in opacity
+                    if (center.opacity < center.targetOpacity) {
+                        center.opacity = min(center.targetOpacity, center.opacity + 0.3);
+                    }
+                    
+                    // Calculate pulse effect
+                    let pulseAmount = sin(millis() * center.pulseRate) * 0.1; // Subtle for sadness
+                    let pulseSize = center.size * (1 + pulseAmount);
+                    
+                    // Draw outer glow for active sadness centers
+                    if (i === activeSadnessCenter && center.activationProgress > 0) {
+                        // Create expanding rings effect for sadness (slow sinking)
+                        for (let j = 0; j < 3; j++) {
+                            let expandedSize = pulseSize + j * 15 * center.activationProgress;
+                            let glowOpacity = (70 - j * 20) * center.activationProgress;
+                            
+                            noFill();
+                            
+                            // Use a blend of grey and purpleBlue colors
+                            let blendedR = lerp(colors.greyBlack[0], colors.purpleBlue[0], 0.5);
+                            let blendedG = lerp(colors.greyBlack[1], colors.purpleBlue[1], 0.5);
+                            let blendedB = lerp(colors.greyBlack[2], colors.purpleBlue[2], 0.5);
+                            
+                            stroke(blendedR, blendedG, blendedB, glowOpacity);
+                            strokeWeight(1.5 - j * 0.4);
+                            
+                            // Draw drooping ellipses to represent sadness (vertical stretch)
+                            ellipse(center.x, center.y, 
+                                   expandedSize, expandedSize * (1 + 0.2 * center.activationProgress));
+                            
+                            // Add downward-flowing drops for sadness
+                            if (j === 0) {
+                                for (let k = 0; k < 3; k++) {
+                                    let angle = PI/2 + (k - 1) * PI/6; // Downward angles
+                                    let dropDist = expandedSize * 0.6 * center.activationProgress;
+                                    let dropSize = 4 * center.activationProgress;
+                                    
+                                    let dropX = center.x + cos(angle) * dropDist;
+                                    let dropY = center.y + sin(angle) * dropDist;
+                                    
+                                    // Draw teardrop
+                                    beginShape();
+                                    for (let l = 0; l < 20; l++) {
+                                        let tearAngle = PI + l * PI / 10;
+                                        let tearRadius = dropSize;
+                                        
+                                        if (l < 10) {
+                                            // Top half of teardrop (round)
+                                            vertex(dropX + cos(tearAngle) * tearRadius, 
+                                                 dropY + sin(tearAngle) * tearRadius);
+                                        } else {
+                                            // Bottom half (pointed)
+                                            let yStretch = map(l, 10, 19, 1, 2);
+                                            vertex(dropX + cos(tearAngle) * tearRadius, 
+                                                 dropY + sin(tearAngle) * tearRadius * yStretch);
+                                        }
+                                    }
+                                    endShape(CLOSE);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Draw main sadness center boundary
+                    noFill();
+                    
+                    // Use grey as the primary color for sadness centers
+                    stroke(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], center.opacity);
+                    strokeWeight(1.5);
+                    
+                    // Draw dashed circle for sadness center
+                    let segments = 36;
+                    let dashLength = 3;
+                    let gapLength = 2;
+                    
+                    for (let j = 0; j < segments; j++) {
+                        if (j % (dashLength + gapLength) < dashLength) { // Draw only dash segments
+                            let startAngle = TWO_PI * j / segments;
+                            let endAngle = TWO_PI * (j + 1) / segments;
+                            
+                            arc(center.x, center.y, pulseSize, pulseSize, startAngle, endAngle);
+                        }
+                    }
+                    
+                    // Draw inner circle
+                    fill(colors.greyBlack[0], colors.greyBlack[1], colors.greyBlack[2], center.opacity * 0.15);
+                    noStroke();
+                    ellipse(center.x, center.y, pulseSize * 0.3, pulseSize * 0.3);
+                    
+                    // Add interactive hint
+                    if (!center.activated) {
+                        // Use ochraYellow color for interactive hint
+                        fill(colors.ochraYellow[0], colors.ochraYellow[1], colors.ochraYellow[2], 
+                            60 + 20 * sin(millis() * 0.001)); // Slower pulse for sadness
+                        noStroke();
+                        
+                        // Draw teardrop/sadness symbol
+                        push();
+                        translate(center.x, center.y);
+                        
+                        // Draw teardrop
+                        beginShape();
+                        for (let j = 0; j < 20; j++) {
+                            let angle = PI + j * PI / 10;
+                            let radius = pulseSize * 0.1;
+                            
+                            if (j < 10) {
+                                // Top half of teardrop (round)
+                                vertex(cos(angle) * radius, sin(angle) * radius);
+                            } else {
+                                // Bottom half (pointed)
+                                let yStretch = map(j, 10, 19, 1, 2);
+                                vertex(cos(angle) * radius, sin(angle) * radius * yStretch);
+                            }
+                        }
+                        endShape(CLOSE);
+                        
+                        pop();
+                    }
+                }
+            }
+        }
+        
+        function showSadnessResonance(message, x, y) {
+            const resonance = document.getElementById('sadness-resonance');
+            resonance.innerHTML = message;
+            
+            // Position near the element but within screen bounds
+            let posX = x;
+            let posY = y - 60;
+            
+            // Adjust if would go off screen
+            if (posX < 20) posX = 20;
+            if (posX > window.innerWidth - 270) posX = window.innerWidth - 270;
+            if (posY < 20) posY = 20;
+            if (posY > window.innerHeight - 100) posY = window.innerHeight - 100;
+            
+            resonance.style.left = posX + 'px';
+            resonance.style.top = posY + 'px';
+            resonance.style.transform = 'translateY(0)';
+            resonance.style.opacity = '1';
+            
+            // Hide after 6 seconds (longer for sadness)
+            setTimeout(() => {
+                resonance.style.opacity = '0';
+                resonance.style.transform = 'translateY(20px)';
+            }, 6000);
+        }
+        
+        function setTimePosition(time) {
+            // Set the internal time position
+            const previousMillis = previousTimePosition;
+            const timeDiff = time - previousMillis;
+            
+            // Reset elements if jumping backward more than 2 seconds
+            if (timeDiff < -2000) {
+                resetExperience();
+            }
+        }
+        
+        function resetExperience() {
+            // Reset all elements to their initial state
+            for (let framework of frameworkElements) {
+                framework.visible = timePosition > framework.startTime;
+                framework.activated = false;
+                framework.weight = 0;
+            }
+            
+            for (let memory of memoryElements) {
+                memory.visible = timePosition > memory.startTime;
+                memory.activated = false;
+                memory.weight = 0;
+            }
+            
+            for (let isolation of isolationElements) {
+                isolation.visible = timePosition > isolation.startTime;
+                isolation.activated = false;
+                isolation.distance = 0;
+            }
+            
+            for (let dot of dottedLineElements) {
+                dot.visible = timePosition > dot.startTime;
+                dot.activated = false;
+                dot.weight = 0;
+            }
+            
+            for (let clip of paperclipElements) {
+                clip.visible = timePosition > clip.startTime;
+                clip.activated = false;
+                clip.weight = 0;
+            }
+            
+            for (let elem of collageElements) {
+                elem.visible = timePosition > elem.startTime;
+                elem.activated = false;
+                elem.weight = 0;
+            }
+            
+            for (let line of connectionLines) {
+                line.progress = 0;
+                line.activated = false;
+                line.weight = 0;
+            }
+            
+            for (let center of sadnessCenters) {
+                center.opacity = timePosition > center.startTime ? center.targetOpacity : 0;
+                center.activated = false;
+                center.activationProgress = 0;
+            }
+            
+            handProgress = min(1, timePosition / 20000);
+            activeSadnessCenter = null;
+            centerActivated = false;
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            repositionElements();
+            updateLayoutForOrientation();
+        }
+        
+        function repositionElements() {
+            // Recalculate hand outline points for new dimensions
+            for (let i = 0; i < handOutlinePoints.length; i++) {
+                handOutlinePoints[i].x = (handOutlinePoints[i].x / width) * windowWidth;
+                handOutlinePoints[i].y = (handOutlinePoints[i].y / height) * windowHeight;
+            }
+            
+            // Recalculate palm lines
+            for (let i = 0; i < palmLines.length; i++) {
+                for (let j = 0; j < palmLines[i].length; j++) {
+                    palmLines[i][j].x = (palmLines[i][j].x / width) * windowWidth;
+                    palmLines[i][j].y = (palmLines[i][j].y / height) * windowHeight;
+                }
+            }
+            
+            // Reposition framework elements
+            for (let framework of frameworkElements) {
+                if (framework.type === 'line') {
+                    framework.x1 = (framework.x1 / width) * windowWidth;
+                    framework.y1 = (framework.y1 / height) * windowHeight;
+                    framework.x2 = (framework.x2 / width) * windowWidth;
+                    framework.y2 = (framework.y2 / height) * windowHeight;
+                } else {
+                    framework.x = (framework.x / width) * windowWidth;
+                    framework.y = (framework.y / height) * windowHeight;
+                    framework.size = (framework.size / min(width, height)) * min(windowWidth, windowHeight);
+                }
+            }
+            
+            // Reposition memory elements
+            for (let memory of memoryElements) {
+                memory.x = (memory.x / width) * windowWidth;
+                memory.y = (memory.y / height) * windowHeight;
+                
+                if (memory.type === 'fragment') {
+                    memory.width = (memory.width / width) * windowWidth;
+                    memory.height = (memory.height / height) * windowHeight;
+                    
+                    for (let vertex of memory.vertices) {
+                        vertex.x = (vertex.x / width) * windowWidth;
+                        vertex.y = (vertex.y / height) * windowHeight;
+                    }
+                } else if (memory.type === 'trace') {
+                    memory.size = (memory.size / min(width, height)) * min(windowWidth, windowHeight);
+                } else if (memory.type === 'blur') {
+                    memory.width = (memory.width / width) * windowWidth;
+                    memory.height = (memory.height / height) * windowHeight;
+                }
+            }
+            
+            // Reposition isolation elements
+            for (let isolation of isolationElements) {
+                isolation.x = (isolation.x / width) * windowWidth;
+                isolation.y = (isolation.y / height) * windowHeight;
+                
+                if (isolation.type === 'circle' || isolation.type === 'echo') {
+                    isolation.radius = (isolation.radius / min(width, height)) * min(windowWidth, windowHeight);
+                    
+                    if (isolation.type === 'echo') {
+                        isolation.spacing = (isolation.spacing / min(width, height)) * min(windowWidth, windowHeight);
+                    }
+                } else if (isolation.type === 'void') {
+                    isolation.size = (isolation.size / min(width, height)) * min(windowWidth, windowHeight);
+                }
+            }
+            
+            // Reposition dotted line elements
+            for (let dot of dottedLineElements) {
+                dot.x = (dot.x / width) * windowWidth;
+                dot.y = (dot.y / height) * windowHeight;
+                dot.size = (dot.size / min(width, height)) * min(windowWidth, windowHeight);
+            }
+            
+            // Reposition paperclip elements
+            for (let clip of paperclipElements) {
+                clip.x = (clip.x / width) * windowWidth;
+                clip.y = (clip.y / height) * windowHeight;
+                clip.width = (clip.width / width) * windowWidth;
+                clip.height = (clip.height / height) * windowHeight;
+            }
+            
+            // Reposition collage elements
+            for (let elem of collageElements) {
+                elem.x = (elem.x / width) * windowWidth;
+                elem.y = (elem.y / height) * windowHeight;
+                elem.width = (elem.width / width) * windowWidth;
+                elem.height = (elem.height / height) * windowHeight;
+            }
+            
+            // Reposition sadness centers
+            for (let center of sadnessCenters) {
+                center.x = (center.x / width) * windowWidth;
+                center.y = (center.y / height) * windowHeight;
+                center.size = (center.size / min(width, height)) * min(windowWidth, windowHeight);
+            }
+        }
+        
+        function mousePressed() {
+            // Initialize audio context for mobile
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            
+            // Only process clicks after landing page has disappeared
+            if (document.getElementById('landing-overlay').style.display === 'none') {
+                
+                // Check for interactions with sadness centers first
+                for (let i = 0; i < sadnessCenters.length; i++) {
+                    let center = sadnessCenters[i];
+                    
+                    if (timePosition > center.startTime) {
+                        let d = dist(mouseX, mouseY, center.x, center.y);
+                        
+                        if (d < center.size / 2) {
+                            // Toggle sadness center activation
+                            center.activated = !center.activated;
+                            
+                            if (center.activated) {
+                                // Set as active sadness center
+                                activeSadnessCenter = i;
+                                centerActivated = true;
+                                
+                                // Show sadness resonance
+                                showSadnessResonance(center.resonance, center.x, center.y);
+                                
+                                // Activate associated elements
+                                for (let element of center.elements) {
+                                    if (element.type === 'framework') {
+                                        frameworkElements[element.index].activated = true;
+                                        frameworkElements[element.index].activatedTime = millis();
+                                        frameworkElements[element.index].weight = frameworkElements[element.index].maxWeight * 0.8;
+                                    } else if (element.type === 'memory') {
+                                        memoryElements[element.index].activated = true;
+                                        memoryElements[element.index].activatedTime = millis();
+                                        memoryElements[element.index].weight = memoryElements[element.index].maxWeight * 0.8;
+                                    } else {
+                                        isolationElements[element.index].activated = true;
+                                        isolationElements[element.index].activatedTime = millis();
+                                        isolationElements[element.index].distance = isolationElements[element.index].maxDistance * 0.8;
+                                    }
+                                }
+                                
+                                // Play slower, deeper sound if enabled
+                                if (soundEnabled && soundLoaded && sadnessSound) {
+                                    sadnessSound.rate(0.8); // Slower for sadness
+                                    setTimeout(() => {
+                                        sadnessSound.rate(1.0); // Return to normal after a few seconds
+                                    }, 5000);
+                                }
+                            } else {
+                                // Deactivate
+                                activeSadnessCenter = null;
+                                centerActivated = false;
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check for interactions with framework elements
+                for (let i = 0; i < frameworkElements.length; i++) {
+                    let framework = frameworkElements[i];
+                    
+                    if (framework.visible && framework.interactive) {
+                        let hitTest = false;
+                        
+                        if (framework.type === 'line') {
+                            // Check if click is near line
+                            let dx = framework.x2 - framework.x1;
+                            let dy = framework.y2 - framework.y1;
+                            let len = sqrt(dx*dx + dy*dy);
+                            
+                            // Calculate dot product to find closest point on line
+                            let t = ((mouseX - framework.x1) * dx + (mouseY - framework.y1) * dy) / (len * len);
+                            t = constrain(t, 0, 1);
+                            
+                            let closestX = framework.x1 + t * dx;
+                            let closestY = framework.y1 + t * dy;
+                            
+                            let distance = dist(mouseX, mouseY, closestX, closestY);
+                            hitTest = (distance < 10);
+                        } else if (framework.type === 'geo') {
+                            // For geometric shapes, use distance to center
+                            let d = dist(mouseX, mouseY, framework.x, framework.y);
+                            hitTest = (d < framework.size);
+                        }
+                        
+                        if (hitTest) {
+                            // Toggle activation
+                            framework.activated = !framework.activated;
+                            framework.activatedTime = millis();
+                            
+                            if (framework.activated) {
+                                // Set weight level
+                                framework.weight = framework.maxWeight * 0.8;
+                                
+                                // Show sadness resonance
+                                let resonanceX, resonanceY;
+                                if (framework.type === 'line') {
+                                    resonanceX = (framework.x1 + framework.x2) / 2;
+                                    resonanceY = (framework.y1 + framework.y2) / 2;
+                                } else {
+                                    resonanceX = framework.x;
+                                    resonanceY = framework.y;
+                                }
+                                showSadnessResonance(getRandomResonance(), resonanceX, resonanceY);
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check for interactions with memory elements
+                for (let i = 0; i < memoryElements.length; i++) {
+                    let memory = memoryElements[i];
+                    
+                    if (memory.visible && memory.interactive) {
+                        let hitTest = false;
+                        
+                        if (memory.type === 'fragment') {
+                            // For fragments, use rectangle test with rotation
+                            let dx = mouseX - memory.x;
+                            let dy = mouseY - memory.y;
+                            
+                            // Rotate point back to get local coordinates
+                            let angle = -memory.rotation;
+                            let rx = dx * cos(angle) - dy * sin(angle);
+                            let ry = dx * sin(angle) + dy * cos(angle);
+                            
+                            hitTest = (abs(rx) < memory.width/2 && abs(ry) < memory.height/2);
+                        } else {
+                            // For traces and blurs, use distance to center
+                            let d = dist(mouseX, mouseY, memory.x, memory.y);
+                            let hitRadius = memory.type === 'trace' ? memory.size * 2 : 
+                                             max(memory.width, memory.height) / 2;
+                            hitTest = (d < hitRadius);
+                        }
+                        
+                        if (hitTest) {
+                            // Toggle activation
+                            memory.activated = !memory.activated;
+                            memory.activatedTime = millis();
+                            
+                            if (memory.activated) {
+                                // Set weight level
+                                memory.weight = memory.maxWeight * 0.8;
+                                
+                                // Show sadness resonance
+                                showSadnessResonance(getRandomResonance(), memory.x, memory.y);
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check for interactions with isolation elements
+                for (let i = 0; i < isolationElements.length; i++) {
+                    let isolation = isolationElements[i];
+                    
+                    if (isolation.visible && isolation.interactive) {
+                        let hitTest = false;
+                        let d = dist(mouseX, mouseY, isolation.x, isolation.y);
+                        
+                        if (isolation.type === 'circle') {
+                            let innerRadius = isolation.radius - isolation.thickness;
+                            let outerRadius = isolation.radius + isolation.thickness;
+                            hitTest = (d > innerRadius && d < outerRadius);
+                        } else if (isolation.type === 'void') {
+                            hitTest = (d < isolation.size/2);
+                        } else if (isolation.type === 'echo') {
+                            let outerRadius = isolation.radius + (isolation.echoes-1) * isolation.spacing;
+                            hitTest = (d < outerRadius);
+                        }
+                        
+                        if (hitTest) {
+                            // Toggle activation
+                            isolation.activated = !isolation.activated;
+                            isolation.activatedTime = millis();
+                            
+                            if (isolation.activated) {
+                                // Set distance level
+                                isolation.distance = isolation.maxDistance * 0.8;
+                                
+                                // Show sadness resonance
+                                showSadnessResonance(getRandomResonance(), isolation.x, isolation.y);
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check for interactions with dotted line elements
+                for (let i = 0; i < dottedLineElements.length; i++) {
+                    let dot = dottedLineElements[i];
+                    
+                    if (dot.visible && dot.interactive) {
+                        let d = dist(mouseX, mouseY, dot.x, dot.y);
+                        
+                        if (d < dot.size * 2) {
+                            // Toggle activation
+                            dot.activated = !dot.activated;
+                            dot.activatedTime = millis();
+                            
+                            if (dot.activated) {
+                                // Set weight level
+                                dot.weight = dot.maxWeight * 0.8;
+                                
+                                // Show sadness resonance
+                                showSadnessResonance(getRandomResonance(), dot.x, dot.y);
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check for interactions with paperclip elements
+                for (let i = 0; i < paperclipElements.length; i++) {
+                    let clip = paperclipElements[i];
+                    
+                    if (clip.visible && clip.interactive) {
+                        // Simplify hit test for paperclips using a rectangle
+                        let dx = mouseX - clip.x;
+                        let dy = mouseY - clip.y;
+                        
+                        // Rotate point back to get local coordinates
+                        let angle = -clip.rotation;
+                        let rx = dx * cos(angle) - dy * sin(angle);
+                        let ry = dx * sin(angle) + dy * cos(angle);
+                        
+                        if (abs(rx) < clip.width/2 && abs(ry) < clip.height) {
+                            // Toggle activation
+                            clip.activated = !clip.activated;
+                            clip.activatedTime = millis();
+                            
+                            if (clip.activated) {
+                                // Set weight level
+                                clip.weight = clip.maxWeight * 0.8;
+                                
+                                // Show sadness resonance
+                                showSadnessResonance(getRandomResonance(), clip.x, clip.y);
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check for interactions with collage elements
+                for (let i = 0; i < collageElements.length; i++) {
+                    let elem = collageElements[i];
+                    
+                    if (elem.visible && elem.interactive) {
+                        // Use rectangle test with rotation
+                        let dx = mouseX - elem.x;
+                        let dy = mouseY - elem.y;
+                        
+                        // Rotate point back to get local coordinates
+                        let angle = -elem.rotation;
+                        let rx = dx * cos(angle) - dy * sin(angle);
+                        let ry = dx * sin(angle) + dy * cos(angle);
+                        
+                        if (abs(rx) < elem.width/2 && abs(ry) < elem.height/2) {
+                            // Toggle activation
+                            elem.activated = !elem.activated;
+                            elem.activatedTime = millis();
+                            
+                            if (elem.activated) {
+                                // Set weight level
+                                elem.weight = elem.maxWeight * 0.8;
+                                
+                                // Show sadness resonance
+                                showSadnessResonance(getRandomResonance(), elem.x, elem.y);
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // If no element was clicked, toggle animation
+                isAnimating = !isAnimating;
+                
+                // Update sound based on animation state
+                if (!isAnimating && soundEnabled && soundLoaded && sadnessSound.isPlaying()) {
+                    sadnessSound.setVolume(0.3, 3); // Slower fade for sadness
+                } else if (isAnimating && soundEnabled && soundLoaded) {
+                    sadnessSound.setVolume(0.6, 3);
+                }
+            }
+            
+            return false;
+        }
+        
+        // Support touch events
+        function touchStarted() {
+            // Initialize audio context for iOS
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            
+            return mousePressed();
+        }
+    </script>
+</body>
+</html>
