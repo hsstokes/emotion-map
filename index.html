@@ -6,10 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-/* =========================
-   Variables
-   ========================= */
-
 :root {
     --paper: #f7f6f3;
     --ink: #2b2b2b;
@@ -17,10 +13,6 @@
     --violet-soft: rgba(92,75,153,0.25);
     --gold: #e6b422;
 }
-
-/* =========================
-   Base
-   ========================= */
 
 *, *::before, *::after {
     box-sizing: border-box;
@@ -31,13 +23,11 @@ body {
     font-family: "Courier New", monospace;
     color: var(--ink);
     background-color: var(--paper);
-
     background-image:
         linear-gradient(var(--violet-soft) 1px, transparent 1px),
         linear-gradient(90deg, var(--violet-soft) 1px, transparent 1px);
     background-size: 40px 40px;
     background-attachment: fixed;
-
     line-height: 1.6;
 }
 
@@ -46,10 +36,6 @@ main {
     margin: 0 auto;
     padding: 40px 16px 100px;
 }
-
-/* =========================
-   Navigation
-   ========================= */
 
 nav {
     position: sticky;
@@ -71,24 +57,18 @@ nav a {
     padding: 6px 14px;
     border: 1px solid var(--violet);
     border-radius: 30px;
-    transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-nav a:hover,
-nav a:focus {
+nav a:hover {
     border-color: var(--gold);
-    outline: none;
 }
 
 nav a.active {
     background-color: var(--violet);
     color: white;
-    border-color: var(--violet);
 }
-
-/* =========================
-   Intro
-   ========================= */
 
 .intro {
     max-width: 900px;
@@ -99,31 +79,13 @@ nav a.active {
     box-shadow: 6px 6px 0 rgba(92,75,153,0.15);
 }
 
-/* =========================
-   Specimen Section (State)
-   ========================= */
-
 section {
     display: none;
 }
 
 section.active {
     display: block;
-    animation: fadeIn 0.3s ease-out;
 }
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-/* =========================
-   Specimen Container Box
-   ========================= */
 
 .specimen {
     max-width: 940px;
@@ -131,14 +93,8 @@ section.active {
     padding: 28px 32px 36px;
     background: rgba(255,255,255,0.97);
     border: 1px solid rgba(92,75,153,0.3);
-    box-shadow: 
-        6px 6px 0 rgba(92,75,153,0.12),
-        inset 0 0 0 1px rgba(255,255,255,0.8);
+    box-shadow: 6px 6px 0 rgba(92,75,153,0.12);
 }
-
-/* =========================
-   Header
-   ========================= */
 
 header {
     display: flex;
@@ -160,7 +116,6 @@ header {
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    flex-shrink: 0;
 }
 
 h2 {
@@ -178,49 +133,28 @@ h2 {
     color: var(--violet);
 }
 
-/* =========================
-   Behaviour (Dominant)
-   ========================= */
-
-.visualisation {
-    max-width: 860px;
-    margin: 0 auto 10px;
+.iframe-container {
     position: relative;
-    background: #fafafa;
-
-    border: 1px solid rgba(92,75,153,0.6);
-    box-shadow:
-        inset 0 0 0 1px rgba(92,75,153,0.2),
-        4px 4px 0 rgba(92,75,153,0.35);
-
-    overflow: hidden;
+    width: 100%;
+    padding-bottom: 75%;
+    height: 0;
+    border: 1px solid var(--violet);
+    box-shadow: 4px 4px 0 rgba(92,75,153,0.35);
+    margin-bottom: 10px;
 }
 
-/* Aspect ratio fallback */
-.visualisation::before {
-    content: "";
-    display: block;
-    padding-top: 60%; /* 5:3 ratio */
-}
-
-.visualisation iframe {
+.iframe-container iframe {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     border: none;
-    display: block;
 }
-
-/* =========================
-   Caption
-   ========================= */
 
 .caption {
     text-align: center;
     font-size: 0.8rem;
-    color: var(--ink);
     margin: 12px 0 28px;
     border-bottom: 1px solid rgba(230,180,34,0.3);
     padding-bottom: 10px;
@@ -230,44 +164,26 @@ h2 {
     color: var(--violet);
 }
 
-/* =========================
-   Collage
-   ========================= */
-
 .collage {
-    max-width: 860px;
-    margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 14px;
     font-size: 0.8rem;
-    color: var(--ink);
 }
 
 .collage img {
-    width: 30vw;
     max-width: 320px;
-    min-width: 180px;
     height: auto;
     border: 1px solid var(--violet);
     box-shadow: 2px 2px 0 rgba(230,180,34,0.25);
 }
 
-/* =========================
-   Notes
-   ========================= */
-
 .notes {
-    max-width: 860px;
-    margin: 28px auto 0;
+    margin: 28px 0 0;
     padding: 18px 20px;
     background: rgba(230,180,34,0.08);
-
     border-left: 4px solid var(--gold);
-    border-top: 1px solid rgba(230,180,34,0.3);
-    border-bottom: 1px solid rgba(230,180,34,0.3);
-
     font-size: 0.95rem;
 }
 
@@ -275,40 +191,14 @@ h2 {
     color: var(--violet);
 }
 
-/* =========================
-   HyperPixel Adjustments
-   ========================= */
-
 @media (max-width: 800px) {
-    main {
-        padding: 30px 12px 60px;
-    }
-
-    .intro {
-        margin-bottom: 50px;
-        padding: 18px 20px;
-    }
-
-    .specimen {
-        padding: 20px 18px 28px;
-    }
-
-    h2 {
-        font-size: 1.3rem;
-    }
-
     .tag {
         margin-left: 0;
         margin-top: 4px;
         width: 100%;
         text-align: center;
     }
-
-    .collage {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
+    
     .collage img {
         width: 100%;
         max-width: 100%;
@@ -320,8 +210,8 @@ h2 {
 <body>
 
 <nav>
-    <a href="#joy" data-target="joy" class="active" aria-current="true">Joy</a>
-    <a href="#sadness" data-target="sadness">Sadness</a>
+    <a data-target="joy" class="active">Joy</a>
+    <a data-target="sadness">Sadness</a>
 </nav>
 
 <main>
@@ -331,22 +221,21 @@ h2 {
     set of visual and structural constraints. Each section documents the behaviour
     of a live system displayed on a physical, landscape‑oriented HyperPixel unit.
 </div>
-
-<!-- =========================
-     JOY
-     ========================= -->
+   
+/* -------------------------------------------
+   JOY
+   ----------------------------------------*/
 
 <section id="joy" class="active">
     <div class="specimen">
-
         <header>
             <div class="marker">+</div>
             <h2>Joy</h2>
             <div class="tag">Basic emotion (Evans)</div>
         </header>
 
-        <div class="visualisation">
-            <iframe src="joy-overlay.html" sandbox="allow-scripts allow-same-origin" title="Joy visualization"></iframe>
+        <div class="iframe-container">
+            <iframe src="joy-overlay.html" frameborder="0"></iframe>
         </div>
 
         <div class="caption">
@@ -355,7 +244,7 @@ h2 {
         </div>
 
         <div class="collage">
-            <img src="joy-sketchbook.jpg" alt="Joy collage showing warm, expansive imagery">
+            <img src="joy-sketchbook.jpg" alt="Joy collage">
             <span>Source collage</span>
         </div>
 
@@ -363,25 +252,23 @@ h2 {
             The visualization represents joy through radiating patterns that expand outward—capturing how joy tends to broaden perceptual and cognitive awareness rather than narrowing focus.
             <br><b>Analysis by Claude</b>
         </div>
-
     </div>
 </section>
 
-<!-- =========================
-     SADNESS
-     ========================= -->
+/* -------------------------------------------
+   SADNESS
+   ----------------------------------------*/
 
 <section id="sadness">
     <div class="specimen">
-
         <header>
             <div class="marker">+</div>
             <h2>Sadness</h2>
             <div class="tag">Basic emotion (Evans)</div>
         </header>
 
-        <div class="visualisation">
-            <iframe src="sadness-overlay.html" sandbox="allow-scripts allow-same-origin" title="Sadness visualization"></iframe>
+        <div class="iframe-container">
+            <iframe src="sadness-overlay.html" frameborder="0"></iframe>
         </div>
 
         <div class="caption">
@@ -390,7 +277,7 @@ h2 {
         </div>
 
         <div class="collage">
-            <img src="sadness-sketchbook.jpg" alt="Sadness collage showing subdued, heavy imagery">
+            <img src="sadness-sketchbook.jpg" alt="Sadness collage">
             <span>Source collage</span>
         </div>
 
@@ -398,54 +285,25 @@ h2 {
             The visualization represents sadness through downward‑drifting elements, reflecting heaviness, withdrawal, and reduced energy.
             <br><b>Analysis by Claude</b>
         </div>
-
     </div>
 </section>
 
 </main>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+const links = document.querySelectorAll('nav a');
+const sections = document.querySelectorAll('section');
 
-    const links = document.querySelectorAll('nav a');
-    const sections = document.querySelectorAll('section');
-
-    function showSection(id) {
-        sections.forEach(section => {
-            section.classList.remove('active');
-            if (section.id === id) {
-                section.classList.add('active');
-            }
-        });
-
-        links.forEach(link => {
-            link.classList.remove('active');
-            link.removeAttribute('aria-current');
-            if (link.dataset.target === id) {
-                link.classList.add('active');
-                link.setAttribute('aria-current', 'true');
-            }
-        });
-
-        history.replaceState(null, null, '#' + id);
-    }
-
-    links.forEach(link => {
-        link.addEventListener('click', e => {
-            e.preventDefault();
-            showSection(link.dataset.target);
-        });
+links.forEach(link => {
+    link.addEventListener('click', function() {
+        const target = this.dataset.target;
+        
+        sections.forEach(s => s.classList.remove('active'));
+        document.getElementById(target).classList.add('active');
+        
+        links.forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
     });
-
-    // Handle direct URL hash on load
-    if (window.location.hash) {
-        const targetId = window.location.hash.substring(1);
-        const targetSection = document.getElementById(targetId);
-        if (targetSection) {
-            showSection(targetId);
-        }
-    }
-
 });
 </script>
 
