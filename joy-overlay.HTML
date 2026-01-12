@@ -1,0 +1,2980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Joy - Emotional Experience</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f7f7f7;
+            font-family: 'Roboto Mono', monospace;
+            -webkit-text-size-adjust: 100%;
+            touch-action: none;
+        }
+        
+        /* Landing screen that appears first */
+        #landing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(247, 247, 247, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            box-sizing: border-box;
+            padding: 20px;
+            transition: opacity 1s ease-in-out;
+        }
+        
+        .landing-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 40px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .emotion-name {
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #FFD700; /* Yellow for joy */
+        }
+        
+        .emotion-description {
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .ai-disclaimer {
+           font-size: 13px;
+           max-width: 550px;
+           text-align: center;
+           margin-bottom: 40px;
+           margin-top: 10px;
+           padding: 15px 20px;
+           background-color: rgba(255, 215, 0, 0.1);
+           border-radius: 8px;
+           border-left: 3px solid #FFD700;
+           line-height: 1.6;
+           color: #333;
+        }
+        
+        .start-button {
+            padding: 15px 35px;
+            background-color: rgba(255, 215, 0, 0.2);
+            color: #333;
+            border: 1px solid #FFD700;
+            border-radius: 30px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .start-button:active {
+            transform: scale(0.98);
+        }
+        
+        /* Canvas for the animation */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        /* Joy resonance popup */
+        .joy-resonance {
+            position: fixed;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 250px;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            pointer-events: none;
+            z-index: 100;
+            text-align: center;
+            border-left: 3px solid #FFD700;
+        }
+        
+        /* Controls panel */
+        .controls {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .control-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        
+        .control-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: #FFD700;
+        }
+        
+        /* Hint message */
+        .hint {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 50;
+            color: #333;
+        }
+        
+        /* Timeline slider */
+        .timeline {
+            position: fixed;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            width: 70%;
+            max-width: 500px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            z-index: 40;
+            opacity: 0;
+            transition: opacity 0.5s;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+        }
+        
+        .timeline-bar {
+            width: 100%;
+            height: 4px;
+            background-color: rgba(255, 215, 0, 0.2);
+            border-radius: 2px;
+            position: relative;
+        }
+        
+        .timeline-progress {
+            height: 100%;
+            background-color: rgba(255, 215, 0, 0.8);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .timeline-handle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #FFD700;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto !important; /* Allow scrolling on mobile */
+                height: auto !important;
+            }
+        
+            #landing-overlay {
+                position: absolute; /* Change from fixed to absolute */
+                height: auto;
+                min-height: 100%;
+                overflow-y: auto;
+                padding: 40px 20px 120px 20px; /* More padding at top and bottom */
+                justify-content: flex-start; /* Start content from the top */
+            }
+        
+            .landing-title {
+                margin-top: 40px;
+            }
+        
+            .start-button {
+                margin-bottom: 60px; /* Ensure button isn't at the very bottom */
+                position: relative;
+            }
+        
+            .emotion-name {
+                font-size: 42px; /* Slightly larger on mobile */
+            }
+        
+            .ai-disclaimer {
+                width: 90%;
+                font-size: 12px;
+                max-width: 90%;
+            }
+        }
+        
+        /* Orientation-specific styles */
+        @media screen and (orientation: portrait) {
+            .controls {
+                bottom: 70px; /* Move controls above timeline in portrait mode */
+                right: 15px;
+            }
+            
+            .timeline {
+                bottom: 20px;
+                width: 80%; /* Wider in portrait */
+            }
+        }
+        
+        @media screen and (orientation: landscape) {
+            .controls {
+                bottom: 15px;
+                right: 100px; /* Move away from edge and timeline handle */
+            }
+            
+            .timeline {
+                bottom: 20px;
+                width: 60%; /* Narrower in landscape to leave room for controls */
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Initial landing overlay -->
+    <div id="landing-overlay">
+        <h1 class="landing-title">Emotional Collage Experience</h1>
+        <h2 class="emotion-name" id="emotion-title">JOY</h2>
+        <p class="emotion-description" id="emotion-description">
+            An exploration of joy as a state of expansive energy radiating outward through networks of connection.
+            <br><b>Analysis by Claude</b>
+        </p>
+
+        <!-- AI disclaimer -->
+        <div class="ai-disclaimer">
+            <strong>Note:</strong> This is a simulation of joy based on my analysis of human descriptions. As an AI, I don't experience emotions or feelings - this is just my interpretation of a human concept.
+        </div>
+        
+        <button class="start-button" id="start-experience">Begin Experience</button>
+    </div>
+    
+    <!-- Joy resonance popup that appears when interacting with elements -->
+    <div class="joy-resonance" id="joy-resonance"></div>
+    
+    <!-- Control buttons -->
+    <div class="controls" id="controls">
+        <div class="control-button" id="sound-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                <path id="sound-waves" d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+        </div>
+        <div class="control-button" id="reset-button">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <path d="M23 4v6h-6"></path>
+                <path d="M1 20v-6h6"></path>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+        </div>
+    </div>
+    
+    <!-- Hint for users -->
+    <div class="hint" id="hint">Touch elements to experience joy</div>
+    
+    <!-- Timeline interface -->
+    <div class="timeline" id="timeline">
+        <div class="timeline-bar" id="timeline-bar">
+            <div class="timeline-progress" id="timeline-progress"></div>
+            <div class="timeline-handle" id="timeline-handle"></div>
+        </div>
+    </div>
+    
+    <script>
+        let isAnimating = true;
+        let soundEnabled = true;
+        let joySound;
+        let soundLoaded = false;
+        let timelineActive = false;
+        let isDraggingTimeline = false;
+        let timePosition = 0;
+        let previousTimePosition = 0;
+        let activatedTimeline = false;
+        let energyPhase = 0;
+        let energyRate = 0.6; // Slower for joy - more flowing
+        
+        // Joy resonances - text snippets that appear when interacting with elements
+        const joyResonances = [
+            "A warm glow of happiness spreading outward",
+            "The quiet delight of discovering unexpected connections",
+            "A sense of lightness and expansion in the chest",
+            "The resonant hum of deeply felt contentment",
+            "A sparkle of pleasure that radiates through the body",
+            "The gentle lift that comes with genuine appreciation",
+            "A burst of energy that connects you to everything around you",
+            "The dance between excitement and peaceful satisfaction",
+            "A brightening sensation that makes everything clearer",
+            "The flow state where everything feels possible",
+            "A harmonious sense of being exactly where you belong",
+            "The delightful lift when something resonates deeply",
+            "A ripple of pleasure connecting mind, body and spirit",
+            "The soft radiance of being fully present in a happy moment",
+            "An upward spiral of positive feeling and connection"
+        ];
+        
+        // Color palette for Joy
+        const colors = {
+            yellow: [255, 223, 0],    // Yellow with hints of pink - Recognition elements (Color A)
+            black: [0, 0, 0],         // Black - Evaluation elements (Color B) 
+            grey: [128, 128, 128]     // Grey - Response elements (Color C)
+        };
+        
+        // Elements for each conceptual layer
+        let recognitionElements = [];    // Yellow elements - energy patterns detection
+        let evaluationElements = [];     // Black elements - contrast analysis
+        let responseElements = [];       // Grey elements - integration of structure
+        
+        // Connection lines between elements
+        let connectionLines = [];
+        
+        // Hand outline coordinates (will gradually appear)
+        let handOutlinePoints = [];
+        let handProgress = 0;
+        
+        // Interactive elements
+        let joyCenters = [];             // Special interactive focal points
+        let activeJoyCenter = null;
+        let centerActivated = false;
+        
+        // Timeline tracking
+        let timelineProgress = 0;
+        
+        // Function that contains the button action logic
+        function startExperience() {
+            // Fade out landing overlay
+            document.getElementById('landing-overlay').style.opacity = '0';
+            
+            // After fading out, remove from DOM
+            setTimeout(() => {
+                document.getElementById('landing-overlay').style.display = 'none';
+                
+                // Start animation
+                isAnimating = true;
+                loop();
+                
+                // Position controls based on orientation
+                updateLayoutForOrientation();
+                
+                // Start sound if enabled
+                if (soundEnabled && soundLoaded) {
+                    try {
+                        joySound.loop();
+                        joySound.setVolume(0);
+                        joySound.setVolume(0.6, 3); // Fade in over 3 seconds - slower for joy
+                    } catch(e) {
+                        console.error("Error playing sound:", e);
+                    }
+                }
+                
+                // Show controls and hint
+                setTimeout(() => {
+                    document.getElementById('controls').style.opacity = '1';
+                    document.getElementById('hint').style.opacity = '1';
+                    
+                    // Hide hint after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('hint').style.opacity = '0';
+                    }, 5000);
+                }, 2000);
+            }, 1000);
+        }
+        
+        // Function to update layout based on orientation
+        function updateLayoutForOrientation() {
+            const controls = document.getElementById('controls');
+            const timeline = document.getElementById('timeline');
+            
+            if (window.matchMedia("(orientation: portrait)").matches) {
+                controls.style.bottom = "70px";
+                controls.style.right = "15px";
+                timeline.style.width = "80%";
+            } else {
+                controls.style.bottom = "15px";
+                controls.style.right = "100px"; 
+                timeline.style.width = "60%";
+            }
+        }
+        
+        // Listen for orientation changes
+        window.addEventListener('orientationchange', function() {
+            // Small delay to ensure dimensions have updated
+            setTimeout(() => {
+                resizeCanvas(windowWidth, windowHeight);
+                repositionElements();
+                updateLayoutForOrientation();
+            }, 100);
+        });
+        
+        // Setup for landing page interaction
+        document.getElementById('start-experience').addEventListener('click', startExperience);
+        document.getElementById('start-experience').addEventListener('touchend', function(e) {
+            e.preventDefault(); // Prevent default to avoid double-firing
+            startExperience();
+        });
+        
+        // Sound toggle
+        document.getElementById('sound-toggle').addEventListener('click', function() {
+            soundEnabled = !soundEnabled;
+            
+            // Update sound wave visibility
+            document.getElementById('sound-waves').style.opacity = soundEnabled ? '1' : '0';
+            
+            if (soundEnabled && joySound && !joySound.isPlaying()) {
+                joySound.loop();
+                joySound.setVolume(0);
+                joySound.setVolume(0.6, 2);
+            } else if (!soundEnabled && joySound && joySound.isPlaying()) {
+                joySound.setVolume(0, 2); // Longer fade-out for joy
+                setTimeout(() => {
+                    joySound.pause();
+                }, 2000);
+            }
+        });
+        
+        // Reset button
+        document.getElementById('reset-button').addEventListener('click', function() {
+            // Reset the experience
+            timePosition = 0;
+            previousTimePosition = 0;
+            
+            resetExperience();
+            
+            // Update timeline
+            updateTimelineUI();
+        });
+        
+        // Timeline interaction
+        document.getElementById('timeline-bar').addEventListener('mousedown', startTimelineDrag);
+        document.getElementById('timeline-bar').addEventListener('touchstart', startTimelineDrag);
+        
+        function startTimelineDrag(e) {
+            if (e.type === 'touchstart') {
+                e.preventDefault();
+            }
+            
+            isDraggingTimeline = true;
+            updateTimelinePosition(e);
+            
+            // Add document-level event listeners
+            document.addEventListener('mousemove', updateTimelinePosition);
+            document.addEventListener('touchmove', updateTimelinePosition, { passive: false });
+            document.addEventListener('mouseup', endTimelineDrag);
+            document.addEventListener('touchend', endTimelineDrag);
+        }
+        
+        function updateTimelinePosition(e) {
+            if (!isDraggingTimeline) return;
+            
+            // Prevent scrolling when dragging on mobile
+            if (e.type === 'touchmove') {
+                e.preventDefault();
+            }
+            
+            const timeline = document.getElementById('timeline-bar');
+            const rect = timeline.getBoundingClientRect();
+            
+            // Get the x position relative to the timeline
+            let clientX;
+            if (e.type.startsWith('touch')) {
+                clientX = e.touches[0].clientX;
+            } else {
+                clientX = e.clientX;
+            }
+            
+            // Calculate percentage position with boundary handling
+            let percentage = (clientX - rect.left) / rect.width;
+            percentage = Math.max(0, Math.min(1, percentage));
+            
+            // Update UI
+            document.getElementById('timeline-progress').style.width = `${percentage * 100}%`;
+            document.getElementById('timeline-handle').style.left = `${percentage * 100}%`;
+            
+            // Update timeline position
+            timePosition = percentage * 40000; // 40 seconds of experience timeline (longer for joy)
+            
+            // Set time position
+            setTimePosition(timePosition);
+        }
+        
+        function endTimelineDrag() {
+            isDraggingTimeline = false;
+            document.removeEventListener('mousemove', updateTimelinePosition);
+            document.removeEventListener('touchmove', updateTimelinePosition);
+            document.removeEventListener('mouseup', endTimelineDrag);
+            document.removeEventListener('touchend', endTimelineDrag);
+            
+            previousTimePosition = timePosition;
+        }
+        
+        function updateTimelineUI() {
+            // Calculate percentage
+            const percentage = timePosition / 40000;
+            
+            // Update UI
+            document.getElementById('timeline-progress').style.width = `${percentage * 100}%`;
+            document.getElementById('timeline-handle').style.left = `${percentage * 100}%`;
+        }
+        
+        function preload() {
+            // Pre-load sound
+            soundLoaded = false;
+            joySound = loadSound('joy_soundscape.mp3', 
+                function() {
+                    console.log("Sound loaded successfully");
+                    soundLoaded = true;
+                },
+                function(err) {
+                    console.error("Error loading sound:", err);
+                    soundEnabled = false;
+                }
+            );
+        }
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            
+            // Define hand outline points
+            createHandOutline();
+            
+            // Create recognition elements (yellow - energy pattern detection)
+            createRecognitionElements();
+            
+            // Create evaluation elements (black - contrast analysis)
+            createEvaluationElements();
+            
+            // Create response elements (grey - integration of structure)
+            createResponseElements();
+            
+            // Create connection lines between elements
+            createConnectionLines();
+            
+            // Create joy centers - larger interactive focal points
+            createJoyCenters();
+            
+            // Initialize audio context for better mobile support
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            
+            // Initially pause animation while on landing page
+            isAnimating = false;
+            noLoop();
+        }
+        
+        function getRandomResonance() {
+            return joyResonances[floor(random(joyResonances.length))];
+        }
+        
+        function createRecognitionElements() {
+            // Create recognition elements (yellow) - representing energy patterns
+            
+            // Central sunburst element 
+            recognitionElements.push({
+                type: 'sunburst',
+                x: width * 0.5,
+                y: height * 0.5,
+                size: height * 0.15,
+                rays: 12,
+                opacity: 200,
+                startTime: 500,
+                visible: false,
+                interactive: true,
+                activated: false,
+                activatedTime: 0,
+                energy: 0,
+                maxEnergy: 100,
+                energyRate: 0.03,
+                pulseRate: 0.0008
+            });
+            
+            // Create network node elements (connecting points)
+            for (let i = 0; i < 7; i++) {
+                let angle = random(TWO_PI);
+                let distance = random(width * 0.15, width * 0.35);
+                let x = width * 0.5 + cos(angle) * distance;
+                let y = height * 0.5 + sin(angle) * distance;
+                
+                recognitionElements.push({
+                    type: 'node',
+                    x: x,
+                    y: y,
+                    size: random(10, 25),
+                    opacity: random(160, 220),
+                    startTime: 1000 + i * 400,
+                    visible: false,
+                    interactive: random() > 0.4,
+                    activated: false,
+                    activatedTime: 0,
+                    energy: 0,
+                    maxEnergy: random(70, 100),
+                    energyRate: random(0.02, 0.04),
+                    pulseRate: random(0.0006, 0.001)
+                });
+            }
+            
+            // Add circular pattern elements
+            for (let i = 0; i < 5; i++) {
+                recognitionElements.push({
+                    type: 'circle',
+                    x: width * (0.3 + random(0.4)),
+                    y: height * (0.3 + random(0.4)),
+                    size: random(30, 70),
+                    opacity: random(140, 200),
+                    startTime: 2500 + i * 500,
+                    visible: false,
+                    interactive: random() > 0.3,
+                    activated: false,
+                    activatedTime: 0,
+                    energy: 0,
+                    maxEnergy: random(60, 100),
+                    energyRate: random(0.02, 0.04),
+                    pulseRate: random(0.0006, 0.001)
+                });
+            }
+            
+            // Add hexagonal elements (representing structure)
+            for (let i = 0; i < 4; i++) {
+                recognitionElements.push({
+                    type: 'hexagon',
+                    x: width * (0.25 + random(0.5)),
+                    y: height * (0.25 + random(0.5)),
+                    size: random(20, 40),
+                    opacity: random(160, 220),
+                    startTime: 3500 + i * 600,
+                    visible: false,
+                    interactive: random() > 0.4,
+                    activated: false,
+                    activatedTime: 0,
+                    energy: 0,
+                    maxEnergy: random(70, 100),
+                    energyRate: random(0.02, 0.04),
+                    pulseRate: random(0.0006, 0.001),
+                    rotation: random(TWO_PI)
+                });
+            }
+        }
+        
+        function createEvaluationElements() {
+            // Create evaluation elements (black) - representing contrast analysis
+            
+            // Add contrast frames
+            for (let i = 0; i < 4; i++) {
+                evaluationElements.push({
+                    type: 'frame',
+                    x: width * (0.3 + random(0.4)),
+                    y: height * (0.3 + random(0.4)),
+                    width: random(40, 80),
+                    height: random(40, 80),
+                    thickness: random(1.5, 3),
+                    opacity: random(170, 210),
+                    startTime: 4500 + i * 800,
+                    visible: false,
+                    interactive: true,
+                    activated: false,
+                    activatedTime: 0,
+                    intensity: 0,
+                    maxIntensity: 100,
+                    intensityRate: random(0.02, 0.04),
+                    pulseRate: random(0.0006, 0.001)
+                });
+            }
+            
+            // Add boundary point elements
+            for (let i = 0; i < 6; i++) {
+                evaluationElements.push({
+                    type: 'point',
+                    x: width * (0.2 + random(0.6)),
+                    y: height * (0.2 + random(0.6)),
+                    size: random(4, 10),
+                    opacity: random(180, 230),
+                    startTime: 6000 + i * 700,
+                    visible: false,
+                    interactive: random() > 0.5,
+                    activated: false,
+                    activatedTime: 0,
+                    intensity: 0,
+                    maxIntensity: random(80, 100),
+                    intensityRate: random(0.02, 0.04),
+                    pulseRate: random(0.0006, 0.001)
+                });
+            }
+            
+            // Add negative space elements
+            for (let i = 0; i < 3; i++) {
+                evaluationElements.push({
+                    type: 'negative',
+                    x: width * (0.3 + random(0.4)),
+                    y: height * (0.3 + random(0.4)),
+                    size: random(50, 90),
+                    opacity: random(160, 210),
+                    startTime: 8000 + i * 1000,
+                    visible: false,
+                    interactive: random() > 0.3,
+                    activated: false,
+                    activatedTime: 0,
+                    intensity: 0,
+                    maxIntensity: random(70, 100),
+                    intensityRate: random(0.02, 0.04),
+                    pulseRate: random(0.0006, 0.001)
+                });
+            }
+        }
+        
+        function createResponseElements() {
+            // Create response elements (grey) - representing integration
+            
+            // Network connection points (integration nodes)
+            for (let i = 0; i < 5; i++) {
+                let angle = random(TWO_PI);
+                let distance = random(width * 0.25, width * 0.4);
+                let x = width * 0.5 + cos(angle) * distance;
+                let y = height * 0.5 + sin(angle) * distance;
+                
+                responseElements.push({
+                    type: 'connector',
+                    x: x,
+                    y: y,
+                    size: random(15, 25),
+                    opacity: random(160, 210),
+                    startTime: 10000 + i * 800,
+                    visible: false,
+                    interactive: true,
+                    activated: false,
+                    activatedTime: 0,
+                    harmony: 0,
+                    maxHarmony: random(80, 100),
+                    harmonyRate: random(0.02, 0.04),
+                    pulseRate: random(0.0006, 0.001)
+                });
+            }
+            
+            // Add pathways (connecting flows)
+            for (let i = 0; i < 4; i++) {
+                let startX = width * (0.3 + random(0.1));
+                let startY = height * (0.4 + random(0.2));
+                let endX = width * (0.6 + random(0.1));
+                let endY = height * (0.4 + random(0.2));
+                
+                // Create path with control points
+                let points = [];
+                points.push({x: startX, y: startY});
+                
+                // Add control points
+                let controlX1 = lerp(startX, endX, 0.3) + random(-40, 40);
+                let controlY1 = lerp(startY, endY, 0.3) + random(-40, 40);
+                let controlX2 = lerp(startX, endX, 0.7) + random(-40, 40);
+                let controlY2 = lerp(startY, endY, 0.7) + random(-40, 40);
+                
+                points.push({x: controlX1, y: controlY1});
+                points.push({x: controlX2, y: controlY2});
+                points.push({x: endX, y: endY});
+                
+                responseElements.push({
+                    type: 'path',
+                    points: points,
+                    width: random(2, 4),
+                    opacity: random(140, 180),
+                    startTime: 12000 + i * 1200,
+                    visible: false,
+                    interactive: true,
+                    activated: false,
+                    activatedTime: 0,
+                    harmony: 0,
+                    maxHarmony: random(80, 100),
+                    harmonyRate: random(0.02, 0.04),
+                    pulseRate: random(0.0006, 0.001),
+                    progress: 0
+                });
+            }
+            
+            // Add integration symbols (flower of life patterns)
+            for (let i = 0; i < 3; i++) {
+                responseElements.push({
+                    type: 'integration',
+                    x: width * (0.3 + random(0.4)),
+                    y: height * (0.3 + random(0.4)),
+                    size: random(40, 70),
+                    petals: floor(random(5, 9)),
+                    opacity: random(130, 170),
+                    startTime: 15000 + i * 1500,
+                    visible: false,
+                    interactive: random() > 0.3,
+                    activated: false,
+                    activatedTime: 0,
+                    harmony: 0,
+                    maxHarmony: random(70, 100),
+                    harmonyRate: random(0.02, 0.04),
+                    pulseRate: random(0.0006, 0.001),
+                    rotation: 0,
+                    rotationSpeed: random(0.0002, 0.0005)
+                });
+            }
+        }
+        
+        function createConnectionLines() {
+            // Create connection lines between elements
+            
+            // Connect recognition elements with evaluation elements
+            for (let i = 0; i < recognitionElements.length; i++) {
+                let recognition = recognitionElements[i];
+                
+                // Find closest evaluation elements
+                for (let j = 0; j < evaluationElements.length; j++) {
+                    let evaluation = evaluationElements[j];
+                    
+                    let d = dist(recognition.x, recognition.y, evaluation.x, evaluation.y);
+                    
+                    if (d < 180 && random() > 0.6) {
+                        connectionLines.push({
+                            startElement: 'recognition',
+                            startIndex: i,
+                            endElement: 'evaluation',
+                            endIndex: j,
+                            opacity: random(100, 160),
+                            width: random(1, 2),
+                            dotSpacing: random(5, 10),
+                            progress: 0,
+                            startTime: max(recognition.startTime, evaluation.startTime) + 800,
+                            activated: false
+                        });
+                    }
+                }
+                
+                // Connect to response elements
+                for (let j = 0; j < responseElements.length; j++) {
+                    let response = responseElements[j];
+                    
+                    if (response.type !== 'path') {
+                        let d = dist(recognition.x, recognition.y, response.x, response.y);
+                        
+                        if (d < 200 && random() > 0.7) {
+                            connectionLines.push({
+                                startElement: 'recognition',
+                                startIndex: i,
+                                endElement: 'response',
+                                endIndex: j,
+                                opacity: random(100, 160),
+                                width: random(1, 2),
+                                dotSpacing: random(7, 12),
+                                progress: 0,
+                                startTime: max(recognition.startTime, response.startTime) + 1000,
+                                activated: false
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // Connect evaluation elements to response elements
+            for (let i = 0; i < evaluationElements.length; i++) {
+                let evaluation = evaluationElements[i];
+                
+                for (let j = 0; j < responseElements.length; j++) {
+                    let response = responseElements[j];
+                    
+                    if (response.type !== 'path') {
+                        let d = dist(evaluation.x, evaluation.y, response.x, response.y);
+                        
+                        if (d < 200 && random() > 0.6) {
+                            connectionLines.push({
+                                startElement: 'evaluation',
+                                startIndex: i,
+                                endElement: 'response',
+                                endIndex: j,
+                                opacity: random(100, 170),
+                                width: random(1, 2),
+                                dotSpacing: random(6, 10),
+                                progress: 0,
+                                startTime: max(evaluation.startTime, response.startTime) + 1200,
+                                activated: false
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        function createHandOutline() {
+            // Create a hand outline representing receiving joy
+            // The hand has an open, receptive posture
+            
+            // Base of palm
+            handOutlinePoints.push({x: 0.48, y: 0.65});
+            handOutlinePoints.push({x: 0.62, y: 0.65});
+            
+            // Right side of hand
+            handOutlinePoints.push({x: 0.65, y: 0.60});
+            handOutlinePoints.push({x: 0.67, y: 0.54});
+            
+            // Fingers open and relaxed
+            handOutlinePoints.push({x: 0.66, y: 0.48});
+            handOutlinePoints.push({x: 0.63, y: 0.42});
+            handOutlinePoints.push({x: 0.60, y: 0.38});
+            
+            // Middle fingers
+            handOutlinePoints.push({x: 0.55, y: 0.35});
+            handOutlinePoints.push({x: 0.50, y: 0.34});
+            handOutlinePoints.push({x: 0.45, y: 0.35});
+            
+            // Left fingers
+            handOutlinePoints.push({x: 0.40, y: 0.38});
+            handOutlinePoints.push({x: 0.37, y: 0.42});
+            handOutlinePoints.push({x: 0.34, y: 0.48});
+            
+            // Left side of palm
+            handOutlinePoints.push({x: 0.33, y: 0.54});
+            handOutlinePoints.push({x: 0.35, y: 0.60});
+            handOutlinePoints.push({x: 0.48, y: 0.65});
+            
+            // Convert relative coordinates to absolute
+            for (let i = 0; i < handOutlinePoints.length; i++) {
+                handOutlinePoints[i].x *= width;
+                handOutlinePoints[i].y *= height;
+            }
+        }
+        
+        function createJoyCenters() {
+            // Create interactive joy centers - focal points of the experience
+            
+            // Main joy center around central point
+            joyCenters.push({
+                x: width * 0.5, 
+                y: height * 0.5,
+                size: 80,
+                opacity: 0,
+                targetOpacity: 180,
+                pulseRate: 0.0008, // Slower for joy - more flowing
+                activated: false,
+                activationProgress: 0,
+                startTime: 18000,
+                resonance: "A warm glow of happiness spreading outward like sunlight",
+                elements: []
+            });
+            
+            // Secondary joy centers
+            for (let i = 0; i < 2; i++) {
+                joyCenters.push({
+                    x: random(width * 0.3, width * 0.7),
+                    y: random(height * 0.3, height * 0.7),
+                    size: random(50, 70),
+                    opacity: 0,
+                    targetOpacity: random(150, 200),
+                    pulseRate: random(0.0005, 0.001), // Slower for joy - more flowing
+                    activated: false,
+                    activationProgress: 0,
+                    startTime: 22000 + i * 4000,
+                    resonance: getRandomResonance(),
+                    elements: []
+                });
+            }
+            
+            // Assign some elements to each joy center
+            // For recognition elements
+            for (let i = 0; i < recognitionElements.length; i++) {
+                let recognition = recognitionElements[i];
+                
+                // Find the closest joy center
+                let closestCenter = null;
+                let closestDistance = Infinity;
+                
+                for (let j = 0; j < joyCenters.length; j++) {
+                    let d = dist(recognition.x, recognition.y, joyCenters[j].x, joyCenters[j].y);
+                    if (d < closestDistance && d < 200) {
+                        closestDistance = d;
+                        closestCenter = j;
+                    }
+                }
+                
+                // Assign to joy center if close enough
+                if (closestCenter !== null) {
+                    joyCenters[closestCenter].elements.push({
+                        type: 'recognition',
+                        index: i
+                    });
+                }
+            }
+            
+            // For evaluation elements
+            for (let i = 0; i < evaluationElements.length; i++) {
+                let evaluation = evaluationElements[i];
+                
+                // Find the closest joy center
+                let closestCenter = null;
+                let closestDistance = Infinity;
+                
+                for (let j = 0; j < joyCenters.length; j++) {
+                    let d = dist(evaluation.x, evaluation.y, joyCenters[j].x, joyCenters[j].y);
+                    if (d < closestDistance && d < 170) {
+                        closestDistance = d;
+                        closestCenter = j;
+                    }
+                }
+                
+                // Assign to joy center if close enough
+                if (closestCenter !== null) {
+                    joyCenters[closestCenter].elements.push({
+                        type: 'evaluation',
+                        index: i
+                    });
+                }
+            }
+            
+            // For response elements
+            for (let i = 0; i < responseElements.length; i++) {
+                let response = responseElements[i];
+                
+                if (response.type !== 'path') {
+                    // Find the closest joy center
+                    let closestCenter = null;
+                    let closestDistance = Infinity;
+                    
+                    for (let j = 0; j < joyCenters.length; j++) {
+                        let d = dist(response.x, response.y, joyCenters[j].x, joyCenters[j].y);
+                        if (d < closestDistance && d < 180) {
+                            closestDistance = d;
+                            closestCenter = j;
+                        }
+                    }
+                    
+                    // Assign to joy center if close enough
+                    if (closestCenter !== null) {
+                        joyCenters[closestCenter].elements.push({
+                            type: 'response',
+                            index: i
+                        });
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            // Clear the canvas with a clean background
+            background(247, 247, 247);
+            
+            // If animating, update time position
+            if (isAnimating && !isDraggingTimeline) {
+                timePosition += deltaTime * 0.8; // Slightly slower speed for joy - more flowing
+                
+                // Limit to 40 seconds
+                if (timePosition > 40000) {
+                    timePosition = 40000;
+                    
+                    // Show timeline if reached end
+                    if (!activatedTimeline) {
+                        showTimeline();
+                        activatedTimeline = true;
+                    }
+                }
+                
+                // Update timeline UI
+                updateTimelineUI();
+                
+                previousTimePosition = timePosition;
+            }
+
+            // Update energy phase
+            energyPhase += energyRate * deltaTime * 0.001;
+            
+            // Draw the layers in appropriate order
+            drawRecognitionElements();   // Yellow elements (recognition)
+            drawConnectionLines();      // Connection lines between elements
+            drawEvaluationElements();   // Black elements (evaluation)
+            drawResponseElements();     // Grey elements (response)
+            drawHandOutline();          // Hand outline representing joy
+            drawJoyCenters();          // Interactive joy centers
+            
+            // Update hand outline progress
+            if (isAnimating) {
+                handProgress = min(1, handProgress + 0.0003); // Slower progress for joy - more flowing
+            }
+            
+            // Update activated elements
+            updateActivatedElements();
+            
+            // Update element propagation (joy spreading effect)
+            updateElementPropagation();
+        }
+        
+        function showTimeline() {
+            // Show the timeline interface
+            document.getElementById('timeline').style.opacity = '1';
+            
+            // Position controls based on orientation when timeline appears
+            updateLayoutForOrientation();
+        }
+        
+        function updateActivatedElements() {
+            // Check any activated recognition elements
+            for (let recognition of recognitionElements) {
+                if (recognition.activated) {
+                    // Decrease energy over time (more slowly for joy)
+                    if (recognition.energy > 0) {
+                        recognition.energy = max(0, recognition.energy - 0.2);
+                    }
+                    
+                    if (millis() - recognition.activatedTime > 5000) { // Longer duration for joy
+                        recognition.activated = false;
+                    }
+                }
+            }
+            
+            // Check any activated evaluation elements
+            for (let evaluation of evaluationElements) {
+                if (evaluation.activated) {
+                    // Decrease intensity over time (more slowly for joy)
+                    if (evaluation.intensity > 0) {
+                        evaluation.intensity = max(0, evaluation.intensity - 0.2);
+                    }
+                    
+                    if (millis() - evaluation.activatedTime > 5000) { // Longer duration for joy
+                        evaluation.activated = false;
+                    }
+                }
+            }
+            
+            // Check any activated response elements
+            for (let response of responseElements) {
+                if (response.activated) {
+                    // Decrease harmony over time (more slowly for joy)
+                    if (response.harmony > 0) {
+                        response.harmony = max(0, response.harmony - 0.2);
+                    }
+                    
+                    if (millis() - response.activatedTime > 5000) { // Longer duration for joy
+                        response.activated = false;
+                    }
+                }
+            }
+            
+            // Check activated joy centers
+            for (let center of joyCenters) {
+                if (center.activated) {
+                    center.activationProgress = min(1, center.activationProgress + 0.005); // Slower for joy
+                }
+            }
+            
+            // If we have an active joy center but it's no longer activated
+            if (activeJoyCenter !== null && !joyCenters[activeJoyCenter].activated) {
+                if (joyCenters[activeJoyCenter].activationProgress > 0) {
+                    joyCenters[activeJoyCenter].activationProgress = max(0, joyCenters[activeJoyCenter].activationProgress - 0.01); // Slower fade for joy
+                } else {
+                    activeJoyCenter = null;
+                    centerActivated = false;
+                }
+            }
+        }
+        
+        function updateElementPropagation() {
+            // Implement the joy effect - spreading energy between elements
+            
+            // From activated recognition elements to nearby evaluation elements
+            for (let i = 0; i < recognitionElements.length; i++) {
+                let recognition = recognitionElements[i];
+                
+                if (recognition.activated && recognition.energy > 30) {
+                    // Spread to nearby evaluation elements
+                    for (let j = 0; j < evaluationElements.length; j++) {
+                        let evaluation = evaluationElements[j];
+                        let d = dist(recognition.x, recognition.y, evaluation.x, evaluation.y);
+                        
+                        if (d < 200) {
+                            // Transfer intensity (influenced by distance)
+                            let intensityTransfer = max(0, recognition.energy * (1 - d/200) * 0.1); // Slower transfer for joy
+                            evaluation.intensity = min(evaluation.maxIntensity, evaluation.intensity + intensityTransfer);
+                            
+                            // Mark as activated if significant intensity
+                            if (evaluation.intensity > 25 && !evaluation.activated) {
+                                evaluation.activated = true;
+                                evaluation.activatedTime = millis();
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // From activated evaluation elements to nearby response elements
+            for (let i = 0; i < evaluationElements.length; i++) {
+                let evaluation = evaluationElements[i];
+                
+                if (evaluation.activated && evaluation.intensity > 35) {
+                    // Spread to nearby response elements
+                    for (let j = 0; j < responseElements.length; j++) {
+                        let response = responseElements[j];
+                        
+                        if (response.type !== 'path') {
+                            let d = dist(evaluation.x, evaluation.y, response.x, response.y);
+                            
+                            if (d < 200) {
+                                // Transfer harmony (influenced by distance)
+                                let harmonyTransfer = max(0, evaluation.intensity * (1 - d/200) * 0.08); // Slower transfer for joy
+                                response.harmony = min(response.maxHarmony, response.harmony + harmonyTransfer);
+                                
+                                // Mark as activated if significant harmony
+                                if (response.harmony > 30 && !response.activated) {
+                                    response.activated = true;
+                                    response.activatedTime = millis();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Special feedback: Response elements can reinforce recognition elements (feedback loop for joy)
+            for (let i = 0; i < responseElements.length; i++) {
+                let response = responseElements[i];
+                
+                if (response.activated) {
+                    let harmonyValue = response.harmony;
+                    
+                    if (harmonyValue > 40) {
+                        // Spread to nearby recognition elements
+                        for (let j = 0; j < recognitionElements.length; j++) {
+                            let recognition = recognitionElements[j];
+                            
+                            let d = dist(response.x, response.y, recognition.x, recognition.y);
+                            
+                            if (d < 200) {
+                                // Transfer energy (influenced by distance)
+                                let energyTransfer = max(0, harmonyValue * (1 - d/200) * 0.07); // Moderate for joy
+                                recognition.energy = min(recognition.maxEnergy, recognition.energy + energyTransfer);
+                                
+                                // Mark as activated if significant energy
+                                if (recognition.energy > 25 && !recognition.activated) {
+                                    recognition.activated = true;
+                                    recognition.activatedTime = millis();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function setTimePosition(time) {
+            // Set the internal time position
+            const previousMillis = previousTimePosition;
+            const timeDiff = time - previousMillis;
+            
+            // Reset elements if jumping backward more than 2 seconds
+            if (timeDiff < -2000) {
+                resetExperience();
+            }
+        }
+        
+        function resetExperience() {
+            // Reset all elements to their initial state
+            for (let recognition of recognitionElements) {
+                recognition.visible = timePosition > recognition.startTime;
+                recognition.activated = false;
+                recognition.energy = 0;
+            }
+            
+            for (let evaluation of evaluationElements) {
+                evaluation.visible = timePosition > evaluation.startTime;
+                evaluation.activated = false;
+                evaluation.intensity = 0;
+            }
+            
+            for (let response of responseElements) {
+                response.visible = timePosition > response.startTime;
+                response.activated = false;
+                response.harmony = 0;
+                
+                if (response.type === 'path') {
+                    response.progress = 0;
+                }
+                if (response.type === 'integration') {
+                    response.rotation = 0;
+                }
+            }
+            
+            for (let line of connectionLines) {
+                line.progress = 0;
+                line.activated = false;
+            }
+            
+            for (let center of joyCenters) {
+                center.opacity = timePosition > center.startTime ? center.targetOpacity : 0;
+                center.activated = false;
+                center.activationProgress = 0;
+            }
+            
+            handProgress = min(1, timePosition / 30000); // Slower for joy
+            activeJoyCenter = null;
+            centerActivated = false;
+        }
+
+        function drawHandOutline() {
+            // Only start drawing hand after initial elements appear
+            if (timePosition < 15000) return; // Later appearance for joy
+            
+            // Calculate how many points to show based on progress
+            let pointsToShow = floor(handOutlinePoints.length * handProgress);
+            
+            if (pointsToShow < 2) return;
+            
+            // Draw the hand outline
+            noFill();
+            stroke(colors.grey[0], colors.grey[1], colors.grey[2], 140); // Lighter for joy
+            strokeWeight(1.5);
+            
+            beginShape();
+            for (let i = 0; i < pointsToShow; i++) {
+                vertex(handOutlinePoints[i].x, handOutlinePoints[i].y);
+            }
+            endShape(pointsToShow === handOutlinePoints.length ? CLOSE : OPEN);
+            
+            // If hand is complete, add some interior detail
+            if (pointsToShow === handOutlinePoints.length) {
+                // Palm lines
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 100);
+                strokeWeight(1);
+                
+                // Heart line
+                line(
+                    handOutlinePoints[0].x + 5, 
+                    (handOutlinePoints[0].y + handOutlinePoints[15].y) / 2 - 10,
+                    handOutlinePoints[14].x - 5,
+                    (handOutlinePoints[0].y + handOutlinePoints[15].y) / 2 - 10
+                );
+                
+                // Life line
+                beginShape();
+                noFill();
+                curveVertex(handOutlinePoints[15].x - 10, handOutlinePoints[15].y - 15);
+                curveVertex(handOutlinePoints[15].x - 5, handOutlinePoints[15].y - 25);
+                curveVertex(handOutlinePoints[11].x + 5, handOutlinePoints[11].y + 10);
+                curveVertex(handOutlinePoints[11].x + 10, handOutlinePoints[11].y + 20);
+                endShape();
+                
+                // Special joy symbol in palm - radiating energy
+                if (activeJoyCenter !== null && joyCenters[activeJoyCenter].activationProgress > 0.5) {
+                    let centerX = (handOutlinePoints[0].x + handOutlinePoints[7].x) / 2;
+                    let centerY = (handOutlinePoints[0].y + handOutlinePoints[7].y) / 2;
+                    
+                    // Energy effect
+                    let energyFactor = sin(energyPhase) * 0.1 + 0.95; // Gentle pulsation for joy
+                    
+                    // Draw joy symbol (sunburst)
+                    push();
+                    translate(centerX, centerY);
+                    
+                    // Outer glow
+                    noFill();
+                    stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                          120 * joyCenters[activeJoyCenter].activationProgress);
+                    strokeWeight(1);
+                    ellipse(0, 0, 25 * energyFactor * joyCenters[activeJoyCenter].activationProgress);
+                    
+                    // Sunburst rays
+                    stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                          160 * joyCenters[activeJoyCenter].activationProgress);
+                    strokeWeight(1.5);
+                    
+                    // Draw rays
+                    let numRays = 12;
+                    for (let i = 0; i < numRays; i++) {
+                        let angle = TWO_PI * i / numRays + millis() * 0.0002; // Slow rotation
+                        let innerRadius = 6 * energyFactor * joyCenters[activeJoyCenter].activationProgress;
+                        let outerRadius = 12 * energyFactor * joyCenters[activeJoyCenter].activationProgress;
+                        
+                        line(cos(angle) * innerRadius, sin(angle) * innerRadius,
+                             cos(angle) * outerRadius, sin(angle) * outerRadius);
+                    }
+                    
+                    // Center circle
+                    fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                         180 * joyCenters[activeJoyCenter].activationProgress);
+                    noStroke();
+                    ellipse(0, 0, 8 * energyFactor * joyCenters[activeJoyCenter].activationProgress);
+                    
+                    pop();
+                }
+            }
+        }
+        
+        function drawRecognitionElements() {
+            // Draw recognition elements (yellow - energy pattern detection)
+            for (let i = 0; i < recognitionElements.length; i++) {
+                let recognition = recognitionElements[i];
+                
+                // Check if this element should be visible based on timing
+                if (timePosition > recognition.startTime) {
+                    recognition.visible = true;
+                }
+                
+                if (recognition.visible) {
+                    // Calculate energy effects
+                    let pulseAmount = sin(millis() * recognition.pulseRate) * 0.1; // Gentler for joy
+                    
+                    // Enhanced appearance for activated elements
+                    let energyFactor = 0;
+                    if (recognition.activated || recognition.energy > 0) {
+                        energyFactor = recognition.energy / recognition.maxEnergy;
+                        
+                        // Draw energy glow
+                        noFill();
+                        stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], 70 * energyFactor);
+                        strokeWeight(2);
+                        
+                        if (recognition.type === 'sunburst') {
+                            // Glow for sunburst
+                            ellipse(recognition.x, recognition.y, recognition.size * (1 + energyFactor * 0.3));
+                        } else if (recognition.type === 'node' || recognition.type === 'circle') {
+                            // Glow for nodes and circles
+                            ellipse(recognition.x, recognition.y, recognition.size + 15 * energyFactor);
+                        } else if (recognition.type === 'hexagon') {
+                            // Glow for hexagons
+                            push();
+                            translate(recognition.x, recognition.y);
+                            rotate(recognition.rotation + energyFactor * 0.1); // Slight rotation with energy
+                            
+                            let glowSize = recognition.size * (1 + energyFactor * 0.2);
+                            beginShape();
+                            for (let j = 0; j < 6; j++) {
+                                let angle = TWO_PI * j / 6;
+                                vertex(cos(angle) * glowSize, sin(angle) * glowSize);
+                            }
+                            endShape(CLOSE);
+                            
+                            pop();
+                        }
+                    }
+                    
+                    // Draw the recognition element based on type
+                    if (recognition.type === 'sunburst') {
+                        drawSunburst(recognition, pulseAmount, energyFactor);
+                    } else if (recognition.type === 'node') {
+                        drawNode(recognition, pulseAmount, energyFactor);
+                    } else if (recognition.type === 'circle') {
+                        drawCircle(recognition, pulseAmount, energyFactor);
+                    } else if (recognition.type === 'hexagon') {
+                        drawHexagon(recognition, pulseAmount, energyFactor);
+                    }
+                    
+                    // Add subtle pulse for interactive elements
+                    if (recognition.interactive && !recognition.activated) {
+                        noFill();
+                        stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], 40);
+                        strokeWeight(0.8);
+                        
+                        ellipse(recognition.x, recognition.y, 
+                               recognition.size + 10 + sin(millis() * 0.001) * 4, // Gentler pulse for joy
+                               recognition.size + 10 + sin(millis() * 0.001) * 4);
+                    }
+                }
+            }
+        }
+        
+        function drawSunburst(recognition, pulseAmount, energyFactor) {
+            push();
+            translate(recognition.x, recognition.y);
+            
+            // Draw center circle
+            if (recognition.activated || recognition.energy > 0) {
+                fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                    recognition.opacity * (0.7 + energyFactor * 0.3));
+            } else {
+                fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], recognition.opacity);
+            }
+            
+            noStroke();
+            let centerSize = recognition.size * 0.3 * (1 + pulseAmount);
+            ellipse(0, 0, centerSize);
+            
+            // Draw rays
+            if (recognition.activated || recognition.energy > 0) {
+                stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                      recognition.opacity * (0.7 + energyFactor * 0.3));
+            } else {
+                stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], recognition.opacity);
+            }
+            
+            strokeWeight(2 + (energyFactor * 1.5));
+            
+            for (let i = 0; i < recognition.rays; i++) {
+                let angle = TWO_PI * i / recognition.rays;
+                
+                // Add energy-based variation
+                if (energyFactor > 0) {
+                    angle += sin(millis() * 0.001 + i) * 0.05 * energyFactor;
+                }
+                
+                let innerRadius = centerSize/2;
+                let outerRadius = recognition.size/2 * (1 + pulseAmount + energyFactor * 0.3);
+                
+                line(cos(angle) * innerRadius, sin(angle) * innerRadius,
+                     cos(angle) * outerRadius, sin(angle) * outerRadius);
+            }
+            
+            pop();
+        }
+        
+        function drawNode(recognition, pulseAmount, energyFactor) {
+            push();
+            translate(recognition.x, recognition.y);
+            
+            // Draw node
+            if (recognition.activated || recognition.energy > 0) {
+                fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                    recognition.opacity * (0.7 + energyFactor * 0.3));
+            } else {
+                fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], recognition.opacity);
+            }
+            
+            noStroke();
+            
+            let nodeSize = recognition.size * (1 + pulseAmount + energyFactor * 0.3);
+            ellipse(0, 0, nodeSize);
+            
+            // Add connection points
+            if (energyFactor > 0.3) {
+                let numPoints = floor(4 + energyFactor * 4);
+                
+                for (let i = 0; i < numPoints; i++) {
+                    let angle = TWO_PI * i / numPoints + millis() * 0.0005;
+                    let pointDist = recognition.size * 0.7 * (1 + sin(millis() * 0.002 + i) * 0.2 * energyFactor);
+                    
+                    fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                        recognition.opacity * 0.8 * energyFactor);
+                    
+                    let pointSize = 3 + energyFactor * 2;
+                    ellipse(cos(angle) * pointDist, sin(angle) * pointDist, pointSize);
+                }
+            }
+            
+            pop();
+        }
+        
+        function drawCircle(recognition, pulseAmount, energyFactor) {
+            push();
+            translate(recognition.x, recognition.y);
+            
+            // Draw multiple concentric circles
+            let numRings = 3;
+            
+            for (let i = 0; i < numRings; i++) {
+                let ringSize = recognition.size * (0.4 + i * 0.3) * (1 + pulseAmount);
+                
+                // Add energy-based size variation
+                if (energyFactor > 0) {
+                    ringSize *= (1 + sin(millis() * 0.001 + i * 1.5) * 0.15 * energyFactor);
+                }
+                
+                noFill();
+                
+                if (recognition.activated || recognition.energy > 0) {
+                    stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                          recognition.opacity * (0.5 + energyFactor * 0.3) * (1 - i * 0.2));
+                    strokeWeight(1.5 + energyFactor);
+                } else {
+                    stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                          recognition.opacity * (1 - i * 0.2));
+                    strokeWeight(1.5);
+                }
+                
+                ellipse(0, 0, ringSize);
+            }
+            
+            // Add center dot
+            if (recognition.activated || recognition.energy > 0) {
+                fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                    recognition.opacity * (0.7 + energyFactor * 0.3));
+            } else {
+                fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], recognition.opacity);
+            }
+            
+            noStroke();
+            ellipse(0, 0, recognition.size * 0.15 * (1 + energyFactor * 0.5));
+            
+            // Add radiating dots for energy
+            if (energyFactor > 0.4) {
+                let numDots = floor(8 + energyFactor * 8);
+                
+                for (let i = 0; i < numDots; i++) {
+                    let t = i / numDots;
+                    let spiralRadius = map(t, 0, 1, recognition.size * 0.1, recognition.size * 0.8);
+                    spiralRadius *= (1 + energyFactor * 0.3);
+                    
+                    let spiralAngle = t * TWO_PI * 3 + millis() * 0.001;
+                    let x = cos(spiralAngle) * spiralRadius;
+                    let y = sin(spiralAngle) * spiralRadius;
+                    
+                    let dotSize = map(t, 0, 1, 3, 1) * (1 + energyFactor * 0.5);
+                    
+                    fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                        recognition.opacity * (1-t) * 0.7 * energyFactor);
+                    ellipse(x, y, dotSize);
+                }
+            }
+            
+            pop();
+        }
+        
+        function drawHexagon(recognition, pulseAmount, energyFactor) {
+            push();
+            translate(recognition.x, recognition.y);
+            rotate(recognition.rotation + (energyFactor > 0 ? millis() * 0.0005 * energyFactor : 0));
+            
+            if (recognition.activated || recognition.energy > 0) {
+                fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                    recognition.opacity * (0.5 + energyFactor * 0.4));
+                stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                      recognition.opacity * (0.7 + energyFactor * 0.3));
+                strokeWeight(1.5);
+            } else {
+                fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], recognition.opacity * 0.5);
+                stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], recognition.opacity);
+                strokeWeight(1);
+            }
+            
+            // Draw hexagon with energy-influenced shape
+            beginShape();
+            for (let i = 0; i < 6; i++) {
+                let angle = TWO_PI * i / 6;
+                
+                // Add energy-based variation to radius
+                let radius = recognition.size/2 * (1 + pulseAmount);
+                
+                if (energyFactor > 0.2) {
+                    radius += sin(angle * 3 + millis() * 0.001) * recognition.size * 0.1 * energyFactor;
+                }
+                
+                vertex(cos(angle) * radius, sin(angle) * radius);
+            }
+            endShape(CLOSE);
+            
+            // Add inner details for activated hexagons
+            if (energyFactor > 0.3) {
+                noFill();
+                stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                      recognition.opacity * 0.6 * energyFactor);
+                strokeWeight(0.8);
+                
+                // Inner hexagon
+                beginShape();
+                for (let i = 0; i < 6; i++) {
+                    let angle = TWO_PI * i / 6 + PI/6; // Offset inner hexagon
+                    let radius = recognition.size * 0.25 * (1 + sin(millis() * 0.002) * 0.2 * energyFactor);
+                    vertex(cos(angle) * radius, sin(angle) * radius);
+                }
+                endShape(CLOSE);
+                
+                // Connection lines
+                for (let i = 0; i < 6; i += 2) { // Every other vertex
+                    let angle = TWO_PI * i / 6;
+                    let outerX = cos(angle) * recognition.size/2;
+                    let outerY = sin(angle) * recognition.size/2;
+                    
+                    let innerAngle = TWO_PI * ((i+1)%6) / 6 + PI/6; // Closest inner vertex
+                    let innerX = cos(innerAngle) * recognition.size * 0.25;
+                    let innerY = sin(innerAngle) * recognition.size * 0.25;
+                    
+                    line(innerX, innerY, outerX, outerY);
+                }
+            }
+            
+            pop();
+        }
+
+        function drawEvaluationElements() {
+            // Draw evaluation elements (black - contrast analysis)
+            for (let i = 0; i < evaluationElements.length; i++) {
+                let evaluation = evaluationElements[i];
+                
+                // Check if this element should be visible based on timing
+                if (timePosition > evaluation.startTime) {
+                    evaluation.visible = true;
+                }
+                
+                if (evaluation.visible) {
+                    if (evaluation.type === 'frame') {
+                        drawFrame(evaluation);
+                    } else if (evaluation.type === 'point') {
+                        drawPoint(evaluation);
+                    } else if (evaluation.type === 'negative') {
+                        drawNegativeSpace(evaluation);
+                    }
+                }
+            }
+        }
+        
+        function drawFrame(evaluation) {
+            // Enhanced appearance for activated frames
+            let intensityFactor = 0;
+            if (evaluation.activated || evaluation.intensity > 0) {
+                intensityFactor = evaluation.intensity / evaluation.maxIntensity;
+            }
+            
+            push();
+            translate(evaluation.x, evaluation.y);
+            
+            // Calculate dimensions with pulse effect
+            let pulseEffect = sin(millis() * evaluation.pulseRate) * 0.08; // Gentler for joy
+            let frameWidth = evaluation.width * (1 + pulseEffect);
+            let frameHeight = evaluation.height * (1 + pulseEffect);
+            
+            // Draw frame
+            noFill();
+            
+            if (evaluation.activated || evaluation.intensity > 0) {
+                stroke(colors.black[0], colors.black[1], colors.black[2], 
+                      evaluation.opacity * (0.6 + intensityFactor * 0.4));
+                strokeWeight(evaluation.thickness + intensityFactor * 1.5);
+            } else {
+                stroke(colors.black[0], colors.black[1], colors.black[2], evaluation.opacity);
+                strokeWeight(evaluation.thickness);
+            }
+            
+            // Draw frame with potential distortion when activated
+            if (intensityFactor > 0.4) {
+                // Distorted frame for higher activation
+                beginShape();
+                vertex(-frameWidth/2 + sin(millis() * 0.001) * 3 * intensityFactor, 
+                      -frameHeight/2 + sin(millis() * 0.0012) * 3 * intensityFactor);
+                       
+                vertex(frameWidth/2 + sin(millis() * 0.0011) * 3 * intensityFactor, 
+                      -frameHeight/2 + sin(millis() * 0.0013) * 3 * intensityFactor);
+                       
+                vertex(frameWidth/2 + sin(millis() * 0.0012) * 3 * intensityFactor, 
+                      frameHeight/2 + sin(millis() * 0.0014) * 3 * intensityFactor);
+                       
+                vertex(-frameWidth/2 + sin(millis() * 0.0013) * 3 * intensityFactor, 
+                      frameHeight/2 + sin(millis() * 0.0015) * 3 * intensityFactor);
+                       
+                endShape(CLOSE);
+            } else {
+                // Regular rectangle when less activated
+                rect(-frameWidth/2, -frameHeight/2, frameWidth, frameHeight);
+            }
+            
+            // Add inner detail for activated frames
+            if (intensityFactor > 0.3) {
+                // Draw inner frame
+                noFill();
+                stroke(colors.black[0], colors.black[1], colors.black[2], 
+                      evaluation.opacity * 0.5 * intensityFactor);
+                strokeWeight(evaluation.thickness * 0.7);
+                
+                let innerWidth = frameWidth * 0.7;
+                let innerHeight = frameHeight * 0.7;
+                
+                rect(-innerWidth/2, -innerHeight/2, innerWidth, innerHeight);
+                
+                // Add connection points at corners
+                fill(colors.black[0], colors.black[1], colors.black[2], 
+                    evaluation.opacity * 0.7 * intensityFactor);
+                noStroke();
+                
+                // Four corners
+                let pointSize = 3 + intensityFactor * 2;
+                ellipse(-frameWidth/2, -frameHeight/2, pointSize);
+                ellipse(frameWidth/2, -frameHeight/2, pointSize);
+                ellipse(frameWidth/2, frameHeight/2, pointSize);
+                ellipse(-frameWidth/2, frameHeight/2, pointSize);
+            }
+            
+            pop();
+            
+            // Add subtle pulse for interactive elements
+            if (evaluation.interactive && !evaluation.activated) {
+                noFill();
+                stroke(colors.black[0], colors.black[1], colors.black[2], 40);
+                strokeWeight(0.8);
+                
+                rect(evaluation.x - evaluation.width/2 - 5, evaluation.y - evaluation.height/2 - 5,
+                    evaluation.width + 10, evaluation.height + 10);
+            }
+        }
+        
+        function drawPoint(evaluation) {
+            // Calculate effects
+            let pulseAmount = sin(millis() * evaluation.pulseRate) * 0.1; // Gentler for joy
+            
+            // Enhanced appearance for activated points
+            let intensityFactor = 0;
+            if (evaluation.activated || evaluation.intensity > 0) {
+                intensityFactor = evaluation.intensity / evaluation.maxIntensity;
+                
+                // Draw glow
+                noFill();
+                stroke(colors.black[0], colors.black[1], colors.black[2], 
+                      90 * intensityFactor);
+                strokeWeight(1);
+                
+                let glowSize = evaluation.size * (2 + intensityFactor * 2);
+                ellipse(evaluation.x, evaluation.y, glowSize);
+            }
+            
+            // Draw main point
+            if (evaluation.activated || evaluation.intensity > 0) {
+                fill(colors.black[0], colors.black[1], colors.black[2], 
+                    evaluation.opacity * (0.7 + intensityFactor * 0.3));
+            } else {
+                fill(colors.black[0], colors.black[1], colors.black[2], evaluation.opacity);
+            }
+            
+            noStroke();
+            
+            // Point gets larger with intensity
+            let pointSize = evaluation.size * (1 + pulseAmount + intensityFactor * 0.5);
+            ellipse(evaluation.x, evaluation.y, pointSize);
+            
+            // Add expanding rings when highly activated
+            if (intensityFactor > 0.5) {
+                noFill();
+                
+                for (let i = 0; i < 3; i++) {
+                    let ringProgress = (millis() % 2000) / 2000; // Ring expansion cycle
+                    let ringSize = evaluation.size * (2 + i * 2 + ringProgress * 3) * intensityFactor;
+                    let ringOpacity = evaluation.opacity * (0.4 - ringProgress * 0.4) * intensityFactor;
+                    
+                    stroke(colors.black[0], colors.black[1], colors.black[2], ringOpacity);
+                    strokeWeight(0.5 + intensityFactor * 0.5);
+                    
+                    ellipse(evaluation.x, evaluation.y, ringSize);
+                }
+            }
+            
+            // Add subtle pulse for interactive elements
+            if (evaluation.interactive && !evaluation.activated) {
+                noFill();
+                stroke(colors.black[0], colors.black[1], colors.black[2], 40);
+                strokeWeight(0.8);
+                
+                ellipse(evaluation.x, evaluation.y, 
+                       evaluation.size * 3 + sin(millis() * 0.001) * 3);
+            }
+        }
+        
+        function drawNegativeSpace(evaluation) {
+            // Enhanced appearance for activated negative spaces
+            let intensityFactor = 0;
+            if (evaluation.activated || evaluation.intensity > 0) {
+                intensityFactor = evaluation.intensity / evaluation.maxIntensity;
+            }
+            
+            push();
+            translate(evaluation.x, evaluation.y);
+            
+            // Draw negative space - a mask-like shape
+            if (evaluation.activated || evaluation.intensity > 0) {
+                fill(colors.black[0], colors.black[1], colors.black[2], 
+                    evaluation.opacity * 0.2 * (0.5 + intensityFactor * 0.3)); // Semi-transparent fill
+                stroke(colors.black[0], colors.black[1], colors.black[2], 
+                      evaluation.opacity * (0.6 + intensityFactor * 0.4));
+            } else {
+                fill(colors.black[0], colors.black[1], colors.black[2], evaluation.opacity * 0.2); // Semi-transparent fill
+                stroke(colors.black[0], colors.black[1], colors.black[2], evaluation.opacity);
+            }
+            
+            strokeWeight(1.5 + intensityFactor * 1);
+            
+            // Draw a shape with holes (negative space)
+            let outerRadius = evaluation.size/2 * (1 + sin(millis() * evaluation.pulseRate) * 0.08);
+            let innerRadius = outerRadius * 0.6;
+            
+            // Create a shape with cutouts
+            beginShape();
+            
+            // Outer perimeter
+            for (let i = 0; i < 24; i++) {
+                let angle = TWO_PI * i / 24;
+                let r = outerRadius;
+                
+                // Add some organic variation
+                if (intensityFactor > 0.3) {
+                    r += sin(angle * 5 + millis() * 0.001) * outerRadius * 0.1 * intensityFactor;
+                }
+                
+                vertex(cos(angle) * r, sin(angle) * r);
+            }
+            
+            // Inner cutout (need to create discontinuity)
+            endShape(CLOSE);
+            
+            // Draw inner cutouts as separate shapes
+            if (evaluation.activated || evaluation.intensity > 0) {
+                fill(247, 247, 247); // Background color
+                stroke(colors.black[0], colors.black[1], colors.black[2], 
+                      evaluation.opacity * (0.6 + intensityFactor * 0.4));
+            } else {
+                fill(247, 247, 247); // Background color
+                stroke(colors.black[0], colors.black[1], colors.black[2], evaluation.opacity);
+            }
+            
+            // Main central cutout
+            beginShape();
+            for (let i = 0; i < 16; i++) {
+                let angle = TWO_PI * i / 16;
+                let r = innerRadius;
+                
+                // Add some organic variation
+                if (intensityFactor > 0.3) {
+                    r += sin(angle * 3 + millis() * 0.001) * innerRadius * 0.1 * intensityFactor;
+                }
+                
+                vertex(cos(angle) * r, sin(angle) * r);
+            }
+            endShape(CLOSE);
+            
+            // Additional cutouts for activated state
+            if (intensityFactor > 0.4) {
+                // Draw 3 smaller cutouts
+                for (let j = 0; j < 3; j++) {
+                    let offsetAngle = TWO_PI * j / 3;
+                    let offsetX = cos(offsetAngle) * innerRadius * 0.7;
+                    let offsetY = sin(offsetAngle) * innerRadius * 0.7;
+                    
+                    let cutoutSize = innerRadius * 0.4 * intensityFactor;
+                    
+                    push();
+                    translate(offsetX, offsetY);
+                    
+                    beginShape();
+                    for (let i = 0; i < 12; i++) {
+                        let angle = TWO_PI * i / 12;
+                        let r = cutoutSize + sin(angle * 2 + millis() * 0.002) * cutoutSize * 0.2;
+                        vertex(cos(angle) * r, sin(angle) * r);
+                    }
+                    endShape(CLOSE);
+                    
+                    pop();
+                }
+            }
+            
+            pop();
+            
+            // Add subtle pulse for interactive elements
+            if (evaluation.interactive && !evaluation.activated) {
+                noFill();
+                stroke(colors.black[0], colors.black[1], colors.black[2], 40);
+                strokeWeight(0.8);
+                
+                ellipse(evaluation.x, evaluation.y, 
+                       evaluation.size + 15 + sin(millis() * 0.001) * 5);
+            }
+        }
+
+        function drawResponseElements() {
+            // Draw response elements (grey - integration)
+            for (let i = 0; i < responseElements.length; i++) {
+                let response = responseElements[i];
+                
+                // Check if this element should be visible based on timing
+                if (timePosition > response.startTime) {
+                    response.visible = true;
+                    
+                    // Update progress if not fully formed (for paths)
+                    if (response.type === 'path' && response.progress < 1) {
+                        response.progress = min(1, response.progress + 0.004); // Slower for joy - more flowing
+                    }
+                    
+                    // Update rotation for integration elements
+                    if (response.type === 'integration') {
+                        response.rotation += response.rotationSpeed * deltaTime;
+                    }
+                }
+                
+                if (response.visible) {
+                    if (response.type === 'connector') {
+                        drawConnector(response);
+                    } else if (response.type === 'path') {
+                        drawPath(response);
+                    } else if (response.type === 'integration') {
+                        drawIntegration(response);
+                    }
+                }
+            }
+        }
+        
+        function drawConnector(response) {
+            // Calculate harmony effects
+            let pulseAmount = sin(millis() * response.pulseRate) * 0.1; // Gentler for joy
+            
+            // Enhanced appearance for activated connectors
+            let harmonyFactor = 0;
+            if (response.activated || response.harmony > 0) {
+                harmonyFactor = response.harmony / response.maxHarmony;
+                
+                // Draw harmony glow
+                noFill();
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 
+                      70 * harmonyFactor);
+                strokeWeight(1.5);
+                
+                let glowSize = response.size * (1.5 + harmonyFactor * 0.5);
+                ellipse(response.x, response.y, glowSize);
+            }
+            
+            // Draw main connector
+            if (response.activated || response.harmony > 0) {
+                fill(colors.grey[0], colors.grey[1], colors.grey[2], 
+                    response.opacity * (0.6 + harmonyFactor * 0.4));
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 
+                      response.opacity * (0.7 + harmonyFactor * 0.3));
+                strokeWeight(1);
+            } else {
+                fill(colors.grey[0], colors.grey[1], colors.grey[2], response.opacity * 0.6);
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], response.opacity);
+                strokeWeight(0.8);
+            }
+            
+            // Connector shape is a circle with spokes
+            let connectorSize = response.size * (1 + pulseAmount + harmonyFactor * 0.2);
+            ellipse(response.x, response.y, connectorSize);
+            
+            // Draw connection spokes
+            if (response.activated || response.harmony > 0) {
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 
+                      response.opacity * (0.7 + harmonyFactor * 0.3));
+                strokeWeight(1 + harmonyFactor * 0.5);
+            } else {
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], response.opacity);
+                strokeWeight(0.8);
+            }
+            
+            noFill();
+            
+            let numSpokes = 8;
+            for (let i = 0; i < numSpokes; i++) {
+                let angle = TWO_PI * i / numSpokes;
+                
+                // Add harmony-based offset
+                if (harmonyFactor > 0) {
+                    angle += sin(millis() * 0.0005) * 0.1 * harmonyFactor;
+                }
+                
+                let spokeInner = connectorSize * 0.5;
+                let spokeOuter = connectorSize * 1.5;
+                
+                // Adjust length with harmony
+                if (harmonyFactor > 0) {
+                    spokeOuter *= (1 + 0.5 * harmonyFactor);
+                }
+                
+                push();
+                translate(response.x, response.y);
+                rotate(angle);
+                
+                line(spokeInner/2, 0, spokeOuter/2, 0);
+                
+                // Add end node for high harmony
+                if (harmonyFactor > 0.5) {
+                    fill(colors.grey[0], colors.grey[1], colors.grey[2], 
+                        response.opacity * 0.7 * harmonyFactor);
+                    noStroke();
+                    
+                    ellipse(spokeOuter/2, 0, 3 + harmonyFactor * 2);
+                }
+                
+                pop();
+            }
+            
+            // Add subtle pulse for interactive elements
+            if (response.interactive && !response.activated) {
+                noFill();
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 40);
+                strokeWeight(0.8);
+                
+                ellipse(response.x, response.y, 
+                       response.size * 2 + sin(millis() * 0.001) * 5);
+            }
+        }
+        
+        function drawPath(response) {
+            // Enhanced appearance for activated paths
+            let harmonyFactor = 0;
+            if (response.activated || response.harmony > 0) {
+                harmonyFactor = response.harmony / response.maxHarmony;
+            }
+            
+            // Draw the path
+            if (response.activated || response.harmony > 0) {
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 
+                      response.opacity * (0.7 + harmonyFactor * 0.3));
+            } else {
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], response.opacity);
+            }
+            
+            strokeWeight(response.width + (harmonyFactor * 1.5));
+            noFill();
+            
+            // Draw path with progress
+            if (response.points.length === 4) { // Bezier curve
+                let p = response.points;
+                let progressLength = response.progress;
+                
+                // Draw bezier path
+                beginShape();
+                for (let i = 0; i <= 20; i++) {
+                    let t = i / 20;
+                    
+                    // Only draw up to current progress
+                    if (t > progressLength) break;
+                    
+                    let x = bezierPoint(p[0].x, p[1].x, p[2].x, p[3].x, t);
+                    let y = bezierPoint(p[0].y, p[1].y, p[2].y, p[3].y, t);
+                    
+                    vertex(x, y);
+                }
+                endShape();
+            }
+            
+            // Add flow particles for activated paths
+            if (harmonyFactor > 0) {
+                noStroke();
+                fill(colors.grey[0], colors.grey[1], colors.grey[2], 
+                    response.opacity * 0.9 * harmonyFactor);
+                
+                // Draw particles along bezier path
+                if (response.points.length === 4) {
+                    let p = response.points;
+                    let numParticles = floor(6 * response.progress);
+                    
+                    for (let j = 0; j < numParticles; j++) {
+                        let t = (j / numParticles + (millis() % 3000) / 3000) % 1; // Slower for joy
+                        // Only show particles up to current progress
+                        if (t > response.progress) continue;
+                        
+                        // Calculate position on curve
+                        let x = bezierPoint(p[0].x, p[1].x, p[2].x, p[3].x, t);
+                        let y = bezierPoint(p[0].y, p[1].y, p[2].y, p[3].y, t);
+                        
+                        // Draw particle
+                        let particleSize = 3 + harmonyFactor * 3;
+                        ellipse(x, y, particleSize);
+                        
+                        // Add secondary echo particles for higher harmony
+                        if (harmonyFactor > 0.6) {
+                            // Echo trail
+                            for (let k = 1; k <= 2; k++) {
+                                let echoT = max(0, t - k * 0.05 * harmonyFactor);
+                                if (echoT < 0 || echoT > response.progress) continue;
+                                
+                                let echoX = bezierPoint(p[0].x, p[1].x, p[2].x, p[3].x, echoT);
+                                let echoY = bezierPoint(p[0].y, p[1].y, p[2].y, p[3].y, echoT);
+                                
+                                let echoSize = particleSize * (1 - k * 0.3);
+                                let echoAlpha = response.opacity * 0.5 * harmonyFactor * (1 - k * 0.4);
+                                
+                                fill(colors.grey[0], colors.grey[1], colors.grey[2], echoAlpha);
+                                ellipse(echoX, echoY, echoSize);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Add endpoint nodes
+            if (response.points.length === 4) {
+                let p = response.points;
+                
+                // Only show end point if path has progressed there
+                if (response.progress >= 1) {
+                    if (response.activated || response.harmony > 0) {
+                        fill(colors.grey[0], colors.grey[1], colors.grey[2], 
+                            response.opacity * (0.7 + harmonyFactor * 0.3));
+                    } else {
+                        fill(colors.grey[0], colors.grey[1], colors.grey[2], response.opacity);
+                    }
+                    
+                    noStroke();
+                    ellipse(p[3].x, p[3].y, 5 + harmonyFactor * 3);
+                }
+                
+                // Always show start point
+                if (response.activated || response.harmony > 0) {
+                    fill(colors.grey[0], colors.grey[1], colors.grey[2], 
+                        response.opacity * (0.7 + harmonyFactor * 0.3));
+                } else {
+                    fill(colors.grey[0], colors.grey[1], colors.grey[2], response.opacity);
+                }
+                
+                noStroke();
+                ellipse(p[0].x, p[0].y, 5 + harmonyFactor * 3);
+            }
+            
+            // Add interactive hint
+            if (response.interactive && !response.activated) {
+                noFill();
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 40);
+                strokeWeight(0.8);
+                
+                // Add pulse at endpoints of path
+                if (response.points.length === 4) {
+                    let p = response.points;
+                    
+                    // Start point pulse
+                    ellipse(p[0].x, p[0].y, 
+                           10 + sin(millis() * 0.001) * 3, 
+                           10 + sin(millis() * 0.001) * 3);
+                    
+                    // End point pulse if visible
+                    if (response.progress >= 0.9) {
+                        ellipse(p[3].x, p[3].y, 
+                               10 + sin(millis() * 0.001 + 1) * 3, 
+                               10 + sin(millis() * 0.001 + 1) * 3);
+                    }
+                }
+            }
+        }
+        
+        function drawIntegration(response) {
+            // Calculate harmony effects
+            let pulseAmount = sin(millis() * response.pulseRate) * 0.1; // Gentler for joy
+            
+            // Enhanced appearance for activated integration elements
+            let harmonyFactor = 0;
+            if (response.activated || response.harmony > 0) {
+                harmonyFactor = response.harmony / response.maxHarmony;
+                
+                // Draw harmony glow
+                noFill();
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 
+                      60 * harmonyFactor);
+                strokeWeight(1.5);
+                
+                let glowSize = response.size * (1.2 + harmonyFactor * 0.3);
+                
+                push();
+                translate(response.x, response.y);
+                rotate(response.rotation);
+                
+                ellipse(0, 0, glowSize);
+                pop();
+            }
+            
+            push();
+            translate(response.x, response.y);
+            rotate(response.rotation);
+            
+            // Draw the integration pattern - flower of life style
+            if (response.activated || response.harmony > 0) {
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 
+                      response.opacity * (0.7 + harmonyFactor * 0.3));
+            } else {
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], response.opacity);
+            }
+            
+            strokeWeight(1 + harmonyFactor * 0.5);
+            noFill();
+            
+            // Central circle
+            let baseSize = response.size * (1 + pulseAmount);
+            ellipse(0, 0, baseSize * 0.3);
+            
+            // Petals
+            for (let i = 0; i < response.petals; i++) {
+                let angle = TWO_PI * i / response.petals;
+                let x = cos(angle) * baseSize * 0.3;
+                let y = sin(angle) * baseSize * 0.3;
+                
+                // Draw petal
+                let petalSize = baseSize * 0.3;
+                
+                // Add harmony-based size variation
+                if (harmonyFactor > 0) {
+                    petalSize *= (1 + sin(millis() * 0.001 + i) * 0.1 * harmonyFactor);
+                }
+                
+                ellipse(x, y, petalSize);
+                
+                // Draw connecting line
+                line(0, 0, x, y);
+                
+                // Add secondary petals for high harmony
+                if (harmonyFactor > 0.5) {
+                    // Outer petals
+                    let outerX = cos(angle) * baseSize * 0.6;
+                    let outerY = sin(angle) * baseSize * 0.6;
+                    
+                    let outerPetalSize = baseSize * 0.2 * harmonyFactor;
+                    
+                    // Lighter stroke for outer elements
+                    stroke(colors.grey[0], colors.grey[1], colors.grey[2], 
+                          response.opacity * 0.5 * harmonyFactor);
+                    
+                    ellipse(outerX, outerY, outerPetalSize);
+                    
+                    // Connect to inner petal
+                    line(x, y, outerX, outerY);
+                }
+            }
+            
+            // Draw outer circle for harmony
+            if (harmonyFactor > 0.3) {
+                let outerCircleSize = baseSize * (0.7 + harmonyFactor * 0.3);
+                
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 
+                      response.opacity * 0.5 * harmonyFactor);
+                ellipse(0, 0, outerCircleSize);
+            }
+            
+            pop();
+            
+            // Add subtle pulse for interactive elements
+            if (response.interactive && !response.activated) {
+                noFill();
+                stroke(colors.grey[0], colors.grey[1], colors.grey[2], 40);
+                strokeWeight(0.8);
+                
+                ellipse(response.x, response.y, 
+                       response.size + 15 + sin(millis() * 0.001) * 5);
+            }
+        }
+
+        function drawConnectionLines() {
+            // Draw connection lines between elements
+            
+            for (let line of connectionLines) {
+                // Only start drawing after the delay
+                if (timePosition > line.startTime) {
+                    // Update progress if animating
+                    if (isAnimating && line.progress < 1) {
+                        line.progress = min(1, line.progress + 0.003); // Slower for joy - more flowing
+                    }
+                    
+                    // Get start and end points based on element types
+                    let startX, startY, endX, endY;
+                    
+                    // Start point
+                    if (line.startElement === 'recognition') {
+                        let recognition = recognitionElements[line.startIndex];
+                        startX = recognition.x;
+                        startY = recognition.y;
+                    } else if (line.startElement === 'evaluation') {
+                        let evaluation = evaluationElements[line.startIndex];
+                        startX = evaluation.x;
+                        startY = evaluation.y;
+                    } else {
+                        let response = responseElements[line.startIndex];
+                        if (response.type === 'path') {
+                            // If path, use start point
+                            startX = response.points[0].x;
+                            startY = response.points[0].y;
+                        } else {
+                            startX = response.x;
+                            startY = response.y;
+                        }
+                    }
+                    
+                    // End point
+                    if (line.endElement === 'recognition') {
+                        let recognition = recognitionElements[line.endIndex];
+                        endX = recognition.x;
+                        endY = recognition.y;
+                    } else if (line.endElement === 'evaluation') {
+                        let evaluation = evaluationElements[line.endIndex];
+                        endX = evaluation.x;
+                        endY = evaluation.y;
+                    } else {
+                        let response = responseElements[line.endIndex];
+                        if (response.type === 'path') {
+                            // If path, use end point
+                            endX = response.points[3].x;
+                            endY = response.points[3].y;
+                        } else {
+                            endX = response.x;
+                            endY = response.y;
+                        }
+                    }
+                    
+                    // Only draw if both elements are visible
+                    let startVisible = false;
+                    let endVisible = false;
+                    
+                    if (line.startElement === 'recognition') {
+                        startVisible = recognitionElements[line.startIndex].visible;
+                    } else if (line.startElement === 'evaluation') {
+                        startVisible = evaluationElements[line.startIndex].visible;
+                    } else {
+                        startVisible = responseElements[line.startIndex].visible;
+                    }
+                    
+                    if (line.endElement === 'recognition') {
+                        endVisible = recognitionElements[line.endIndex].visible;
+                    } else if (line.endElement === 'evaluation') {
+                        endVisible = evaluationElements[line.endIndex].visible;
+                    } else {
+                        endVisible = responseElements[line.endIndex].visible;
+                    }
+                    
+                    if (startVisible && endVisible) {
+                        // Get color based on end element
+                        let lineColor;
+                        if (line.endElement === 'recognition') {
+                            lineColor = colors.yellow;
+                        } else if (line.endElement === 'evaluation') {
+                            lineColor = colors.black;
+                        } else {
+                            lineColor = colors.grey;
+                        }
+                        
+                        // Calculate activated state
+                        let isActivated = false;
+                        let activationLevel = 0;
+                        
+                        if (line.startElement === 'recognition') {
+                            let recognition = recognitionElements[line.startIndex];
+                            isActivated = recognition.activated;
+                            activationLevel = recognition.energy / recognition.maxEnergy;
+                        } else if (line.startElement === 'evaluation') {
+                            let evaluation = evaluationElements[line.startIndex];
+                            isActivated = evaluation.activated;
+                            activationLevel = evaluation.intensity / evaluation.maxIntensity;
+                        } else {
+                            let response = responseElements[line.startIndex];
+                            isActivated = response.activated;
+                            activationLevel = response.harmony / response.maxHarmony;
+                        }
+                        
+                        // Also check end element activation
+                        let endActivated = false;
+                        let endActivationLevel = 0;
+                        
+                        if (line.endElement === 'recognition') {
+                            let recognition = recognitionElements[line.endIndex];
+                            endActivated = recognition.activated;
+                            endActivationLevel = recognition.energy / recognition.maxEnergy;
+                        } else if (line.endElement === 'evaluation') {
+                            let evaluation = evaluationElements[line.endIndex];
+                            endActivated = evaluation.activated;
+                            endActivationLevel = evaluation.intensity / evaluation.maxIntensity;
+                        } else {
+                            let response = responseElements[line.endIndex];
+                            endActivated = response.activated;
+                            endActivationLevel = response.harmony / response.maxHarmony;
+                        }
+                        
+                        // Use higher of the two activation levels
+                        isActivated = isActivated || endActivated;
+                        activationLevel = max(activationLevel, endActivationLevel);
+                        
+                        // Draw the connection line
+                        noFill();
+                        
+                        // Line appearance based on activation
+                        if (isActivated && activationLevel > 0.2) {
+                            stroke(lineColor[0], lineColor[1], lineColor[2], 
+                                  line.opacity * (0.6 + activationLevel * 0.4));
+                            strokeWeight(line.width + activationLevel * 1);
+                        } else {
+                            stroke(lineColor[0], lineColor[1], lineColor[2], line.opacity);
+                            strokeWeight(line.width);
+                        }
+                        
+                        // Only draw up to current progress
+                        let distance = dist(startX, startY, endX, endY);
+                        let drawDistance = distance * line.progress;
+                        
+                        // Calculate endpoint based on progress
+                        let progressX = lerp(startX, endX, line.progress);
+                        let progressY = lerp(startY, endY, line.progress);
+                        
+                        // Draw line with gentle curve for joy
+                        beginShape();
+                        vertex(startX, startY);
+                        
+                        // Add gentle curve
+                        let midX = (startX + endX) / 2;
+                        let midY = (startY + endY) / 2 - 10;
+                        
+                        if (isActivated && activationLevel > 0.3) {
+                            // Add flow animation for activated lines
+                            let flowOffset = sin(millis() * 0.001) * 10 * activationLevel;
+                            midY += flowOffset;
+                        }
+                        
+                        quadraticVertex(midX, midY, progressX, progressY);
+                        endShape();
+                        
+                        // Add flow particles for highly activated connections
+                        if (isActivated && activationLevel > 0.5 && line.progress >= 0.98) {
+                            noStroke();
+                            fill(lineColor[0], lineColor[1], lineColor[2], 
+                                line.opacity * 0.7 * activationLevel);
+                            
+                            // Number of particles based on distance
+                            let numParticles = floor(distance / 30) + 1;
+                            
+                            for (let i = 0; i < numParticles; i++) {
+                                // Calculate particle position along the curve
+                                let t = ((millis() / 3000) + i / numParticles) % 1;
+                                
+                                // Quadratic bezier formula
+                                let mt = 1 - t;
+                                let particleX = mt*mt*startX + 2*mt*t*midX + t*t*endX;
+                                let particleY = mt*mt*startY + 2*mt*t*midY + t*t*endY;
+                                
+                                // Draw particle
+                                let particleSize = 3 + activationLevel * 2;
+                                ellipse(particleX, particleY, particleSize);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawJoyCenters() {
+            // Only draw joy centers after they should appear
+            for (let i = 0; i < joyCenters.length; i++) {
+                let center = joyCenters[i];
+                
+                // Check timing
+                if (timePosition > center.startTime) {
+                    // Fade in opacity
+                    if (center.opacity < center.targetOpacity) {
+                        center.opacity = min(center.targetOpacity, center.opacity + 0.5); // Slower for joy
+                    }
+                    
+                    // Calculate pulse effect
+                    let pulseAmount = sin(millis() * center.pulseRate) * 0.1; // Gentler for joy
+                    let pulseSize = center.size * (1 + pulseAmount);
+                    
+                    // Draw outer glow for active joy centers
+                    if (i === activeJoyCenter && center.activationProgress > 0) {
+                        // Create radiating rings effect for joy
+                        for (let j = 0; j < 3; j++) {
+                            let expandedSize = pulseSize * (1 + j * 0.3) * center.activationProgress;
+                            let glowOpacity = (80 - j * 20) * center.activationProgress;
+                            
+                            noFill();
+                            
+                            // Use a blend of yellow and grey colors
+                            let blendedR = lerp(colors.grey[0], colors.yellow[0], 0.6);
+                            let blendedG = lerp(colors.grey[1], colors.yellow[1], 0.6);
+                            let blendedB = lerp(colors.grey[2], colors.yellow[2], 0.6);
+                            
+                            stroke(blendedR, blendedG, blendedB, glowOpacity);
+                            strokeWeight(1.5 - j * 0.4);
+                            ellipse(center.x, center.y, expandedSize);
+                            
+                            // Add radiating lines for joy
+                            if (j === 0) {
+                                let numRays = 12;
+                                let rayLength = expandedSize * 0.2;
+                                
+                                for (let k = 0; k < numRays; k++) {
+                                    let angle = TWO_PI * k / numRays + millis() * 0.0002; // Slow rotation
+                                    let innerRadius = expandedSize * 0.45;
+                                    let outerRadius = expandedSize * 0.45 + rayLength;
+                                    
+                                    line(center.x + cos(angle) * innerRadius, center.y + sin(angle) * innerRadius,
+                                         center.x + cos(angle) * outerRadius, center.y + sin(angle) * outerRadius);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Draw main joy center boundary
+                    noFill();
+                    
+                    // Use yellow as the primary color for joy centers
+                    stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], center.opacity);
+                    strokeWeight(2);
+                    
+                    // Draw circle
+                    ellipse(center.x, center.y, pulseSize);
+                    
+                    // Draw inner pattern
+                    if (center.activated || i === activeJoyCenter) {
+                        // Draw radiant pattern when activated
+                        let innerSize = pulseSize * 0.7;
+                        let numRays = 12;
+                        
+                        stroke(colors.yellow[0], colors.yellow[1], colors.yellow[2], center.opacity * 0.7);
+                        strokeWeight(1.5);
+                        
+                        for (let j = 0; j < numRays; j++) {
+                            let angle = TWO_PI * j / numRays + millis() * 0.0003; // Gentle rotation
+                            let innerRadius = innerSize * 0.2;
+                            let outerRadius = innerSize * 0.4;
+                            
+                            line(center.x + cos(angle) * innerRadius, center.y + sin(angle) * innerRadius,
+                                 center.x + cos(angle) * outerRadius, center.y + sin(angle) * outerRadius);
+                        }
+                    }
+                    
+                    // Draw inner circle
+                    fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], center.opacity * 0.2);
+                    noStroke();
+                    ellipse(center.x, center.y, pulseSize * 0.4);
+                    
+                    // Add interactive hint
+                    if (!center.activated) {
+                        // Use yellow color for interactive hint
+                        fill(colors.yellow[0], colors.yellow[1], colors.yellow[2], 
+                            70 + 30 * sin(millis() * 0.002)); // Gentler pulse for joy
+                        noStroke();
+                        
+                        // Draw sunburst symbol for joy
+                        push();
+                        translate(center.x, center.y);
+                        
+                        // Central circle
+                        ellipse(0, 0, 8);
+                        
+                        // Rays
+                        let rayLength = 6;
+                        let numRays = 8;
+                        
+                        for (let j = 0; j < numRays; j++) {
+                            let angle = TWO_PI * j / numRays;
+                            let innerRadius = 4;
+                            let outerRadius = innerRadius + rayLength;
+                            
+                            line(cos(angle) * innerRadius, sin(angle) * innerRadius,
+                                 cos(angle) * outerRadius, sin(angle) * outerRadius);
+                        }
+                        
+                        pop();
+                    }
+                }
+            }
+        }
+        
+        function showJoyResonance(message, x, y) {
+            const resonance = document.getElementById('joy-resonance');
+            resonance.innerHTML = message;
+            
+            // Position near the element but within screen bounds
+            let posX = x;
+            let posY = y - 60;
+            
+            // Adjust if would go off screen
+            if (posX < 20) posX = 20;
+            if (posX > window.innerWidth - 270) posX = window.innerWidth - 270;
+            if (posY < 20) posY = 20;
+            if (posY > window.innerHeight - 100) posY = window.innerHeight - 100;
+            
+            resonance.style.left = posX + 'px';
+            resonance.style.top = posY + 'px';
+            resonance.style.transform = 'translateY(0)';
+            resonance.style.opacity = '1';
+            
+            // Hide after 6 seconds (longer for joy)
+            setTimeout(() => {
+                resonance.style.opacity = '0';
+                resonance.style.transform = 'translateY(20px)';
+            }, 6000);
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            repositionElements();
+            updateLayoutForOrientation();
+        }
+        
+        function repositionElements() {
+            // Recalculate hand outline points for new dimensions
+            for (let i = 0; i < handOutlinePoints.length; i++) {
+                handOutlinePoints[i].x = (handOutlinePoints[i].x / width) * windowWidth;
+                handOutlinePoints[i].y = (handOutlinePoints[i].y / height) * windowHeight;
+            }
+            
+            // Reposition recognition elements
+            for (let recognition of recognitionElements) {
+                recognition.x = (recognition.x / width) * windowWidth;
+                recognition.y = (recognition.y / height) * windowHeight;
+                
+                if (recognition.type === 'sunburst' || recognition.type === 'node' || 
+                    recognition.type === 'circle' || recognition.type === 'hexagon') {
+                    recognition.size = (recognition.size / width) * windowWidth;
+                }
+            }
+            
+            // Reposition evaluation elements
+            for (let evaluation of evaluationElements) {
+                evaluation.x = (evaluation.x / width) * windowWidth;
+                evaluation.y = (evaluation.y / height) * windowHeight;
+                
+                if (evaluation.type === 'frame') {
+                    evaluation.width = (evaluation.width / width) * windowWidth;
+                    evaluation.height = (evaluation.height / height) * windowHeight;
+                } else if (evaluation.type === 'point') {
+                    evaluation.size = (evaluation.size / width) * windowWidth;
+                } else if (evaluation.type === 'negative') {
+                    evaluation.size = (evaluation.size / width) * windowWidth;
+                }
+            }
+            
+            // Reposition response elements
+            for (let response of responseElements) {
+                if (response.type !== 'path') {
+                    response.x = (response.x / width) * windowWidth;
+                    response.y = (response.y / height) * windowHeight;
+                    response.size = (response.size / width) * windowWidth;
+                } else {
+                    // Reposition path points
+                    for (let point of response.points) {
+                        point.x = (point.x / width) * windowWidth;
+                        point.y = (point.y / height) * windowHeight;
+                    }
+                }
+            }
+            
+            // Reposition joy centers
+            for (let center of joyCenters) {
+                center.x = (center.x / width) * windowWidth;
+                center.y = (center.y / height) * windowHeight;
+                center.size = (center.size / width) * windowWidth;
+            }
+        }
+        
+        function mousePressed() {
+            // Only process clicks after landing page has disappeared
+            if (document.getElementById('landing-overlay').style.display === 'none') {
+                
+                // Check for interactions with joy centers first
+                for (let i = 0; i < joyCenters.length; i++) {
+                    let center = joyCenters[i];
+                    
+                    if (timePosition > center.startTime) {
+                        let d = dist(mouseX, mouseY, center.x, center.y);
+                        
+                        if (d < center.size / 2) {
+                            // Toggle joy center activation
+                            center.activated = !center.activated;
+                            
+                            if (center.activated) {
+                                // Set as active joy center
+                                activeJoyCenter = i;
+                                centerActivated = true;
+                                
+                                // Show joy resonance
+                                showJoyResonance(center.resonance, center.x, center.y);
+                                
+                                // Activate associated elements
+                                for (let element of center.elements) {
+                                    if (element.type === 'recognition') {
+                                        recognitionElements[element.index].activated = true;
+                                        recognitionElements[element.index].activatedTime = millis();
+                                        recognitionElements[element.index].energy = recognitionElements[element.index].maxEnergy * 0.7;
+                                    } else if (element.type === 'evaluation') {
+                                        evaluationElements[element.index].activated = true;
+                                        evaluationElements[element.index].activatedTime = millis();
+                                        evaluationElements[element.index].intensity = evaluationElements[element.index].maxIntensity * 0.7;
+                                    } else {
+                                        responseElements[element.index].activated = true;
+                                        responseElements[element.index].activatedTime = millis();
+                                        responseElements[element.index].harmony = responseElements[element.index].maxHarmony * 0.7;
+                                    }
+                                }
+                                
+                                // Play special sound if enabled
+                                if (soundEnabled && joySound) {
+                                    // Could add special sound effect here
+                                }
+                            } else {
+                                // Deactivate
+                                activeJoyCenter = null;
+                                centerActivated = false;
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check for interactions with recognition elements
+                for (let i = 0; i < recognitionElements.length; i++) {
+                    let recognition = recognitionElements[i];
+                    
+                    if (recognition.visible && recognition.interactive) {
+                        let d = dist(mouseX, mouseY, recognition.x, recognition.y);
+                        let hitSize = recognition.size / 2;
+                        
+                        if (d < hitSize) {
+                            // Toggle activation
+                            recognition.activated = !recognition.activated;
+                            recognition.activatedTime = millis();
+                            
+                            if (recognition.activated) {
+                                // Set energy level
+                                recognition.energy = recognition.maxEnergy * 0.7;
+                                
+                                // Show joy resonance
+                                showJoyResonance(getRandomResonance(), recognition.x, recognition.y);
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check for interactions with evaluation elements
+                for (let i = 0; i < evaluationElements.length; i++) {
+                    let evaluation = evaluationElements[i];
+                    
+                    if (evaluation.visible && evaluation.interactive) {
+                        let hitTest = false;
+                        
+                        if (evaluation.type === 'frame') {
+                            // Check if within frame bounds
+                            let inX = abs(mouseX - evaluation.x) < evaluation.width / 2;
+                            let inY = abs(mouseY - evaluation.y) < evaluation.height / 2;
+                            hitTest = inX && inY;
+                        } else if (evaluation.type === 'point') {
+                            // Check if near point
+                            let d = dist(mouseX, mouseY, evaluation.x, evaluation.y);
+                            hitTest = d < evaluation.size * 2;
+                        } else if (evaluation.type === 'negative') {
+                            // Check if within negative space bounds
+                            let d = dist(mouseX, mouseY, evaluation.x, evaluation.y);
+                            hitTest = d < evaluation.size / 2;
+                        }
+                        
+                        if (hitTest) {
+                            // Toggle activation
+                            evaluation.activated = !evaluation.activated;
+                            evaluation.activatedTime = millis();
+                            
+                            if (evaluation.activated) {
+                                // Set intensity level
+                                evaluation.intensity = evaluation.maxIntensity * 0.7;
+                                
+                                // Show joy resonance
+                                showJoyResonance(getRandomResonance(), evaluation.x, evaluation.y);
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // Check for interactions with response elements
+                for (let i = 0; i < responseElements.length; i++) {
+                    let response = responseElements[i];
+                    
+                    if (response.visible && response.interactive) {
+                        let hitTest = false;
+                        
+                        if (response.type === 'connector' || response.type === 'integration') {
+                            // Check if near element center
+                            let d = dist(mouseX, mouseY, response.x, response.y);
+                            hitTest = d < response.size / 2;
+                        } else if (response.type === 'path') {
+                            // Check if near path
+                            if (response.points.length === 4) { // Bezier curve
+                                let p = response.points;
+                                let hitTestPoints = 10;
+                                
+                                // Check multiple points along the curve
+                                for (let j = 0; j < hitTestPoints; j++) {
+                                    let t = j / (hitTestPoints - 1);
+                                    if (t > response.progress) break; // Only check up to current progress
+                                    
+                                    let x = bezierPoint(p[0].x, p[1].x, p[2].x, p[3].x, t);
+                                    let y = bezierPoint(p[0].y, p[1].y, p[2].y, p[3].y, t);
+                                    
+                                    let d = dist(mouseX, mouseY, x, y);
+                                    
+                                    if (d < response.width + 10) {
+                                        hitTest = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (hitTest) {
+                            // Toggle activation
+                            response.activated = !response.activated;
+                            response.activatedTime = millis();
+                            
+                            if (response.activated) {
+                                // Set harmony level
+                                response.harmony = response.maxHarmony * 0.7;
+                                
+                                // Show joy resonance
+                                if (response.type === 'path') {
+                                    let p = response.points;
+                                    let t = response.progress * 0.5; // Show resonance at middle of visible path
+                                    let x = bezierPoint(p[0].x, p[1].x, p[2].x, p[3].x, t);
+                                    let y = bezierPoint(p[0].y, p[1].y, p[2].y, p[3].y, t);
+                                    
+                                    showJoyResonance(getRandomResonance(), x, y);
+                                } else {
+                                    showJoyResonance(getRandomResonance(), response.x, response.y);
+                                }
+                            }
+                            
+                            return false;
+                        }
+                    }
+                }
+                
+                // If no element was clicked, toggle animation
+                isAnimating = !isAnimating;
+                
+                // Update sound based on animation state
+                if (!isAnimating && soundEnabled && soundLoaded && joySound.isPlaying()) {
+                    joySound.setVolume(0.3, 1);
+                } else if (isAnimating && soundEnabled && soundLoaded) {
+                    joySound.setVolume(0.6, 1);
+                }
+            }
+            
+            return false;
+        }
+        
+        // Support touch events
+        function touchStarted() {
+            // Initialize audio context for iOS
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            
+            return mousePressed();
+        }
+    </script>
+</body>
+</html>
