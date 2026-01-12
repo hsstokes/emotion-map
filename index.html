@@ -80,11 +80,8 @@ nav a.active {
 }
 
 section {
-    display: none;
-}
-
-section.active {
-    display: block;
+    margin-bottom: 80px;
+    scroll-margin-top: 70px; /* Accounts for sticky nav height */
 }
 
 .specimen {
@@ -191,6 +188,7 @@ h2 {
     color: var(--violet);
 }
 
+/* Standard mobile */
 @media (max-width: 800px) {
     .tag {
         margin-left: 0;
@@ -202,6 +200,79 @@ h2 {
     .collage img {
         width: 100%;
         max-width: 100%;
+    }
+}
+
+/* HyperPixel / small screen optimizations */
+@media (max-width: 480px) {
+    nav {
+        gap: 5px;
+        padding: 8px 5px;
+    }
+    
+    nav a {
+        padding: 4px 10px;
+        font-size: 0.7rem;
+    }
+    
+    main {
+        padding: 20px 10px 60px;
+    }
+    
+    .intro {
+        margin-bottom: 40px;
+        padding: 16px 18px;
+        font-size: 0.85rem;
+    }
+    
+    section {
+        margin-bottom: 50px;
+        scroll-margin-top: 55px;
+    }
+    
+    .specimen {
+        padding: 18px 16px 24px;
+    }
+    
+    header {
+        gap: 10px;
+        padding-bottom: 10px;
+        margin-bottom: 18px;
+    }
+    
+    .marker {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    h2 {
+        font-size: 1.3rem;
+    }
+    
+    .tag {
+        font-size: 0.7rem;
+        padding: 3px 10px;
+    }
+    
+    .iframe-container {
+        padding-bottom: 100%; /* Taller ratio for small screens */
+    }
+    
+    .caption {
+        font-size: 0.7rem;
+        margin: 8px 0 18px;
+    }
+    
+    .collage {
+        font-size: 0.7rem;
+        gap: 10px;
+    }
+    
+    .notes {
+        margin-top: 18px;
+        padding: 12px 14px;
+        font-size: 0.8rem;
     }
 }
 </style>
@@ -223,10 +294,10 @@ h2 {
 </div>
     
 <!-- ==========================================
-     SADNESS
+     JOY
      ========================================== -->
 
-<section id="joy" class="active">
+<section id="joy">
     <div class="specimen">
         <header>
             <div class="marker">+</div>
@@ -291,18 +362,47 @@ h2 {
 </main>
 
 <script>
-const links = document.querySelectorAll('nav a');
-const sections = document.querySelectorAll('section');
+document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('nav a');
+    const sections = document.querySelectorAll('section');
 
-links.forEach(link => {
-    link.addEventListener('click', function() {
-        const target = this.dataset.target;
-        
-        sections.forEach(s => s.classList.remove('active'));
-        document.getElementById(target).classList.add('active');
-        
-        links.forEach(l => l.classList.remove('active'));
-        this.classList.add('active');
+    links.forEach(link => {
+        link.addEventListener('click', function() {
+            const target = this.dataset.target;
+            const targetSection = document.getElementById(target);
+            
+            // Scroll to the section
+            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Update active nav link
+            links.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    
+    // Optional: Update active nav link based on scroll position
+    const observerOptions = {
+        root: null,
+        rootMargin: '-80px 0px -50% 0px',
+        threshold: 0
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.id;
+                links.forEach(l => {
+                    l.classList.remove('active');
+                    if (l.dataset.target === id) {
+                        l.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+    
+    sections.forEach(section => {
+        observer.observe(section);
     });
 });
 </script>
