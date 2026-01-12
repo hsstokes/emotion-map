@@ -22,6 +22,10 @@
    Base
    ========================= */
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     font-family: "Courier New", monospace;
@@ -40,7 +44,7 @@ body {
 main {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 60px 20px 140px;
+    padding: 40px 16px 100px;
 }
 
 /* =========================
@@ -52,9 +56,10 @@ nav {
     top: 0;
     z-index: 10;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 14px;
-    padding: 14px;
+    gap: 10px;
+    padding: 12px;
     background: rgba(255,255,255,0.95);
     border-bottom: 1px solid rgba(230,180,34,0.35);
 }
@@ -66,10 +71,19 @@ nav a {
     padding: 6px 14px;
     border: 1px solid var(--violet);
     border-radius: 30px;
+    transition: border-color 0.2s, background-color 0.2s, color 0.2s;
 }
 
-nav a:hover {
+nav a:hover,
+nav a:focus {
     border-color: var(--gold);
+    outline: none;
+}
+
+nav a.active {
+    background-color: var(--violet);
+    color: white;
+    border-color: var(--violet);
 }
 
 /* =========================
@@ -78,8 +92,8 @@ nav a:hover {
 
 .intro {
     max-width: 900px;
-    margin: 0 auto 120px;
-    padding: 32px 36px;
+    margin: 0 auto 80px;
+    padding: 24px 28px;
     background: rgba(255,255,255,0.96);
     border-left: 4px solid var(--gold);
     box-shadow: 6px 6px 0 rgba(92,75,153,0.15);
@@ -90,17 +104,21 @@ nav a:hover {
    ========================= */
 
 section {
-    opacity: 0;
-    pointer-events: none;
-    position: absolute;
-    left: 0;
-    right: 0;
+    display: none;
 }
 
 section.active {
-    opacity: 1;
-    pointer-events: auto;
-    position: relative;
+    display: block;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 /* =========================
@@ -109,10 +127,11 @@ section.active {
 
 header {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 18px;
+    gap: 14px;
     padding-bottom: 14px;
-    margin-bottom: 36px;
+    margin-bottom: 28px;
     border-bottom: 1px solid rgba(230,180,34,0.45);
 }
 
@@ -126,6 +145,7 @@ header {
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
+    flex-shrink: 0;
 }
 
 h2 {
@@ -150,7 +170,7 @@ h2 {
 .visualisation {
     max-width: 860px;
     margin: 0 auto 10px;
-    aspect-ratio: 5 / 3;
+    position: relative;
     background: #fafafa;
 
     border: 1px solid rgba(92,75,153,0.6);
@@ -161,12 +181,21 @@ h2 {
     overflow: hidden;
 }
 
+/* Aspect ratio fallback */
+.visualisation::before {
+    content: "";
+    display: block;
+    padding-top: 60%; /* 5:3 ratio */
+}
+
 .visualisation iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     border: none;
     display: block;
-    pointer-events: none;
 }
 
 /* =========================
@@ -176,10 +205,14 @@ h2 {
 .caption {
     text-align: center;
     font-size: 0.8rem;
-    color: var(--violet);
-    margin: 12px 0 34px;
+    color: var(--ink);
+    margin: 12px 0 28px;
     border-bottom: 1px solid rgba(230,180,34,0.3);
     padding-bottom: 10px;
+}
+
+.caption b {
+    color: var(--violet);
 }
 
 /* =========================
@@ -190,10 +223,11 @@ h2 {
     max-width: 860px;
     margin: 0 auto;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 14px;
     font-size: 0.8rem;
-    color: var(--violet);
+    color: var(--ink);
 }
 
 .collage img {
@@ -211,8 +245,8 @@ h2 {
 
 .notes {
     max-width: 860px;
-    margin: 34px auto 0;
-    padding: 20px 22px;
+    margin: 28px auto 0;
+    padding: 18px 20px;
     background: rgba(230,180,34,0.08);
 
     border-left: 4px solid var(--gold);
@@ -221,13 +255,53 @@ h2 {
 
     font-size: 0.95rem;
 }
+
+.notes b {
+    color: var(--violet);
+}
+
+/* =========================
+   HyperPixel Adjustments
+   ========================= */
+
+@media (max-width: 800px) {
+    main {
+        padding: 30px 12px 60px;
+    }
+
+    .intro {
+        margin-bottom: 50px;
+        padding: 18px 20px;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+    }
+
+    .tag {
+        margin-left: 0;
+        margin-top: 4px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .collage {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .collage img {
+        width: 100%;
+        max-width: 100%;
+    }
+}
 </style>
 </head>
 
 <body>
 
 <nav>
-    <a href="#joy" data-target="joy">Joy</a>
+    <a href="#joy" data-target="joy" class="active" aria-current="true">Joy</a>
     <a href="#sadness" data-target="sadness">Sadness</a>
 </nav>
 
@@ -252,7 +326,7 @@ h2 {
     </header>
 
     <div class="visualisation">
-        <iframe src="joy-overlay.html" sandbox="allow-scripts allow-same-origin"></iframe>
+        <iframe src="joy-overlay.html" sandbox="allow-scripts allow-same-origin" title="Joy visualization"></iframe>
     </div>
 
     <div class="caption">
@@ -261,7 +335,7 @@ h2 {
     </div>
 
     <div class="collage">
-        <img src="joy-sketchbook.jpg" alt="Joy collage">
+        <img src="joy-sketchbook.jpg" alt="Joy collage showing warm, expansive imagery">
         <span>Source collage</span>
     </div>
 
@@ -285,7 +359,7 @@ h2 {
     </header>
 
     <div class="visualisation">
-        <iframe src="sadness-overlay.html" sandbox="allow-scripts allow-same-origin"></iframe>
+        <iframe src="sadness-overlay.html" sandbox="allow-scripts allow-same-origin" title="Sadness visualization"></iframe>
     </div>
 
     <div class="caption">
@@ -294,7 +368,7 @@ h2 {
     </div>
 
     <div class="collage">
-        <img src="sadness-sketchbook.jpg" alt="Sadness collage">
+        <img src="sadness-sketchbook.jpg" alt="Sadness collage showing subdued, heavy imagery">
         <span>Source collage</span>
     </div>
 
@@ -320,6 +394,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 section.classList.add('active');
             }
         });
+
+        links.forEach(link => {
+            link.classList.remove('active');
+            link.removeAttribute('aria-current');
+            if (link.dataset.target === id) {
+                link.classList.add('active');
+                link.setAttribute('aria-current', 'true');
+            }
+        });
+
+        history.replaceState(null, null, '#' + id);
     }
 
     links.forEach(link => {
@@ -328,6 +413,15 @@ document.addEventListener('DOMContentLoaded', () => {
             showSection(link.dataset.target);
         });
     });
+
+    // Handle direct URL hash on load
+    if (window.location.hash) {
+        const targetId = window.location.hash.substring(1);
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+            showSection(targetId);
+        }
+    }
 
 });
 </script>
