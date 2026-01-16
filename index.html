@@ -186,34 +186,29 @@ section.active {
         <iframe src="anger-overlay.html" frameborder="0"></iframe>
     </div>
 </section>
-
+    
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const links = document.querySelectorAll('nav a');
     const sections = document.querySelectorAll('section');
     const emotionLabel = document.getElementById('current-emotion');
-    
-    const iframeSources = {
-        'joy': 'joy-overlay.html',
-        'sadness': 'sadness-overlay.html',
-        'anger': 'anger-overlay.html'
-    };
 
     links.forEach(link => {
         link.addEventListener('click', function() {
             const target = this.dataset.target;
             
-            // Stop all iframes by clearing their src
+            // Tell all iframes to stop their sounds
             document.querySelectorAll('iframe').forEach(iframe => {
-                iframe.src = '';
+                try {
+                    iframe.contentWindow.postMessage('stopSound', '*');
+                } catch(e) {}
             });
             
             // Hide all sections
             sections.forEach(s => s.classList.remove('active'));
             
-            // Show target section and load iframe
+            // Show target section
             document.getElementById(target).classList.add('active');
-            document.querySelector('#' + target + ' iframe').src = iframeSources[target];
             
             // Update nav
             links.forEach(l => l.classList.remove('active'));
