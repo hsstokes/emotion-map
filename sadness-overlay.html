@@ -1807,6 +1807,14 @@
             
             return mousePressed();
         }
+        // Listen for stop sound message from parent
+window.addEventListener('message', function(event) {
+    if (event.data === 'stopSound') {
+        if (sadnessSound && sadnessSound.isPlaying()) {
+            sadnessSound.stop();
+        }
+    }
+});
     </script>
 </body>
 </html>
