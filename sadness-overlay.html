@@ -93,10 +93,13 @@
             transform: scale(0.98);
         }
         
+        /* FIXED: Canvas positioning for HyperPixel */
         canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
             z-index: 1;
         }
         
@@ -268,52 +271,53 @@
                 max-width: 600px;
             }
         }
+        
         /* ==========================================
-   HYPERPIXEL OPTIMIZATIONS (800x480)
-   ========================================== */
-@media (max-height: 500px) {
-    #landing-overlay {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-content: center;
-        padding: 10px 20px;
-        gap: 8px;
-    }
-    
-    .landing-title {
-        display: none;
-    }
-    
-    .emotion-name {
-        font-size: 24px;
-        margin: 0 0 5px 0;
-        width: 100%;
-        text-align: center;
-    }
-    
-    .emotion-description {
-        font-size: 10px;
-        line-height: 1.2;
-        margin: 0;
-        max-width: 44%;
-        padding: 0 5px;
-    }
-    
-    .ai-disclaimer {
-        font-size: 9px;
-        padding: 6px 10px;
-        margin: 0;
-        max-width: 44%;
-        line-height: 1.2;
-    }
-    
-    .start-button {
-        padding: 10px 25px;
-        font-size: 13px;
-        margin-top: 8px;
-    }
-}
+           HYPERPIXEL OPTIMIZATIONS (800x480)
+           ========================================== */
+        @media (max-height: 500px) {
+            #landing-overlay {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-content: center;
+                padding: 10px 20px;
+                gap: 8px;
+            }
+            
+            .landing-title {
+                display: none;
+            }
+            
+            .emotion-name {
+                font-size: 24px;
+                margin: 0 0 5px 0;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .emotion-description {
+                font-size: 10px;
+                line-height: 1.2;
+                margin: 0;
+                max-width: 44%;
+                padding: 0 5px;
+            }
+            
+            .ai-disclaimer {
+                font-size: 9px;
+                padding: 6px 10px;
+                margin: 0;
+                max-width: 44%;
+                line-height: 1.2;
+            }
+            
+            .start-button {
+                padding: 10px 25px;
+                font-size: 13px;
+                margin-top: 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -373,6 +377,9 @@
         let weightPhase = 0;
         let weightRate = 0.3;
         
+        // Store actual canvas dimensions
+        let canvasWidth, canvasHeight;
+        
         const sadnessResonances = [
             "A heaviness that settles slowly into the bones",
             "The world seen through a veil of grey",
@@ -419,6 +426,13 @@
         let centerActivated = false;
         
         let timelineProgress = 0;
+        
+        // Helper function to get reliable dimensions
+        function getCanvasDimensions() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth || 800;
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight || 480;
+            return { w: w, h: h };
+        }
         
         function startExperience() {
             document.getElementById('landing-overlay').style.opacity = '0';
@@ -469,7 +483,10 @@
         
         window.addEventListener('orientationchange', function() {
             setTimeout(() => {
-                resizeCanvas(windowWidth, windowHeight);
+                let dims = getCanvasDimensions();
+                resizeCanvas(dims.w, dims.h);
+                canvasWidth = dims.w;
+                canvasHeight = dims.h;
                 repositionElements();
                 updateLayoutForOrientation();
             }, 100);
@@ -582,7 +599,12 @@
         }
 
         function setup() {
-            createCanvas(windowWidth, windowHeight);
+            // FIXED: Use reliable dimension detection
+            let dims = getCanvasDimensions();
+            canvasWidth = dims.w;
+            canvasHeight = dims.h;
+            
+            createCanvas(canvasWidth, canvasHeight);
             
             createHandOutline();
             createFallingElements();
@@ -609,9 +631,9 @@
             for (let i = 0; i < 25; i++) {
                 fallingElements.push({
                     type: 'particle',
-                    x: random(width * 0.1, width * 0.9),
-                    y: random(-height * 0.3, height * 0.7),
-                    baseY: random(-height * 0.3, height * 0.7),
+                    x: random(canvasWidth * 0.1, canvasWidth * 0.9),
+                    y: random(-canvasHeight * 0.3, canvasHeight * 0.7),
+                    baseY: random(-canvasHeight * 0.3, canvasHeight * 0.7),
                     size: random(3, 8),
                     fallSpeed: random(0.1, 0.3),
                     driftAmount: random(0.3, 0.8),
@@ -632,9 +654,9 @@
             for (let i = 0; i < 8; i++) {
                 fallingElements.push({
                     type: 'dissolving',
-                    x: random(width * 0.2, width * 0.8),
-                    y: random(height * 0.2, height * 0.6),
-                    baseY: random(height * 0.2, height * 0.6),
+                    x: random(canvasWidth * 0.2, canvasWidth * 0.8),
+                    y: random(canvasHeight * 0.2, canvasHeight * 0.6),
+                    baseY: random(canvasHeight * 0.2, canvasHeight * 0.6),
                     size: random(30, 60),
                     fragments: floor(random(5, 12)),
                     fallSpeed: random(0.05, 0.15),
@@ -655,9 +677,9 @@
             for (let i = 0; i < 6; i++) {
                 fallingElements.push({
                     type: 'line',
-                    x: width * (0.2 + i * 0.12),
-                    y: height * 0.1,
-                    length: random(height * 0.3, height * 0.5),
+                    x: canvasWidth * (0.2 + i * 0.12),
+                    y: canvasHeight * 0.1,
+                    length: random(canvasHeight * 0.3, canvasHeight * 0.5),
                     width: random(1, 2.5),
                     fallSpeed: random(0.08, 0.2),
                     opacity: random(120, 200),
@@ -681,8 +703,8 @@
             for (let i = 0; i < 5; i++) {
                 poolingElements.push({
                     type: 'pool',
-                    x: width * (0.15 + i * 0.18),
-                    y: height * 0.85,
+                    x: canvasWidth * (0.15 + i * 0.18),
+                    y: canvasHeight * 0.85,
                     width: random(80, 150),
                     height: random(20, 40),
                     opacity: random(100, 160),
@@ -702,9 +724,9 @@
             for (let i = 0; i < 4; i++) {
                 poolingElements.push({
                     type: 'layer',
-                    x: width * 0.1,
-                    y: height * (0.7 + i * 0.07),
-                    width: width * 0.8,
+                    x: canvasWidth * 0.1,
+                    y: canvasHeight * (0.7 + i * 0.07),
+                    width: canvasWidth * 0.8,
                     height: random(3, 8),
                     opacity: random(60, 120),
                     startTime: 8000 + i * 600,
@@ -722,8 +744,8 @@
             for (let i = 0; i < 6; i++) {
                 poolingElements.push({
                     type: 'settling',
-                    x: random(width * 0.2, width * 0.8),
-                    y: height * (0.75 + random(0.15)),
+                    x: random(canvasWidth * 0.2, canvasWidth * 0.8),
+                    y: canvasHeight * (0.75 + random(0.15)),
                     radius: random(15, 35),
                     opacity: random(80, 140),
                     startTime: 10000 + i * 700,
@@ -745,8 +767,8 @@
             for (let i = 0; i < 8; i++) {
                 warmthElements.push({
                     type: 'glow',
-                    x: random(width * 0.15, width * 0.85),
-                    y: random(height * 0.2, height * 0.7),
+                    x: random(canvasWidth * 0.15, canvasWidth * 0.85),
+                    y: random(canvasHeight * 0.2, canvasHeight * 0.7),
                     size: random(20, 45),
                     opacity: random(40, 80),
                     startTime: 12000 + i * 900,
@@ -765,8 +787,8 @@
             for (let i = 0; i < 12; i++) {
                 warmthElements.push({
                     type: 'fragment',
-                    x: random(width * 0.1, width * 0.9),
-                    y: random(height * 0.15, height * 0.75),
+                    x: random(canvasWidth * 0.1, canvasWidth * 0.9),
+                    y: random(canvasHeight * 0.15, canvasHeight * 0.75),
                     size: random(4, 10),
                     opacity: random(50, 100),
                     startTime: 14000 + i * 500,
@@ -784,9 +806,9 @@
             // Horizon line - distant hope
             warmthElements.push({
                 type: 'horizon',
-                x: width * 0.1,
-                y: height * 0.35,
-                width: width * 0.8,
+                x: canvasWidth * 0.1,
+                y: canvasHeight * 0.35,
+                width: canvasWidth * 0.8,
                 opacity: 50,
                 startTime: 16000,
                 visible: false,
@@ -832,16 +854,16 @@
             
             // Convert to absolute coordinates
             for (let i = 0; i < handOutlinePoints.length; i++) {
-                handOutlinePoints[i].x *= width;
-                handOutlinePoints[i].y *= height;
+                handOutlinePoints[i].x *= canvasWidth;
+                handOutlinePoints[i].y *= canvasHeight;
             }
         }
         
         function createSadnessCenters() {
             // Main center - the heart of the weight
             sadnessCenters.push({
-                x: width * 0.5, 
-                y: height * 0.55,
+                x: canvasWidth * 0.5, 
+                y: canvasHeight * 0.55,
                 size: 90,
                 opacity: 0,
                 targetOpacity: 120,
@@ -856,8 +878,8 @@
             // Secondary centers
             for (let i = 0; i < 2; i++) {
                 sadnessCenters.push({
-                    x: random(width * 0.25, width * 0.75),
-                    y: random(height * 0.4, height * 0.7),
+                    x: random(canvasWidth * 0.25, canvasWidth * 0.75),
+                    y: random(canvasHeight * 0.4, canvasHeight * 0.7),
                     size: random(50, 70),
                     opacity: 0,
                     targetOpacity: random(80, 120),
@@ -1166,7 +1188,7 @@
                     elem.y += elem.fallSpeed * (1 + elem.weight / elem.maxWeight * 0.5);
                     
                     // Reset when fallen off screen
-                    if (elem.y > height + 50) {
+                    if (elem.y > canvasHeight + 50) {
                         elem.y = -50;
                     }
                 }
@@ -1593,51 +1615,60 @@
         }
 
         function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
+            // FIXED: Use reliable dimension detection
+            let dims = getCanvasDimensions();
+            canvasWidth = dims.w;
+            canvasHeight = dims.h;
+            
+            resizeCanvas(canvasWidth, canvasHeight);
             repositionElements();
             updateLayoutForOrientation();
         }
         
         function repositionElements() {
+            // Use stored dimensions for repositioning
+            let oldWidth = width;
+            let oldHeight = height;
+            
             for (let i = 0; i < handOutlinePoints.length; i++) {
-                handOutlinePoints[i].x = (handOutlinePoints[i].x / width) * windowWidth;
-                handOutlinePoints[i].y = (handOutlinePoints[i].y / height) * windowHeight;
+                handOutlinePoints[i].x = (handOutlinePoints[i].x / oldWidth) * canvasWidth;
+                handOutlinePoints[i].y = (handOutlinePoints[i].y / oldHeight) * canvasHeight;
             }
             
             for (let elem of fallingElements) {
-                elem.x = (elem.x / width) * windowWidth;
-                elem.y = (elem.y / height) * windowHeight;
-                elem.baseY = (elem.baseY / height) * windowHeight;
-                if (elem.type === 'dissolving') elem.size = (elem.size / width) * windowWidth;
-                if (elem.type === 'line') elem.length = (elem.length / height) * windowHeight;
+                elem.x = (elem.x / oldWidth) * canvasWidth;
+                elem.y = (elem.y / oldHeight) * canvasHeight;
+                elem.baseY = (elem.baseY / oldHeight) * canvasHeight;
+                if (elem.type === 'dissolving') elem.size = (elem.size / oldWidth) * canvasWidth;
+                if (elem.type === 'line') elem.length = (elem.length / oldHeight) * canvasHeight;
             }
             
             for (let elem of poolingElements) {
-                elem.x = (elem.x / width) * windowWidth;
-                elem.y = (elem.y / height) * windowHeight;
+                elem.x = (elem.x / oldWidth) * canvasWidth;
+                elem.y = (elem.y / oldHeight) * canvasHeight;
                 if (elem.type === 'pool') {
-                    elem.width = (elem.width / width) * windowWidth;
+                    elem.width = (elem.width / oldWidth) * canvasWidth;
                 }
                 if (elem.type === 'layer') {
-                    elem.width = (elem.width / width) * windowWidth;
+                    elem.width = (elem.width / oldWidth) * canvasWidth;
                 }
                 if (elem.type === 'settling') {
-                    elem.radius = (elem.radius / width) * windowWidth;
+                    elem.radius = (elem.radius / oldWidth) * canvasWidth;
                 }
             }
             
             for (let elem of warmthElements) {
-                elem.x = (elem.x / width) * windowWidth;
-                elem.y = (elem.y / height) * windowHeight;
+                elem.x = (elem.x / oldWidth) * canvasWidth;
+                elem.y = (elem.y / oldHeight) * canvasHeight;
                 if (elem.type === 'horizon') {
-                    elem.width = (elem.width / width) * windowWidth;
+                    elem.width = (elem.width / oldWidth) * canvasWidth;
                 }
             }
             
             for (let center of sadnessCenters) {
-                center.x = (center.x / width) * windowWidth;
-                center.y = (center.y / height) * windowHeight;
-                center.size = (center.size / width) * windowWidth;
+                center.x = (center.x / oldWidth) * canvasWidth;
+                center.y = (center.y / oldHeight) * canvasHeight;
+                center.size = (center.size / oldWidth) * canvasWidth;
             }
         }
         
