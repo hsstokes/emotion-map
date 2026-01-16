@@ -8,14 +8,30 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             background-color: #f7f7f7;
             font-family: 'Roboto Mono', monospace;
             -webkit-text-size-adjust: 100%;
             touch-action: none;
+        }
+        
+        /* Canvas styling - ensure full screen */
+        canvas {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 1;
         }
         
         /* Landing screen that appears first */
@@ -31,7 +47,6 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            box-sizing: border-box;
             padding: 20px;
             transition: opacity 1s ease-in-out;
         }
@@ -62,17 +77,17 @@
         }
 
         .ai-disclaimer {
-           font-size: 13px;
-           max-width: 550px;
-           text-align: center;
-           margin-bottom: 40px;
-           margin-top: 10px;
-           padding: 15px 20px;
-           background-color: rgba(178, 34, 52, 0.1);
-           border-radius: 8px;
-           border-left: 3px solid #B22234;
-           line-height: 1.6;
-           color: #333;
+            font-size: 13px;
+            max-width: 550px;
+            text-align: center;
+            margin-bottom: 40px;
+            margin-top: 10px;
+            padding: 15px 20px;
+            background-color: rgba(178, 34, 52, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #B22234;
+            line-height: 1.6;
+            color: #333;
         }
         
         .start-button {
@@ -90,14 +105,6 @@
         
         .start-button:active {
             transform: scale(0.98);
-        }
-        
-        /* Canvas for the animation */
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
         }
         
         /* Anger resonance popup */
@@ -274,52 +281,53 @@
                 max-width: 600px;
             }
         }
-   /* ==========================================
-   HYPERPIXEL OPTIMIZATIONS (800x480)
-   ========================================== */
-   @media (max-height: 500px) {
-    #landing-overlay {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-content: center;
-        padding: 10px 20px;
-        gap: 8px;
-    }
-    
-    .landing-title {
-        display: none;
-    }
-    
-    .emotion-name {
-        font-size: 24px;
-        margin: 0 0 5px 0;
-        width: 100%;
-        text-align: center;
-    }
-    
-    .emotion-description {
-        font-size: 10px;
-        line-height: 1.2;
-        margin: 0;
-        max-width: 44%;
-        padding: 0 5px;
-    }
-    
-    .ai-disclaimer {
-        font-size: 9px;
-        padding: 6px 10px;
-        margin: 0;
-        max-width: 44%;
-        line-height: 1.2;
-    }
-    
-    .start-button {
-        padding: 10px 25px;
-        font-size: 13px;
-        margin-top: 8px;
-    }
-}
+        
+        /* ==========================================
+           HYPERPIXEL OPTIMIZATIONS (800x480)
+           ========================================== */
+        @media (max-height: 500px) {
+            #landing-overlay {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-content: center;
+                padding: 10px 20px;
+                gap: 8px;
+            }
+            
+            .landing-title {
+                display: none;
+            }
+            
+            .emotion-name {
+                font-size: 24px;
+                margin: 0 0 5px 0;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .emotion-description {
+                font-size: 10px;
+                line-height: 1.2;
+                margin: 0;
+                max-width: 44%;
+                padding: 0 5px;
+            }
+            
+            .ai-disclaimer {
+                font-size: 9px;
+                padding: 6px 10px;
+                margin: 0;
+                max-width: 44%;
+                line-height: 1.2;
+            }
+            
+            .start-button {
+                padding: 10px 25px;
+                font-size: 13px;
+                margin-top: 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -372,6 +380,7 @@
     </div>
     
     <script>
+        // Global variables
         let isAnimating = true;
         let soundEnabled = true;
         let angerSound;
@@ -382,9 +391,12 @@
         let previousTimePosition = 0;
         let activatedTimeline = false;
         let pressurePhase = 0;
-        let pressureRate = 1.2; // Fast, aggressive for anger
+        let pressureRate = 1.2;
         
-        // Anger resonances - text snippets that appear when interacting with elements
+        // Canvas dimensions - stored globally for reliable access
+        let canvasWidth, canvasHeight;
+        
+        // Anger resonances
         const angerResonances = [
             "The heat rising when boundaries are crossed",
             "A surge of energy demanding action",
@@ -405,36 +417,32 @@
         
         // Color palette for Anger
         const colors = {
-            crimson: [178, 34, 52],       // Crimson Red - Recognition (boundary violations)
-            charcoal: [45, 45, 45],       // Charcoal Black - Evaluation (threat intensity)
-            gray: [168, 169, 173]         // Cool Gray - Response (containment)
+            crimson: [178, 34, 52],
+            charcoal: [45, 45, 45],
+            gray: [168, 169, 173]
         };
         
-        // Elements for each conceptual layer
-        let violationElements = [];      // Crimson elements - slashing forms, boundary breaks
-        let pressureElements = [];       // Charcoal elements - accumulating mass and tension
-        let containmentElements = [];    // Gray elements - structural restraint
-        
-        // Slash lines that cut across the composition
+        // Element arrays
+        let violationElements = [];
+        let pressureElements = [];
+        let containmentElements = [];
         let slashLines = [];
-        
-        // Fragment particles from broken boundaries
         let fragmentParticles = [];
-        
-        // Pressure zones that build intensity
         let pressureZones = [];
-        
-        // Interactive anger centers
         let angerCenters = [];
         let activeAngerCenter = null;
         let centerActivated = false;
         
-        // Timeline tracking
-        let timelineProgress = 0;
-        
-        // Shake effect for intense anger
+        // Shake effect
         let shakeIntensity = 0;
         let shakeDecay = 0.95;
+
+        // Get reliable canvas dimensions
+        function getCanvasDimensions() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth || 800;
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight || 480;
+            return { width: w, height: h };
+        }
 
         function startExperience() {
             document.getElementById('landing-overlay').style.opacity = '0';
@@ -485,7 +493,10 @@
         
         window.addEventListener('orientationchange', function() {
             setTimeout(() => {
-                resizeCanvas(windowWidth, windowHeight);
+                let dims = getCanvasDimensions();
+                canvasWidth = dims.width;
+                canvasHeight = dims.height;
+                resizeCanvas(canvasWidth, canvasHeight);
                 repositionElements();
                 updateLayoutForOrientation();
             }, 100);
@@ -563,7 +574,7 @@
             document.getElementById('timeline-progress').style.width = `${percentage * 100}%`;
             document.getElementById('timeline-handle').style.left = `${percentage * 100}%`;
             
-            timePosition = percentage * 25000; // 25 seconds for anger (intense, shorter)
+            timePosition = percentage * 25000;
             
             setTimePosition(timePosition);
         }
@@ -600,7 +611,15 @@
         }
 
         function setup() {
-            createCanvas(windowWidth, windowHeight);
+            // Get reliable dimensions
+            let dims = getCanvasDimensions();
+            canvasWidth = dims.width;
+            canvasHeight = dims.height;
+            
+            console.log("Creating canvas:", canvasWidth, "x", canvasHeight);
+            
+            let canvas = createCanvas(canvasWidth, canvasHeight);
+            canvas.style('display', 'block');
             
             createViolationElements();
             createPressureElements();
@@ -622,17 +641,17 @@
         }
         
         function createViolationElements() {
-            // Create violation elements (crimson) - slashing, breaking boundary forms
+            violationElements = [];
             
             // Aggressive diagonal slashes
             for (let i = 0; i < 8; i++) {
                 violationElements.push({
                     type: 'slash',
-                    x: random(width * 0.2, width * 0.8),
-                    y: random(height * 0.2, height * 0.8),
+                    x: random(canvasWidth * 0.2, canvasWidth * 0.8),
+                    y: random(canvasHeight * 0.2, canvasHeight * 0.8),
                     length: random(80, 200),
                     width: random(3, 8),
-                    angle: random(-PI/3, -PI/6), // Aggressive diagonal
+                    angle: random(-PI/3, -PI/6),
                     opacity: random(180, 255),
                     startTime: 500 + i * 400,
                     visible: false,
@@ -650,8 +669,8 @@
             for (let i = 0; i < 5; i++) {
                 violationElements.push({
                     type: 'burst',
-                    x: random(width * 0.25, width * 0.75),
-                    y: random(height * 0.25, height * 0.75),
+                    x: random(canvasWidth * 0.25, canvasWidth * 0.75),
+                    y: random(canvasHeight * 0.25, canvasHeight * 0.75),
                     size: random(30, 60),
                     rays: floor(random(8, 16)),
                     rayLength: random(20, 50),
@@ -673,8 +692,8 @@
             for (let i = 0; i < 4; i++) {
                 let points = [];
                 let numPoints = floor(random(6, 10));
-                let startX = random(width * 0.3, width * 0.7);
-                let startY = random(height * 0.3, height * 0.7);
+                let startX = random(canvasWidth * 0.3, canvasWidth * 0.7);
+                let startY = random(canvasHeight * 0.3, canvasHeight * 0.7);
                 
                 for (let j = 0; j < numPoints; j++) {
                     points.push({
@@ -702,14 +721,14 @@
         }
         
         function createPressureElements() {
-            // Create pressure elements (charcoal) - dense, heavy accumulating forms
+            pressureElements = [];
             
             // Dense geometric blocks
             for (let i = 0; i < 6; i++) {
                 pressureElements.push({
                     type: 'block',
-                    x: random(width * 0.2, width * 0.8),
-                    y: random(height * 0.2, height * 0.8),
+                    x: random(canvasWidth * 0.2, canvasWidth * 0.8),
+                    y: random(canvasHeight * 0.2, canvasHeight * 0.8),
                     width: random(40, 100),
                     height: random(30, 80),
                     opacity: random(200, 255),
@@ -730,8 +749,8 @@
             for (let i = 0; i < 5; i++) {
                 pressureElements.push({
                     type: 'mass',
-                    x: random(width * 0.25, width * 0.75),
-                    y: random(height * 0.25, height * 0.75),
+                    x: random(canvasWidth * 0.25, canvasWidth * 0.75),
+                    y: random(canvasHeight * 0.25, canvasHeight * 0.75),
                     size: random(50, 100),
                     layers: floor(random(3, 6)),
                     opacity: random(180, 240),
@@ -751,8 +770,8 @@
             for (let i = 0; i < 4; i++) {
                 pressureElements.push({
                     type: 'grid',
-                    x: random(width * 0.3, width * 0.7),
-                    y: random(height * 0.3, height * 0.7),
+                    x: random(canvasWidth * 0.3, canvasWidth * 0.7),
+                    y: random(canvasHeight * 0.3, canvasHeight * 0.7),
                     size: random(60, 100),
                     cells: floor(random(3, 5)),
                     opacity: random(160, 220),
@@ -771,17 +790,17 @@
         }
         
         function createContainmentElements() {
-            // Create containment elements (gray) - structural restraint
+            containmentElements = [];
             
             // Boundary lines
             for (let i = 0; i < 6; i++) {
                 containmentElements.push({
                     type: 'boundary',
-                    x: random(width * 0.15, width * 0.85),
-                    y: random(height * 0.15, height * 0.85),
+                    x: random(canvasWidth * 0.15, canvasWidth * 0.85),
+                    y: random(canvasHeight * 0.15, canvasHeight * 0.85),
                     length: random(100, 250),
                     width: random(2, 4),
-                    angle: random() > 0.5 ? 0 : HALF_PI, // Horizontal or vertical
+                    angle: random() > 0.5 ? 0 : HALF_PI,
                     opacity: random(140, 200),
                     startTime: 1500 + i * 400,
                     visible: false,
@@ -799,8 +818,8 @@
             for (let i = 0; i < 3; i++) {
                 containmentElements.push({
                     type: 'frame',
-                    x: random(width * 0.25, width * 0.75),
-                    y: random(height * 0.25, height * 0.75),
+                    x: random(canvasWidth * 0.25, canvasWidth * 0.75),
+                    y: random(canvasHeight * 0.25, canvasHeight * 0.75),
                     width: random(80, 150),
                     height: random(60, 120),
                     strokeWidth: random(2, 4),
@@ -821,8 +840,8 @@
             for (let i = 0; i < 3; i++) {
                 containmentElements.push({
                     type: 'overlay',
-                    x: random(width * 0.2, width * 0.8),
-                    y: random(height * 0.2, height * 0.8),
+                    x: random(canvasWidth * 0.2, canvasWidth * 0.8),
+                    y: random(canvasHeight * 0.2, canvasHeight * 0.8),
                     size: random(100, 180),
                     lines: floor(random(4, 8)),
                     opacity: random(100, 160),
@@ -840,22 +859,21 @@
         }
         
         function createSlashLines() {
-            // Create dramatic slash lines that cut across the entire composition
+            slashLines = [];
+            
             for (let i = 0; i < 4; i++) {
                 let startX, startY, endX, endY;
                 
                 if (random() > 0.5) {
-                    // Diagonal from top-left area to bottom-right area
-                    startX = random(0, width * 0.3);
-                    startY = random(0, height * 0.3);
-                    endX = random(width * 0.7, width);
-                    endY = random(height * 0.7, height);
+                    startX = random(0, canvasWidth * 0.3);
+                    startY = random(0, canvasHeight * 0.3);
+                    endX = random(canvasWidth * 0.7, canvasWidth);
+                    endY = random(canvasHeight * 0.7, canvasHeight);
                 } else {
-                    // Diagonal from top-right area to bottom-left area
-                    startX = random(width * 0.7, width);
-                    startY = random(0, height * 0.3);
-                    endX = random(0, width * 0.3);
-                    endY = random(height * 0.7, height);
+                    startX = random(canvasWidth * 0.7, canvasWidth);
+                    startY = random(0, canvasHeight * 0.3);
+                    endX = random(0, canvasWidth * 0.3);
+                    endY = random(canvasHeight * 0.7, canvasHeight);
                 }
                 
                 slashLines.push({
@@ -874,11 +892,12 @@
         }
         
         function createPressureZones() {
-            // Create pressure zones where intensity accumulates
+            pressureZones = [];
+            
             for (let i = 0; i < 3; i++) {
                 pressureZones.push({
-                    x: random(width * 0.3, width * 0.7),
-                    y: random(height * 0.3, height * 0.7),
+                    x: random(canvasWidth * 0.3, canvasWidth * 0.7),
+                    y: random(canvasHeight * 0.3, canvasHeight * 0.7),
                     radius: random(80, 150),
                     pressure: 0,
                     maxPressure: 100,
@@ -890,12 +909,12 @@
         }
         
         function createAngerCenters() {
-            // Create interactive anger centers - focal points of intensity
+            angerCenters = [];
             
             // Main anger center
             angerCenters.push({
-                x: width * 0.5, 
-                y: height * 0.5,
+                x: canvasWidth * 0.5, 
+                y: canvasHeight * 0.5,
                 size: 100,
                 opacity: 0,
                 targetOpacity: 200,
@@ -910,8 +929,8 @@
             // Secondary anger centers
             for (let i = 0; i < 2; i++) {
                 angerCenters.push({
-                    x: random(width * 0.25, width * 0.75),
-                    y: random(height * 0.25, height * 0.75),
+                    x: random(canvasWidth * 0.25, canvasWidth * 0.75),
+                    y: random(canvasHeight * 0.25, canvasHeight * 0.75),
                     size: random(60, 80),
                     opacity: 0,
                     targetOpacity: random(160, 200),
@@ -924,7 +943,6 @@
                 });
             }
             
-            // Assign elements to anger centers based on proximity
             assignElementsToCenters();
         }
         
@@ -988,12 +1006,11 @@
                 shakeIntensity *= shakeDecay;
             }
             
-            // Clear with slightly warm background
             background(247, 245, 244);
             
             // Update time position
             if (isAnimating && !isDraggingTimeline) {
-                timePosition += deltaTime * 1.2; // Faster progression for anger
+                timePosition += deltaTime * 1.2;
                 
                 if (timePosition > 25000) {
                     timePosition = 25000;
@@ -1008,17 +1025,16 @@
                 previousTimePosition = timePosition;
             }
 
-            // Update pressure phase
             pressurePhase += pressureRate * deltaTime * 0.001;
             
-            // Draw layers in order
-            drawContainmentElements();    // Gray - structural restraint (background)
-            drawPressureZones();          // Pressure accumulation zones
-            drawPressureElements();       // Charcoal - mounting pressure
-            drawSlashLines();             // Dramatic cutting lines
-            drawViolationElements();      // Crimson - boundary violations (foreground)
-            drawAngerCenters();           // Interactive focal points
-            drawFragmentParticles();      // Broken boundary fragments
+            // Draw layers
+            drawContainmentElements();
+            drawPressureZones();
+            drawPressureElements();
+            drawSlashLines();
+            drawViolationElements();
+            drawAngerCenters();
+            drawFragmentParticles();
             
             // Update systems
             updateActivatedElements();
@@ -1061,19 +1077,16 @@
             translate(elem.x, elem.y);
             rotate(elem.angle);
             
-            // Glow effect when activated
             if (intensityFactor > 0) {
                 stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 80 * intensityFactor);
                 strokeWeight(elem.width + 10 * intensityFactor);
                 line(0, 0, elem.length * (1 + pulse), 0);
             }
             
-            // Main slash
             stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
                    elem.opacity * (0.8 + intensityFactor * 0.2));
             strokeWeight(elem.width + intensityFactor * 4);
             
-            // Add jagged quality when intense
             if (intensityFactor > 0.5) {
                 beginShape();
                 let segments = 10;
@@ -1087,14 +1100,11 @@
                 line(0, 0, elem.length, 0);
             }
             
-            // Sharp endpoints
             fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], elem.opacity);
             noStroke();
             
-            // Entry point
             triangle(-5, -elem.width/2, -5, elem.width/2, 5, 0);
             
-            // Exit point (sharper when intense)
             push();
             translate(elem.length, 0);
             let exitSize = 8 + intensityFactor * 6;
@@ -1103,7 +1113,6 @@
             
             pop();
             
-            // Interactive pulse
             if (elem.interactive && !elem.activated) {
                 noFill();
                 stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 40);
@@ -1120,7 +1129,6 @@
             translate(elem.x, elem.y);
             rotate(elem.rotation + (intensityFactor > 0 ? millis() * 0.002 * intensityFactor : 0));
             
-            // Outer glow when activated
             if (intensityFactor > 0) {
                 noFill();
                 stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 60 * intensityFactor);
@@ -1128,7 +1136,6 @@
                 ellipse(0, 0, elem.size * (1.5 + intensityFactor));
             }
             
-            // Draw rays
             for (let j = 0; j < elem.rays; j++) {
                 let angle = TWO_PI * j / elem.rays;
                 let rayLen = elem.rayLength * (1 + pulse + intensityFactor * 0.5);
@@ -1145,7 +1152,6 @@
                     sin(angle) * (innerRadius + rayLen)
                 );
                 
-                // Ray tips
                 if (intensityFactor > 0.3) {
                     fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
                          elem.opacity * intensityFactor);
@@ -1157,19 +1163,16 @@
                 }
             }
             
-            // Central core
             fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
                  elem.opacity * (0.8 + intensityFactor * 0.2));
             noStroke();
             ellipse(0, 0, elem.size * 0.4 * (1 + pulse));
             
-            // Inner hot core
             fill(255, 100, 100, elem.opacity * intensityFactor);
             ellipse(0, 0, elem.size * 0.15 * (1 + intensityFactor));
             
             pop();
             
-            // Interactive pulse
             if (elem.interactive && !elem.activated) {
                 noFill();
                 stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 40);
@@ -1181,7 +1184,6 @@
         function drawTearElement(elem, intensityFactor, pulse) {
             if (elem.points.length < 2) return;
             
-            // Glow when activated
             if (intensityFactor > 0) {
                 noFill();
                 stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 60 * intensityFactor);
@@ -1194,7 +1196,6 @@
                 endShape();
             }
             
-            // Main tear line
             stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
                    elem.opacity * (0.8 + intensityFactor * 0.2));
             strokeWeight(elem.width + intensityFactor * 3);
@@ -1207,7 +1208,6 @@
             }
             endShape();
             
-            // Fragment points at vertices when intense
             if (intensityFactor > 0.4) {
                 fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
                      elem.opacity * intensityFactor);
@@ -1220,7 +1220,6 @@
                 }
             }
             
-            // Interactive pulse
             if (elem.interactive && !elem.activated) {
                 noFill();
                 stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 40);
@@ -1257,7 +1256,6 @@
             translate(elem.x, elem.y);
             rotate(elem.rotation + pressureFactor * 0.1);
             
-            // Shadow/pressure effect
             if (pressureFactor > 0) {
                 fill(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 50 * pressureFactor);
                 noStroke();
@@ -1268,7 +1266,6 @@
                      elem.height * (1 + pulse));
             }
             
-            // Main block
             fill(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 
                  elem.opacity * (0.8 + pressureFactor * 0.2));
             
@@ -1284,20 +1281,17 @@
                  elem.width * (1 + pulse + pressureFactor * 0.1), 
                  elem.height * (1 + pulse + pressureFactor * 0.1));
             
-            // Stress lines when under pressure
             if (pressureFactor > 0.5) {
                 stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
                        120 * pressureFactor);
                 strokeWeight(1);
                 
-                // Diagonal stress fractures
                 line(-elem.width/2, -elem.height/2, elem.width/2, elem.height/2);
                 line(elem.width/2, -elem.height/2, -elem.width/2, elem.height/2);
             }
             
             pop();
             
-            // Interactive pulse
             if (elem.interactive && !elem.activated) {
                 noFill();
                 stroke(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 40);
@@ -1312,12 +1306,10 @@
             push();
             translate(elem.x, elem.y);
             
-            // Draw concentric layers from outside in
             for (let j = elem.layers - 1; j >= 0; j--) {
                 let layerRatio = (j + 1) / elem.layers;
                 let layerSize = elem.size * layerRatio * (1 + pulse);
                 
-                // Layers get denser (darker) toward center
                 let layerOpacity = elem.opacity * (0.4 + 0.6 * (1 - layerRatio));
                 
                 if (pressureFactor > 0) {
@@ -1327,7 +1319,6 @@
                 
                 fill(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], layerOpacity);
                 
-                // Add red tinge when highly pressurized
                 if (pressureFactor > 0.6 && j === 0) {
                     fill(
                         lerp(colors.charcoal[0], colors.crimson[0], pressureFactor * 0.3),
@@ -1341,7 +1332,6 @@
                 ellipse(0, 0, layerSize);
             }
             
-            // Pressure ring when activated
             if (pressureFactor > 0) {
                 noFill();
                 stroke(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 
@@ -1353,7 +1343,6 @@
             
             pop();
             
-            // Interactive pulse
             if (elem.interactive && !elem.activated) {
                 noFill();
                 stroke(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 40);
@@ -1374,14 +1363,12 @@
             strokeWeight(1.5 + pressureFactor);
             noFill();
             
-            // Draw distorted grid
             for (let row = 0; row <= elem.cells; row++) {
                 beginShape();
                 for (let col = 0; col <= elem.cells; col++) {
                     let x = -elem.size/2 + col * cellSize;
                     let y = -elem.size/2 + row * cellSize;
                     
-                    // Add distortion based on pressure
                     if (pressureFactor > 0.2) {
                         x += random(-distortAmount, distortAmount);
                         y += random(-distortAmount, distortAmount);
@@ -1392,7 +1379,6 @@
                 endShape();
             }
             
-            // Vertical lines
             for (let col = 0; col <= elem.cells; col++) {
                 beginShape();
                 for (let row = 0; row <= elem.cells; row++) {
@@ -1411,7 +1397,6 @@
             
             pop();
             
-            // Interactive pulse
             if (elem.interactive && !elem.activated) {
                 noFill();
                 stroke(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], 40);
@@ -1449,12 +1434,10 @@
             translate(elem.x, elem.y);
             rotate(elem.angle);
             
-            // Main boundary line
             stroke(colors.gray[0], colors.gray[1], colors.gray[2], 
                    elem.opacity * (0.8 + strainFactor * 0.2));
             strokeWeight(elem.width + strainFactor * 2);
             
-            // Add wavering when under strain
             if (strainFactor > 0.4) {
                 beginShape();
                 let segments = 15;
@@ -1468,13 +1451,11 @@
                 line(-elem.length/2, 0, elem.length/2, 0);
             }
             
-            // Break points when highly strained
             if (strainFactor > 0.7) {
                 stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
                        150 * strainFactor);
                 strokeWeight(2);
                 
-                // Random break indicators
                 let breaks = floor(strainFactor * 3);
                 for (let j = 0; j < breaks; j++) {
                     let breakX = random(-elem.length/2, elem.length/2);
@@ -1484,15 +1465,12 @@
             
             pop();
             
-            // Interactive pulse
             if (elem.interactive && !elem.activated) {
                 noFill();
                 stroke(colors.gray[0], colors.gray[1], colors.gray[2], 40);
                 strokeWeight(1);
                 
-                let midX = elem.x + cos(elem.angle) * 0;
-                let midY = elem.y + sin(elem.angle) * 0;
-                ellipse(midX, midY, 15 + sin(millis() * 0.003) * 4);
+                ellipse(elem.x, elem.y, 15 + sin(millis() * 0.003) * 4);
             }
         }
         
@@ -1505,7 +1483,6 @@
                    elem.opacity * (0.8 + strainFactor * 0.2));
             strokeWeight(elem.strokeWidth + strainFactor * 2);
             
-            // Distort frame corners when under strain
             let distort = strainFactor * 8;
             
             beginShape();
@@ -1519,20 +1496,17 @@
                    elem.height/2 + random(-distort, distort));
             endShape(CLOSE);
             
-            // Internal pressure indicators
             if (strainFactor > 0.5) {
                 stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
                        80 * strainFactor);
                 strokeWeight(1);
                 
-                // Diagonal pressure lines
                 line(-elem.width/2, -elem.height/2, elem.width/2, elem.height/2);
                 line(elem.width/2, -elem.height/2, -elem.width/2, elem.height/2);
             }
             
             pop();
             
-            // Interactive pulse
             if (elem.interactive && !elem.activated) {
                 noFill();
                 stroke(colors.gray[0], colors.gray[1], colors.gray[2], 40);
@@ -1553,7 +1527,6 @@
             let spacing = elem.size / elem.lines;
             let distort = strainFactor * 6;
             
-            // Horizontal lines
             for (let j = 0; j <= elem.lines; j++) {
                 let y = -elem.size/2 + j * spacing;
                 let x1 = -elem.size/2 + random(-distort, distort);
@@ -1561,7 +1534,6 @@
                 line(x1, y + random(-distort, distort), x2, y + random(-distort, distort));
             }
             
-            // Vertical lines
             for (let j = 0; j <= elem.lines; j++) {
                 let x = -elem.size/2 + j * spacing;
                 let y1 = -elem.size/2 + random(-distort, distort);
@@ -1583,23 +1555,19 @@
                         let currentX = lerp(slash.startX, slash.endX, slash.progress);
                         let currentY = lerp(slash.startY, slash.endY, slash.progress);
                         
-                        // Trail glow
                         stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], 60);
                         strokeWeight(slash.width + 8);
                         line(slash.startX, slash.startY, currentX, currentY);
                         
-                        // Main slash
                         stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], slash.opacity);
                         strokeWeight(slash.width);
                         line(slash.startX, slash.startY, currentX, currentY);
                         
-                        // Leading edge spark
                         if (slash.progress < 1) {
                             fill(255, 150, 150, 200);
                             noStroke();
                             ellipse(currentX, currentY, slash.width * 2);
                             
-                            // Spawn fragment particles
                             if (random() > 0.7) {
                                 spawnFragment(currentX, currentY);
                             }
@@ -1614,17 +1582,14 @@
                 if (timePosition > zone.startTime) {
                     zone.visible = true;
                     
-                    // Calculate pressure based on nearby activated elements
                     zone.pressure = calculateZonePressure(zone);
                     
                     if (zone.pressure > 10) {
                         let pulse = sin(millis() * zone.pulseRate) * 0.2;
                         let pressureFactor = zone.pressure / zone.maxPressure;
                         
-                        // Pressure field visualization
                         noFill();
                         
-                        // Outer rings
                         for (let i = 0; i < 3; i++) {
                             let ringSize = zone.radius * (0.6 + i * 0.3) * (1 + pulse);
                             let ringOpacity = 40 * pressureFactor * (1 - i * 0.25);
@@ -1634,7 +1599,6 @@
                             ellipse(zone.x, zone.y, ringSize * 2);
                         }
                         
-                        // Inner pressure core
                         if (pressureFactor > 0.5) {
                             fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
                                  30 * pressureFactor);
@@ -1649,7 +1613,6 @@
         function calculateZonePressure(zone) {
             let totalPressure = 0;
             
-            // Check violation elements
             for (let elem of violationElements) {
                 if (elem.visible && elem.intensity > 0) {
                     let elemX = elem.type === 'tear' ? elem.points[0].x : elem.x;
@@ -1662,7 +1625,6 @@
                 }
             }
             
-            // Check pressure elements
             for (let elem of pressureElements) {
                 if (elem.visible && elem.pressure > 0) {
                     let d = dist(elem.x, elem.y, zone.x, zone.y);
@@ -1688,9 +1650,7 @@
                     let pulse = sin(millis() * center.pulseRate) * 0.2;
                     let pulseSize = center.size * (1 + pulse);
                     
-                    // Active anger center effects
                     if (i === activeAngerCenter && center.activationProgress > 0) {
-                        // Explosive rings
                         for (let j = 0; j < 4; j++) {
                             let ringSize = pulseSize * (1 + j * 0.3) * center.activationProgress;
                             let ringOpacity = (100 - j * 20) * center.activationProgress;
@@ -1701,7 +1661,6 @@
                             ellipse(center.x, center.y, ringSize);
                         }
                         
-                        // Radiating anger lines
                         let numLines = 12;
                         for (let j = 0; j < numLines; j++) {
                             let angle = TWO_PI * j / numLines + millis() * 0.002;
@@ -1720,28 +1679,23 @@
                         }
                     }
                     
-                    // Main center boundary
                     noFill();
                     stroke(colors.crimson[0], colors.crimson[1], colors.crimson[2], center.opacity);
                     strokeWeight(3);
                     ellipse(center.x, center.y, pulseSize);
                     
-                    // Inner core
                     fill(colors.charcoal[0], colors.charcoal[1], colors.charcoal[2], center.opacity * 0.3);
                     noStroke();
                     ellipse(center.x, center.y, pulseSize * 0.4);
                     
-                    // Hot center
                     fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], center.opacity * 0.5);
                     ellipse(center.x, center.y, pulseSize * 0.15);
                     
-                    // Interactive indicator
                     if (!center.activated) {
                         fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], 
                              60 + 40 * sin(millis() * 0.006));
                         noStroke();
                         
-                        // Exclamation mark
                         push();
                         translate(center.x, center.y);
                         rect(-3, -15, 6, 20);
@@ -1773,7 +1727,6 @@
             for (let p of fragmentParticles) {
                 fill(colors.crimson[0], colors.crimson[1], colors.crimson[2], p.opacity * p.life);
                 
-                // Sharp angular fragment
                 push();
                 translate(p.x, p.y);
                 rotate(atan2(p.vy, p.vx));
@@ -1795,17 +1748,16 @@
                 
                 p.x += p.vx;
                 p.y += p.vy;
-                p.vy += 0.1; // Gravity
+                p.vy += 0.1;
                 p.life -= p.decay;
                 
-                if (p.life <= 0 || p.y > height + 50) {
+                if (p.life <= 0 || p.y > canvasHeight + 50) {
                     fragmentParticles.splice(i, 1);
                 }
             }
         }
         
         function updateActivatedElements() {
-            // Update violation elements
             for (let elem of violationElements) {
                 if (elem.activated) {
                     if (elem.intensity > 0) {
@@ -1818,7 +1770,6 @@
                 }
             }
             
-            // Update pressure elements
             for (let elem of pressureElements) {
                 if (elem.activated) {
                     if (elem.pressure > 0) {
@@ -1831,7 +1782,6 @@
                 }
             }
             
-            // Update containment elements
             for (let elem of containmentElements) {
                 if (elem.activated) {
                     if (elem.strain > 0) {
@@ -1844,7 +1794,6 @@
                 }
             }
             
-            // Update anger centers
             for (let center of angerCenters) {
                 if (center.activated) {
                     center.activationProgress = min(1, center.activationProgress + 0.015);
@@ -1863,7 +1812,6 @@
         }
         
         function updateElementPropagation() {
-            // Violation elements intensify pressure elements
             for (let vElem of violationElements) {
                 if (vElem.activated && vElem.intensity > 40) {
                     let vX = vElem.type === 'tear' ? vElem.points[0].x : vElem.x;
@@ -1885,7 +1833,6 @@
                 }
             }
             
-            // Pressure elements strain containment elements
             for (let pElem of pressureElements) {
                 if (pElem.activated && pElem.pressure > 50) {
                     for (let cElem of containmentElements) {
@@ -1904,7 +1851,6 @@
                 }
             }
             
-            // High strain containment feeds back to violation (anger breaking through)
             for (let cElem of containmentElements) {
                 if (cElem.activated && cElem.strain > 70) {
                     for (let vElem of violationElements) {
@@ -1921,7 +1867,6 @@
                                 vElem.activated = true;
                                 vElem.activatedTime = millis();
                                 
-                                // Spawn fragments when anger breaks through
                                 spawnFragment(vX, vY);
                                 shakeIntensity = min(15, shakeIntensity + 3);
                             }
@@ -1982,73 +1927,79 @@
         }
 
         function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
+            let dims = getCanvasDimensions();
+            canvasWidth = dims.width;
+            canvasHeight = dims.height;
+            resizeCanvas(canvasWidth, canvasHeight);
             repositionElements();
             updateLayoutForOrientation();
         }
         
         function repositionElements() {
-            // Reposition all elements based on new dimensions
+            // Store old dimensions for ratio calculation
+            let oldWidth = width || canvasWidth;
+            let oldHeight = height || canvasHeight;
+            
             for (let elem of violationElements) {
-                elem.x = (elem.x / width) * windowWidth;
-                elem.y = (elem.y / height) * windowHeight;
+                elem.x = (elem.x / oldWidth) * canvasWidth;
+                elem.y = (elem.y / oldHeight) * canvasHeight;
                 
                 if (elem.type === 'slash') {
-                    elem.length = (elem.length / width) * windowWidth;
+                    elem.length = (elem.length / oldWidth) * canvasWidth;
                 } else if (elem.type === 'burst') {
-                    elem.size = (elem.size / width) * windowWidth;
-                    elem.rayLength = (elem.rayLength / width) * windowWidth;
+                    elem.size = (elem.size / oldWidth) * canvasWidth;
+                    elem.rayLength = (elem.rayLength / oldWidth) * canvasWidth;
                 } else if (elem.type === 'tear') {
                     for (let p of elem.points) {
-                        p.x = (p.x / width) * windowWidth;
-                        p.y = (p.y / height) * windowHeight;
+                        p.x = (p.x / oldWidth) * canvasWidth;
+                        p.y = (p.y / oldHeight) * canvasHeight;
                     }
                 }
             }
             
             for (let elem of pressureElements) {
-                elem.x = (elem.x / width) * windowWidth;
-                elem.y = (elem.y / height) * windowHeight;
+                elem.x = (elem.x / oldWidth) * canvasWidth;
+                elem.y = (elem.y / oldHeight) * canvasHeight;
                 
                 if (elem.type === 'block') {
-                    elem.width = (elem.width / width) * windowWidth;
-                    elem.height = (elem.height / height) * windowHeight;
+                    elem.width = (elem.width / oldWidth) * canvasWidth;
+                    elem.height = (elem.height / oldHeight) * canvasHeight;
                 } else {
-                    elem.size = (elem.size / width) * windowWidth;
+                    elem.size = (elem.size / oldWidth) * canvasWidth;
                 }
             }
             
             for (let elem of containmentElements) {
-                elem.x = (elem.x / width) * windowWidth;
-                elem.y = (elem.y / height) * windowHeight;
+                elem.x = (elem.x / oldWidth) * canvasWidth;
+                elem.y = (elem.y / oldHeight) * canvasHeight;
                 
                 if (elem.type === 'boundary') {
-                    elem.length = (elem.length / width) * windowWidth;
+                    elem.length = (elem.length / oldWidth) * canvasWidth;
                 } else if (elem.type === 'frame') {
-                    elem.width = (elem.width / width) * windowWidth;
-                    elem.height = (elem.height / height) * windowHeight;
+                    elem.width = (elem.width / oldWidth) * canvasWidth;
+                    elem.height = (elem.height / oldHeight) * canvasHeight;
                 } else {
-                    elem.size = (elem.size / width) * windowWidth;
+                    elem.size = (elem.size / oldWidth) * canvasWidth;
                 }
             }
             
             for (let slash of slashLines) {
-                slash.startX = (slash.startX / width) * windowWidth;
-                slash.startY = (slash.startY / height) * windowHeight;
-                slash.endX = (slash.endX / width) * windowWidth;
-                slash.endY = (slash.endY / height) * windowHeight;
+                slash.startX = (slash.startX / oldWidth) * canvasWidth;
+                slash.startY = (slash.startY / oldHeight) * canvasHeight;
+                slash.endX = (slash.endX / oldWidth) * canvasWidth;
+                slash.endY = (slash.endY / oldHeight) * canvasHeight;
             }
             
             for (let zone of pressureZones) {
-                zone.x = (zone.x / width) * windowWidth;
-                zone.y = (zone.y / height) * windowHeight;
-                zone.radius = (zone.radius / width) * windowWidth;
+                zone.x = (zone.x / oldWidth) * canvasWidth;
+                zone.y = (zone.y / oldHeight) * canvasHeight;
+                zone.radius = (zone.radius / oldWidth) * canvasWidth;
             }
             
             for (let center of angerCenters) {
-                center.x = (center.x / width) * windowWidth;
-                center.y = (center.y / height) * windowHeight;
-                center.size = (center.size / width) * windowWidth;
+                center.x = (center.x / oldWidth) * canvasWidth;
+                center.y = (center.y / oldHeight) * canvasHeight;
+                center.size = (center.size / oldWidth) * canvasWidth;
             }
         }
         
@@ -2078,7 +2029,6 @@
         function mousePressed() {
             if (document.getElementById('landing-overlay').style.display === 'none') {
                 
-                // Check anger centers first
                 for (let i = 0; i < angerCenters.length; i++) {
                     let center = angerCenters[i];
                     
@@ -2094,10 +2044,8 @@
                                 
                                 showAngerResonance(center.resonance, center.x, center.y);
                                 
-                                // Trigger shake
                                 shakeIntensity = 10;
                                 
-                                // Activate associated elements
                                 for (let element of center.elements) {
                                     if (element.type === 'violation') {
                                         violationElements[element.index].activated = true;
@@ -2117,7 +2065,6 @@
                                     }
                                 }
                                 
-                                // Spawn explosion of fragments
                                 for (let j = 0; j < 10; j++) {
                                     spawnFragment(center.x + random(-20, 20), center.y + random(-20, 20));
                                 }
@@ -2131,7 +2078,6 @@
                     }
                 }
                 
-                // Check violation elements
                 for (let i = 0; i < violationElements.length; i++) {
                     let elem = violationElements[i];
                     
@@ -2164,7 +2110,6 @@
                                 showAngerResonance(getRandomResonance(), elemX, elemY);
                                 shakeIntensity = min(12, shakeIntensity + 4);
                                 
-                                // Spawn fragments
                                 for (let j = 0; j < 5; j++) {
                                     spawnFragment(elemX, elemY);
                                 }
@@ -2175,7 +2120,6 @@
                     }
                 }
                 
-                // Check pressure elements
                 for (let i = 0; i < pressureElements.length; i++) {
                     let elem = pressureElements[i];
                     
@@ -2198,7 +2142,6 @@
                     }
                 }
                 
-                // Check containment elements
                 for (let i = 0; i < containmentElements.length; i++) {
                     let elem = containmentElements[i];
                     
@@ -2206,9 +2149,7 @@
                         let hitTest = false;
                         
                         if (elem.type === 'boundary') {
-                            let midX = elem.x;
-                            let midY = elem.y;
-                            hitTest = dist(mouseX, mouseY, midX, midY) < elem.length/2;
+                            hitTest = dist(mouseX, mouseY, elem.x, elem.y) < elem.length/2;
                         } else {
                             let testSize = elem.type === 'frame' ? max(elem.width, elem.height)/2 : elem.size/2;
                             hitTest = dist(mouseX, mouseY, elem.x, elem.y) < testSize;
@@ -2228,7 +2169,6 @@
                     }
                 }
                 
-                // Toggle animation
                 isAnimating = !isAnimating;
                 
                 if (!isAnimating && soundEnabled && soundLoaded && angerSound.isPlaying()) {
