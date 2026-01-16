@@ -18,8 +18,11 @@
     box-sizing: border-box;
 }
 
-body {
+html, body {
     margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
     font-family: "Courier New", monospace;
     color: var(--ink);
     background-color: var(--paper);
@@ -27,42 +30,39 @@ body {
         linear-gradient(var(--violet-soft) 1px, transparent 1px),
         linear-gradient(90deg, var(--violet-soft) 1px, transparent 1px);
     background-size: 40px 40px;
-    background-attachment: fixed;
-    line-height: 1.6;
-}
-
-main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 16px 100px;
 }
 
 nav {
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 10;
+    left: 0;
+    right: 0;
+    z-index: 100;
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
-    padding: 12px;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
     background: rgba(255,255,255,0.95);
-    border-bottom: 1px solid rgba(230,180,34,0.35);
+    border-bottom: 2px solid var(--gold);
+    height: 44px;
 }
 
 nav a {
     text-decoration: none;
     font-size: 0.85rem;
     color: var(--violet);
-    padding: 6px 14px;
-    border: 1px solid var(--violet);
+    padding: 6px 16px;
+    border: 2px solid var(--violet);
     border-radius: 30px;
     cursor: pointer;
     transition: all 0.2s;
+    font-weight: bold;
 }
 
 nav a:hover {
     border-color: var(--gold);
+    background: rgba(230,180,34,0.1);
 }
 
 nav a.active {
@@ -70,210 +70,83 @@ nav a.active {
     color: white;
 }
 
-.intro {
-    max-width: 900px;
-    margin: 0 auto 80px;
-    padding: 24px 28px;
-    background: rgba(255,255,255,0.96);
-    border-left: 4px solid var(--gold);
-    box-shadow: 6px 6px 0 rgba(92,75,153,0.15);
-}
-
-section {
-    margin-bottom: 80px;
-    scroll-margin-top: 70px; /* Accounts for sticky nav height */
-}
-
-.specimen {
-    max-width: 940px;
-    margin: 0 auto;
-    padding: 28px 32px 36px;
-    background: rgba(255,255,255,0.97);
-    border: 1px solid rgba(92,75,153,0.3);
-    box-shadow: 6px 6px 0 rgba(92,75,153,0.12);
-}
-
-header {
+.emotion-label {
+    position: fixed;
+    top: 52px;
+    left: 12px;
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 14px;
-    padding-bottom: 14px;
-    margin-bottom: 28px;
-    border-bottom: 1px solid rgba(230,180,34,0.45);
+    gap: 10px;
+    z-index: 90;
 }
 
 .marker {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: var(--violet);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1rem;
+    font-weight: bold;
 }
 
-h2 {
+.emotion-label h2 {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: 1.2rem;
     font-weight: normal;
-}
-
-.tag {
-    margin-left: auto;
-    font-size: 0.8rem;
-    padding: 4px 14px;
-    border-radius: 20px;
-    background: rgba(92,75,153,0.12);
     color: var(--violet);
 }
 
+.tag {
+    position: fixed;
+    top: 56px;
+    right: 12px;
+    font-size: 0.7rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(92,75,153,0.15);
+    color: var(--violet);
+    z-index: 90;
+}
+
+section {
+    display: none;
+    position: fixed;
+    top: 90px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+}
+
+section.active {
+    display: block;
+}
+
 .iframe-container {
-    position: relative;
     width: 100%;
-    padding-bottom: 75%;
-    height: 0;
-    border: 1px solid var(--violet);
-    box-shadow: 4px 4px 0 rgba(92,75,153,0.35);
-    margin-bottom: 10px;
+    height: 100%;
+    border: 2px solid var(--violet);
+    box-shadow: 4px 4px 0 rgba(92,75,153,0.25);
+    background: white;
 }
 
 .iframe-container iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
     border: none;
 }
 
-.caption {
-    text-align: center;
-    font-size: 0.8rem;
-    margin: 12px 0 28px;
-    border-bottom: 1px solid rgba(230,180,34,0.3);
-    padding-bottom: 10px;
-}
-
-.caption b {
-    color: var(--violet);
-}
-
-.collage {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 14px;
-    font-size: 0.8rem;
-}
-
-.collage img {
-    max-width: 320px;
-    height: auto;
-    border: 1px solid var(--violet);
-    box-shadow: 2px 2px 0 rgba(230,180,34,0.25);
-}
-
-.notes {
-    margin: 28px 0 0;
-    padding: 18px 20px;
-    background: rgba(230,180,34,0.08);
-    border-left: 4px solid var(--gold);
-    font-size: 0.95rem;
-}
-
-.notes b {
-    color: var(--violet);
-}
-
-/* Standard mobile */
-@media (max-width: 800px) {
-    .tag {
-        margin-left: 0;
-        margin-top: 4px;
-        width: 100%;
-        text-align: center;
-    }
-    
-    .collage img {
-        width: 100%;
-        max-width: 100%;
-    }
-}
-
-/* HyperPixel / small screen optimizations */
-@media (max-width: 480px) {
-    nav {
-        gap: 5px;
-        padding: 8px 5px;
-    }
-    
-    nav a {
-        padding: 4px 10px;
-        font-size: 0.7rem;
-    }
-    
-    main {
-        padding: 20px 10px 60px;
-    }
-    
-    .intro {
-        margin-bottom: 40px;
-        padding: 16px 18px;
-        font-size: 0.85rem;
-    }
-    
-    section {
-        margin-bottom: 50px;
-        scroll-margin-top: 55px;
-    }
-    
-    .specimen {
-        padding: 18px 16px 24px;
-    }
-    
-    header {
-        gap: 10px;
-        padding-bottom: 10px;
-        margin-bottom: 18px;
-    }
-    
-    .marker {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
-    }
-    
-    h2 {
-        font-size: 1.3rem;
-    }
-    
-    .tag {
-        font-size: 0.7rem;
-        padding: 3px 10px;
-    }
-    
-    .iframe-container {
-        padding-bottom: 100%; /* Taller ratio for small screens */
-    }
-    
-    .caption {
-        font-size: 0.7rem;
-        margin: 8px 0 18px;
-    }
-    
-    .collage {
-        font-size: 0.7rem;
-        gap: 10px;
-    }
-    
-    .notes {
-        margin-top: 18px;
-        padding: 12px 14px;
-        font-size: 0.8rem;
-    }
+/* Hide elements not needed on HyperPixel */
+.intro,
+.caption,
+.collage,
+.notes,
+.specimen,
+.specimen header {
+    display: none;
 }
 </style>
 </head>
@@ -286,159 +159,57 @@ h2 {
     <a data-target="anger">Anger</a>
 </nav>
 
-<main>
-
-<div class="intro">
-    Six basic emotional states interpreted by an artificial system under a shared
-    set of visual and structural constraints. Each section documents the behaviour
-    of a live system displayed on a physical, landscape‑oriented HyperPixel unit.
+<div class="emotion-label">
+    <div class="marker">+</div>
+    <h2 id="current-emotion">Joy</h2>
 </div>
-    
-<!-- ==========================================
-     JOY
-     ========================================== -->
 
-<section id="joy">
-    <div class="specimen">
-        <header>
-            <div class="marker">+</div>
-            <h2>Joy</h2>
-            <div class="tag">Basic emotion (Evans)</div>
-        </header>
+<div class="tag">Basic emotion (Evans)</div>
 
-        <div class="iframe-container">
-            <iframe src="joy-overlay.html" frameborder="0"></iframe>
-        </div>
-
-        <div class="caption">
-            A dynamic visualization of joy's expansion patterns, connection strength, and approach momentum
-            <br><b>Analysis by Claude</b>
-        </div>
-
-        <div class="collage">
-            <img src="joy-sketchbook.jpg" alt="Joy collage">
-            <span>Source collage</span>
-        </div>
-
-        <div class="notes">
-            The visualization represents joy through radiating patterns that expand outward—capturing how joy tends to broaden perceptual and cognitive awareness rather than narrowing focus.
-            <br><b>Analysis by Claude</b>
-        </div>
+<!-- JOY -->
+<section id="joy" class="active">
+    <div class="iframe-container">
+        <iframe src="joy-overlay.html" frameborder="0"></iframe>
     </div>
 </section>
-    
-<!-- ==========================================
-     SADNESS
-     ========================================== -->
 
+<!-- SADNESS -->
 <section id="sadness">
-    <div class="specimen">
-        <header>
-            <div class="marker">+</div>
-            <h2>Sadness</h2>
-            <div class="tag">Basic emotion (Evans)</div>
-        </header>
-
-        <div class="iframe-container">
-            <iframe src="sadness-overlay.html" frameborder="0"></iframe>
-        </div>
-
-        <div class="caption">
-            A visualization of sadness as a downward flowing, weight‑bearing emotional state.
-            <br><b>Analysis by Claude</b>
-        </div>
-
-        <div class="collage">
-            <img src="sadness-sketchbook.jpg" alt="Sadness collage">
-            <span>Source collage</span>
-        </div>
-
-        <div class="notes">
-            The visualization represents sadness through downward‑drifting elements, reflecting heaviness, withdrawal, and reduced energy.
-            <br><b>Analysis by Claude</b>
-        </div>
+    <div class="iframe-container">
+        <iframe src="sadness-overlay.html" frameborder="0"></iframe>
     </div>
 </section>
 
-<!-- ==========================================
-     ANGER
-     ========================================== -->
-
+<!-- ANGER -->
 <section id="anger">
-    <div class="specimen">
-        <header>
-            <div class="marker">+</div>
-            <h2>Anger</h2>
-            <div class="tag">Basic emotion (Evans)</div>
-        </header>
-
-        <div class="iframe-container">
-            <iframe src="anger-overlay.html" frameborder="0"></iframe>
-        </div>
-
-        <div class="caption">
-            A dynamic visualization of anger's boundary violations, mounting pressure, and contained explosive force.
-            <br><b>Analysis by Claude</b>
-        </div>
-
-        <div class="collage">
-            <img src="anger-sketchbook.jpg" alt="Anger collage">
-            <span>Source collage</span>
-        </div>
-
-        <div class="notes">
-            The visualization represents anger through slashing crimson forms that tear through structured elements—capturing how anger functions as a boundary-defending mechanism.
-            When violations occur, anger mobilizes energy to restore integrity and push back against threats, reflected in the aggressive diagonal thrusts and penetrating red threads.
-            <br><b>Analysis by Claude</b>
-        </div>
+    <div class="iframe-container">
+        <iframe src="anger-overlay.html" frameborder="0"></iframe>
     </div>
 </section>
-
-
-</main>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const links = document.querySelectorAll('nav a');
     const sections = document.querySelectorAll('section');
+    const emotionLabel = document.getElementById('current-emotion');
 
     links.forEach(link => {
         link.addEventListener('click', function() {
             const target = this.dataset.target;
-            const targetSection = document.getElementById(target);
             
-            // Scroll to the section
-            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Hide all sections
+            sections.forEach(s => s.classList.remove('active'));
             
-            // Update active nav link
+            // Show target section
+            document.getElementById(target).classList.add('active');
+            
+            // Update nav
             links.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
+            
+            // Update label
+            emotionLabel.textContent = this.textContent;
         });
-    });
-    
-    // Optional: Update active nav link based on scroll position
-    const observerOptions = {
-        root: null,
-        rootMargin: '-80px 0px -50% 0px',
-        threshold: 0
-    };
-    
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const id = entry.target.id;
-                links.forEach(l => {
-                    l.classList.remove('active');
-                    if (l.dataset.target === id) {
-                        l.classList.add('active');
-                    }
-                });
-            }
-        });
-    }, observerOptions);
-    
-    sections.forEach(section => {
-        observer.observe(section);
     });
 });
 </script>
