@@ -481,9 +481,8 @@
             }
         }
         
-        window.addEventListener
+        window.addEventListener('orientationchange', function() {
             setTimeout(() => {
-                // Store old dimensions BEFORE updating
                 let oldWidth = canvasWidth;
                 let oldHeight = canvasHeight;
                 
@@ -491,11 +490,11 @@
                 canvasWidth = dims.w;
                 canvasHeight = dims.h;
                 resizeCanvas(canvasWidth, canvasHeight);
-                repositionElements(oldWidth, oldHeight);  // Pass old dimensions
+                repositionElements(oldWidth, oldHeight);
                 updateLayoutForOrientation();
             }, 100);
         });
-
+            
         document.getElementById('start-experience').addEventListener('click', startExperience);
         document.getElementById('start-experience').addEventListener('touchend', function(e) {
             e.preventDefault();
