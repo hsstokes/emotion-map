@@ -2804,16 +2804,25 @@
                 getAudioContext().resume();
             }
             
-            return mousePressed();
+            return mousePressed();  
         }
         // Listen for stop sound message from parent
-window.addEventListener('message', function(event) {
-    if (event.data === 'stopSound') {
-        if (joySound && joySound.isPlaying()) {
-            joySound.stop();
-        }
-    }
-});
+        window.addEventListener('message', function(event) {
+            if (event.data === 'stopSound') {
+                if (joySound && joySound.isPlaying()) {
+                    joySound.stop();
+                }
+            }
+            if (event.data === 'resumeSound') {
+                if (getAudioContext().state !== 'running') {
+                    getAudioContext().resume();
+                }
+                if (joySound && soundEnabled && !joySound.isPlaying()) {
+                    joySound.loop();
+                }
+            }
+        });
+        
     </script>
 </body>
 </html>
