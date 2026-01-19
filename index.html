@@ -213,6 +213,16 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show target section
             document.getElementById(target).classList.add('active');
             
+            // Force iframe to resize after becoming visible
+            setTimeout(() => {
+                const activeIframe = document.getElementById(target).querySelector('iframe');
+                if (activeIframe && activeIframe.contentWindow) {
+                    try {
+                        activeIframe.contentWindow.dispatchEvent(new Event('resize'));
+                    } catch(e) {}
+                }
+            }, 100);
+            
             // Update nav
             links.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
