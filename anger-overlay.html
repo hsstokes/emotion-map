@@ -487,11 +487,15 @@
         
         window.addEventListener('orientationchange', function() {
             setTimeout(() => {
+                // Store old dimensions BEFORE updating
+                let oldWidth = canvasWidth;
+                let oldHeight = canvasHeight;
+                
                 let dims = getCanvasDimensions();
                 canvasWidth = dims.w;
                 canvasHeight = dims.h;
                 resizeCanvas(canvasWidth, canvasHeight);
-                repositionElements();
+                repositionElements(oldWidth, oldHeight);  // ✅ Pass old dimensions
                 updateLayoutForOrientation();
             }, 100);
         });
