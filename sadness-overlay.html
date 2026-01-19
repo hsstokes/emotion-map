@@ -1615,20 +1615,23 @@
         }
 
         function windowResized() {
-            // FIXED: Use reliable dimension detection
+            // Store old dimensions BEFORE resizing
+            let oldWidth = canvasWidth;
+            let oldHeight = canvasHeight;
+            
+            // Get new dimensions
             let dims = getCanvasDimensions();
             canvasWidth = dims.w;
             canvasHeight = dims.h;
             
             resizeCanvas(canvasWidth, canvasHeight);
-            repositionElements();
+            repositionElements(oldWidth, oldHeight);
             updateLayoutForOrientation();
         }
-        
-        function repositionElements() {
-            // Use stored dimensions for repositioning
-            let oldWidth = width;
-            let oldHeight = height;
+
+        function repositionElements(oldWidth, oldHeight) {
+            // Guard against invalid dimensions
+            if (!oldWidth || !oldHeight || oldWidth <= 0 || oldHeight <= 0) return;
             
             for (let i = 0; i < handOutlinePoints.length; i++) {
                 handOutlinePoints[i].x = (handOutlinePoints[i].x / oldWidth) * canvasWidth;
