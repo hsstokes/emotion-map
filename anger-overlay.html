@@ -494,8 +494,8 @@
         window.addEventListener('orientationchange', function() {
             setTimeout(() => {
                 let dims = getCanvasDimensions();
-                canvasWidth = dims.width;
-                canvasHeight = dims.height;
+                canvasWidth = .w;
+                canvasHeight = .h;
                 resizeCanvas(canvasWidth, canvasHeight);
                 repositionElements();
                 updateLayoutForOrientation();
@@ -613,8 +613,8 @@
         function setup() {
             // Get reliable dimensions
             let dims = getCanvasDimensions();
-            canvasWidth = dims.width;
-            canvasHeight = dims.height;
+            canvasWidth = .w;
+            canvasHeight = .h;
             
             console.log("Creating canvas:", canvasWidth, "x", canvasHeight);
             
@@ -1928,8 +1928,8 @@
 
         function windowResized() {
             let dims = getCanvasDimensions();
-            canvasWidth = dims.width;
-            canvasHeight = dims.height;
+            canvasWidth = .w;
+            canvasHeight = .h;
             resizeCanvas(canvasWidth, canvasHeight);
             repositionElements();
             updateLayoutForOrientation();
