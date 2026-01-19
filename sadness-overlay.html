@@ -1813,11 +1813,18 @@
             
             return mousePressed();
         }
-        // Listen for stop sound message from parent
 window.addEventListener('message', function(event) {
     if (event.data === 'stopSound') {
         if (sadnessSound && sadnessSound.isPlaying()) {
             sadnessSound.stop();
+        }
+    }
+    if (event.data === 'resumeSound') {
+        if (getAudioContext().state !== 'running') {
+            getAudioContext().resume();
+        }
+        if (sadnessSound && soundEnabled && !sadnessSound.isPlaying()) {
+            sadnessSound.loop();
         }
     }
 });
