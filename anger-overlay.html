@@ -2186,22 +2186,21 @@
             return mousePressed();
         }
         
-        // Listen for stop sound message from parent
-        window.addEventListener('message', function(event) {
-            if (event.data === 'stopSound') {
-                if (joySound && joySound.isPlaying()) {
-                    joySound.stop();
-                }
-            }
-            if (event.data === 'resumeSound') {
-                if (getAudioContext().state !== 'running') {
-                    getAudioContext().resume();
-                }
-                if (joySound && soundEnabled && !joySound.isPlaying()) {
-                    joySound.loop();
-                }
-            }
-        });
+window.addEventListener('message', function(event) {
+    if (event.data === 'stopSound') {
+        if (angerSound && angerSound.isPlaying()) {
+            angerSound.stop();
+        }
+    }
+    if (event.data === 'resumeSound') {
+        if (getAudioContext().state !== 'running') {
+            getAudioContext().resume();
+        }
+        if (angerSound && soundEnabled && !angerSound.isPlaying()) {
+            angerSound.loop();
+        }
+    }
+});
 
     </script>
 </body>
