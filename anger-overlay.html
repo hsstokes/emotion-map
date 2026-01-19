@@ -1942,13 +1942,13 @@
                 elem.x = (elem.x / oldWidth) * canvasWidth;
                 elem.y = (elem.y / oldHeight) * canvasHeight;
         
-            if (elem.type === 'slash') {
+                if (elem.type === 'slash') {
                 elem.length = (elem.length / oldWidth) * canvasWidth;
-            } else if (elem.type === 'burst') {
+                } else if (elem.type === 'burst') {
                 elem.size = (elem.size / oldWidth) * canvasWidth;
+                }
             }
-        }
-    }
+    
            
             for (let elem of pressureElements) {
                 elem.x = (elem.x / oldWidth) * canvasWidth;
