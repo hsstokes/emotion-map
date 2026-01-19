@@ -1921,36 +1921,35 @@
         }
 
         function windowResized() {
-            let dims = getCanvasDimensions();
-            canvasWidth = dims.w;
-            canvasHeight = dims.h;
+            let oldWidth = canvasWidth;
+            let oldHeight = canvasHeight;
+    
+            canvasWidth = windowWidth;
+            canvasHeight = windowHeight;
+    
             resizeCanvas(canvasWidth, canvasHeight);
-            repositionElements();
+    
+            // Reposition all elements based on new dimensions
+            if (oldWidth > 0 && oldHeight > 0) {
+                repositionElements(oldWidth, oldHeight);
+            }
+    
             updateLayoutForOrientation();
         }
         
-        function repositionElements() {
-            // Store old dimensions for ratio calculation
-            let oldWidth = width || canvasWidth;
-            let oldHeight = height || canvasHeight;
-            
+        function repositionElements(oldWidth, oldHeight) {
             for (let elem of violationElements) {
                 elem.x = (elem.x / oldWidth) * canvasWidth;
                 elem.y = (elem.y / oldHeight) * canvasHeight;
-                
-                if (elem.type === 'slash') {
-                    elem.length = (elem.length / oldWidth) * canvasWidth;
-                } else if (elem.type === 'burst') {
-                    elem.size = (elem.size / oldWidth) * canvasWidth;
-                    elem.rayLength = (elem.rayLength / oldWidth) * canvasWidth;
-                } else if (elem.type === 'tear') {
-                    for (let p of elem.points) {
-                        p.x = (p.x / oldWidth) * canvasWidth;
-                        p.y = (p.y / oldHeight) * canvasHeight;
-                    }
-                }
+        
+            if (elem.type === 'slash') {
+                elem.length = (elem.length / oldWidth) * canvasWidth;
+            } else if (elem.type === 'burst') {
+                elem.size = (elem.size / oldWidth) * canvasWidth;
             }
-            
+        }
+    }
+           
             for (let elem of pressureElements) {
                 elem.x = (elem.x / oldWidth) * canvasWidth;
                 elem.y = (elem.y / oldHeight) * canvasHeight;
