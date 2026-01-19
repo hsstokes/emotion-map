@@ -213,12 +213,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show target section
             document.getElementById(target).classList.add('active');
             
-            // Force iframe to resize after becoming visible
+            // Force iframe to resize and resume sound after becoming visible
             setTimeout(() => {
                 const activeIframe = document.getElementById(target).querySelector('iframe');
                 if (activeIframe && activeIframe.contentWindow) {
                     try {
                         activeIframe.contentWindow.dispatchEvent(new Event('resize'));
+                        activeIframe.contentWindow.postMessage('resumeSound', '*');
                     } catch(e) {}
                 }
             }, 100);
