@@ -481,17 +481,21 @@
             }
         }
         
-        window.addEventListener('orientationchange', function() {
+        window.addEventListener
             setTimeout(() => {
+                // Store old dimensions BEFORE updating
+                let oldWidth = canvasWidth;
+                let oldHeight = canvasHeight;
+                
                 let dims = getCanvasDimensions();
-                resizeCanvas(dims.w, dims.h);
                 canvasWidth = dims.w;
                 canvasHeight = dims.h;
-                repositionElements();
+                resizeCanvas(canvasWidth, canvasHeight);
+                repositionElements(oldWidth, oldHeight);  // ✅ Pass old dimensions
                 updateLayoutForOrientation();
             }, 100);
         });
-        
+
         document.getElementById('start-experience').addEventListener('click', startExperience);
         document.getElementById('start-experience').addEventListener('touchend', function(e) {
             e.preventDefault();
