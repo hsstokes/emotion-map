@@ -448,20 +448,27 @@
         }
         
         function startExperience() {
-            fetch('http://localhost:8080/play/joy');
+            if (useAudioServer) {
+                fetch('http://localhost:8080/play/joy');
+            }
+            
             document.getElementById('landing-overlay').style.opacity = '0';
             
             setTimeout(() => {
                 document.getElementById('landing-overlay').style.display = 'none';
+                
                 isAnimating = true;
                 loop();
+                
                 updateLayoutForOrientation();
                 
                 if (soundEnabled && soundLoaded) {
                     try {
-                        joySound.loop();
+                        if (!useAudioServer) {
+                            joySound.loop();
+                        }
                         joySound.setVolume(0);
-                        joySound.setVolume(0.6, 3);
+                        joySound.setVolume(0.4, 3);
                     } catch(e) {
                         console.error("Error playing sound:", e);
                     }
@@ -473,9 +480,9 @@
                     
                     setTimeout(() => {
                         document.getElementById('hint').style.opacity = '0';
-                    }, 5000);
-                }, 2000);
-            }, 1000);
+                    }, 6000);
+                }, 3000);
+            }, 1500);
         }
         
         function updateLayoutForOrientation() {
