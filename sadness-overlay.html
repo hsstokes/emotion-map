@@ -378,6 +378,13 @@
         
         // Store actual canvas dimensions
         let canvasWidth, canvasHeight;
+
+        // Detect if running on Pi (audio server available)
+        let useAudioServer = false;
+        
+        fetch('http://localhost:8080/', { method: 'HEAD', mode: 'no-cors' })
+            .then(() => { useAudioServer = true; })
+            .catch(() => { useAudioServer = false; });
         
         const sadnessResonances = [
             "A heaviness that settles slowly into the bones",
@@ -1812,7 +1819,7 @@
             
             return mousePressed();
         }
-        
+
 window.addEventListener('message', function(event) {
     if (event.data === 'stopSound' || event.data === 'resetExperience') {
         fetch('http://localhost:8080/stop').catch(e => {});
