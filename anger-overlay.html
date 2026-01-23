@@ -592,20 +592,6 @@
             document.getElementById('timeline-progress').style.width = `${percentage * 100}%`;
             document.getElementById('timeline-handle').style.left = `${percentage * 100}%`;
         }
-        
-        function preload() {
-            soundLoaded = false;
-            angerSound = loadSound('anger_soundscape.mp3', 
-                function() {
-                    console.log("Sound loaded successfully");
-                    soundLoaded = true;
-                },
-                function(err) {
-                    console.error("Error loading sound:", err);
-                    soundEnabled = false;
-                }
-            );
-        }
 
         function setup() {
             // Get reliable dimensions
@@ -624,6 +610,19 @@
             createSlashLines();
             createPressureZones();
             createAngerCenters();
+
+            // Load sound without blocking
+            soundLoaded = false;
+            angerSound = loadSound('anger_soundscape.mp3', 
+                function() {
+                    console.log("Sound loaded successfully");
+                    soundLoaded = true;
+                },
+                function(err) {
+                    console.error("Error loading sound:", err);
+                    soundEnabled = false;
+                }
+            );
             
             if (getAudioContext().state !== 'running') {
                 getAudioContext().resume();
