@@ -519,13 +519,21 @@
         
         document.getElementById('sound-toggle').addEventListener('click', function() {
             soundEnabled = !soundEnabled;
+            
             document.getElementById('sound-waves').style.opacity = soundEnabled ? '1' : '0';
             
             if (soundEnabled && joySound && !joySound.isPlaying()) {
-                joySound.loop();
+                if (useAudioServer) {
+                    fetch('http://localhost:8080/play/joy');
+                } else {
+                    joySound.loop();
+                }
                 joySound.setVolume(0);
-                joySound.setVolume(0.6, 2);
+                joySound.setVolume(0.4, 2);
             } else if (!soundEnabled && joySound && joySound.isPlaying()) {
+                if (useAudioServer) {
+                    fetch('http://localhost:8080/stop');
+                }
                 joySound.setVolume(0, 2);
                 setTimeout(() => {
                     joySound.pause();
