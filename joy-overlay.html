@@ -2828,10 +2828,11 @@
             return mousePressed();  
         }
 
-// Listen for stop sound message from parent
 window.addEventListener('message', function(event) {
     if (event.data === 'stopSound' || event.data === 'resetExperience') {
-        fetch('http://localhost:8080/stop').catch(e => {});
+        if (useAudioServer) {
+            fetch('http://localhost:8080/stop');
+        }
         isAnimating = false;
         noLoop();
         document.getElementById('landing-overlay').style.display = 'flex';
@@ -2845,7 +2846,11 @@ window.addEventListener('message', function(event) {
             getAudioContext().resume();
         }
         if (joySound && soundEnabled && !joySound.isPlaying()) {
-            // joySound.loop(); // disabled - using audio server
+            if (useAudioServer) {
+                fetch('http://localhost:8080/play/joy');
+            } else {
+                joySound.loop();
+            }
         }
     }
 });
