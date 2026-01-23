@@ -2216,16 +2216,25 @@ window.addEventListener('message', function(event) {
         if (angerSound && angerSound.isPlaying()) {
             angerSound.stop();
         }
+        // Reset timeline
+        timePosition = 0;
+        previousTimePosition = 0;
+        activatedTimeline = false;
+        updateTimelineUI();
     }
     if (event.data === 'resumeSound') {
-        if (getAudioContext().state !== 'running') {
-            getAudioContext().resume();
-        }
-        if (angerSound && soundEnabled && !angerSound.isPlaying()) {
-            if (useAudioServer) {
-                fetch('http://localhost:8080/play/anger');
-            } else {
-                angerSound.loop();
+        // Only resume if experience has already started (landing overlay is hidden)
+        if (document.getElementById('landing-overlay').style.display === 'none') {
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            if (angerSound && soundEnabled && soundLoaded && !angerSound.isPlaying()) {
+                if (useAudioServer) {
+                    fetch('http://localhost:8080/play/anger');
+                } else {
+                    angerSound.loop();
+                    angerSound.setVolume(0.4);
+                }
             }
         }
     }
