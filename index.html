@@ -197,15 +197,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const emotionLabel = document.getElementById('current-emotion');
 
     links.forEach(link => {
-        link.addEventListener('click', function() {
-            const target = this.dataset.target;
-            
-            // Tell all iframes to stop their sounds
-            document.querySelectorAll('iframe').forEach(iframe => {
-                try {
-                    iframe.contentWindow.postMessage('stopSound', '*');
-                } catch(e) {}
-            });
+    link.addEventListener('click', function() {
+        const target = this.dataset.target;
+        
+        // Stop audio server
+        fetch('http://localhost:8080/stop').catch(e => {});
+        
+        // Tell all iframes to stop their sounds
+        document.querySelectorAll('iframe').forEach(iframe => {
+            try {
+                iframe.contentWindow.postMessage('resetExperience', '*');
+            } catch(e) {}
+        });
             
             // Hide all sections
             sections.forEach(s => s.classList.remove('active'));
