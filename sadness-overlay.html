@@ -1812,8 +1812,14 @@
             
             return mousePressed();
         }
+        
 window.addEventListener('message', function(event) {
-    if (event.data === 'stopSound') {
+    if (event.data === 'stopSound' || event.data === 'resetExperience') {
+        fetch('http://localhost:8080/stop').catch(e => {});
+        isAnimating = false;
+        noLoop();
+        document.getElementById('landing-overlay').style.display = 'flex';
+        document.getElementById('landing-overlay').style.opacity = '1';
         if (sadnessSound && sadnessSound.isPlaying()) {
             sadnessSound.stop();
         }
@@ -1823,7 +1829,7 @@ window.addEventListener('message', function(event) {
             getAudioContext().resume();
         }
         if (sadnessSound && soundEnabled && !sadnessSound.isPlaying()) {
-            sadnessSound.loop();
+            // sadnessSound.loop(); // disabled - using audio server
         }
     }
 });
