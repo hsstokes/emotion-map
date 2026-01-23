@@ -1844,16 +1844,25 @@ window.addEventListener('message', function(event) {
         if (sadnessSound && sadnessSound.isPlaying()) {
             sadnessSound.stop();
         }
+        // Reset timeline
+        timePosition = 0;
+        previousTimePosition = 0;
+        activatedTimeline = false;
+        updateTimelineUI();
     }
     if (event.data === 'resumeSound') {
-        if (getAudioContext().state !== 'running') {
-            getAudioContext().resume();
-        }
-        if (sadnessSound && soundEnabled && !sadnessSound.isPlaying()) {
-            if (useAudioServer) {
-                fetch('http://localhost:8080/play/sadness');
-            } else {
-                sadnessSound.loop();
+        // Only resume if experience has already started (landing overlay is hidden)
+        if (document.getElementById('landing-overlay').style.display === 'none') {
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            if (sadnessSound && soundEnabled && soundLoaded && !sadnessSound.isPlaying()) {
+                if (useAudioServer) {
+                    fetch('http://localhost:8080/play/sadness');
+                } else {
+                    sadnessSound.loop();
+                    sadnessSound.setVolume(0.4);
+                }
             }
         }
     }
