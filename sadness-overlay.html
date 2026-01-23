@@ -441,7 +441,10 @@
         }
         
         function startExperience() {
-            fetch('http://localhost:8080/play/sadness');
+            if (useAudioServer) {
+                fetch('http://localhost:8080/play/sadness');
+            }
+            
             document.getElementById('landing-overlay').style.opacity = '0';
             
             setTimeout(() => {
@@ -454,7 +457,9 @@
                 
                 if (soundEnabled && soundLoaded) {
                     try {
-                        sadnessSound.loop();
+                        if (!useAudioServer) {
+                            sadnessSound.loop();
+                        }
                         sadnessSound.setVolume(0);
                         sadnessSound.setVolume(0.4, 3);
                     } catch(e) {
