@@ -524,14 +524,21 @@
             document.getElementById('sound-waves').style.opacity = soundEnabled ? '1' : '0';
             
             if (soundEnabled && angerSound && !angerSound.isPlaying()) {
-                angerSound.loop();
+                if (useAudioServer) {
+                    fetch('http://localhost:8080/play/anger');
+                } else {
+                    angerSound.loop();
+                }
                 angerSound.setVolume(0);
-                angerSound.setVolume(0.6, 1);
+                angerSound.setVolume(0.4, 2);
             } else if (!soundEnabled && angerSound && angerSound.isPlaying()) {
-                angerSound.setVolume(0, 0.5);
+                if (useAudioServer) {
+                    fetch('http://localhost:8080/stop');
+                }
+                angerSound.setVolume(0, 2);
                 setTimeout(() => {
                     angerSound.pause();
-                }, 500);
+                }, 2000);
             }
         });
         
