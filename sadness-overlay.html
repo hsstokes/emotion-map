@@ -519,10 +519,17 @@
             document.getElementById('sound-waves').style.opacity = soundEnabled ? '1' : '0';
             
             if (soundEnabled && sadnessSound && !sadnessSound.isPlaying()) {
-                sadnessSound.loop();
+                if (useAudioServer) {
+                    fetch('http://localhost:8080/play/sadness');
+                } else {
+                    sadnessSound.loop();
+                }
                 sadnessSound.setVolume(0);
                 sadnessSound.setVolume(0.4, 2);
             } else if (!soundEnabled && sadnessSound && sadnessSound.isPlaying()) {
+                if (useAudioServer) {
+                    fetch('http://localhost:8080/stop');
+                }
                 sadnessSound.setVolume(0, 2);
                 setTimeout(() => {
                     sadnessSound.pause();
