@@ -2840,16 +2840,25 @@ window.addEventListener('message', function(event) {
         if (joySound && joySound.isPlaying()) {
             joySound.stop();
         }
+        // Reset timeline
+        timePosition = 0;
+        previousTimePosition = 0;
+        activatedTimeline = false;
+        updateTimelineUI();
     }
     if (event.data === 'resumeSound') {
-        if (getAudioContext().state !== 'running') {
-            getAudioContext().resume();
-        }
-        if (joySound && soundEnabled && !joySound.isPlaying()) {
-            if (useAudioServer) {
-                fetch('http://localhost:8080/play/joy');
-            } else {
-                joySound.loop();
+        // Only resume if experience has already started (landing overlay is hidden)
+        if (document.getElementById('landing-overlay').style.display === 'none') {
+            if (getAudioContext().state !== 'running') {
+                getAudioContext().resume();
+            }
+            if (joySound && soundEnabled && soundLoaded && !joySound.isPlaying()) {
+                if (useAudioServer) {
+                    fetch('http://localhost:8080/play/joy');
+                } else {
+                    joySound.loop();
+                    joySound.setVolume(0.4);
+                }
             }
         }
     }
