@@ -375,6 +375,13 @@
         
         // Store actual canvas dimensions
         let canvasWidth, canvasHeight;
+
+        // Detect if running on Pi (audio server available)
+        let useAudioServer = false;
+        
+        fetch('http://localhost:8080/', { method: 'HEAD', mode: 'no-cors' })
+            .then(() => { useAudioServer = true; })
+            .catch(() => { useAudioServer = false; });
         
         // Joy particles flowing toward hand
         let joyParticles = [];
