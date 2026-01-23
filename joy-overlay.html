@@ -2805,22 +2805,28 @@
             
             return mousePressed();  
         }
-    // Listen for stop sound message from parent
-    window.addEventListener('message', function(event) {
-        if (event.data === 'stopSound') {
-            if (joySound && joySound.isPlaying()) {
-                joySound.stop();
-            }
+
+// Listen for stop sound message from parent
+window.addEventListener('message', function(event) {
+    if (event.data === 'stopSound' || event.data === 'resetExperience') {
+        fetch('http://localhost:8080/stop').catch(e => {});
+        isAnimating = false;
+        noLoop();
+        document.getElementById('landing-overlay').style.display = 'flex';
+        document.getElementById('landing-overlay').style.opacity = '1';
+        if (joySound && joySound.isPlaying()) {
+            joySound.stop();
         }
-        if (event.data === 'resumeSound') {
-            if (getAudioContext().state !== 'running') {
-                getAudioContext().resume();
-            }
-            if (joySound && soundEnabled && !joySound.isPlaying()) {
-                joySound.loop();
-            }
+    }
+    if (event.data === 'resumeSound') {
+        if (getAudioContext().state !== 'running') {
+            getAudioContext().resume();
         }
-    });
+        if (joySound && soundEnabled && !joySound.isPlaying()) {
+            // joySound.loop(); // disabled - using audio server
+        }
+    }
+});
         
     </script>
 </body>
