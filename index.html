@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Emotion Map — AI Behavioural Interpretations</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <style>
 :root {
@@ -22,7 +22,7 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
     font-family: "Courier New", monospace;
     color: var(--ink);
     background-color: var(--paper);
@@ -32,35 +32,61 @@ html, body {
     background-size: 40px 40px;
 }
 
-nav {
-    position: fixed;
+/* Header */
+header {
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
     z-index: 100;
+    background: rgba(255,255,255,0.98);
+    border-bottom: 2px solid var(--gold);
+    padding: 12px 16px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--violet);
+    letter-spacing: 0.05em;
+}
+
+header p {
+    margin: 0;
+    font-size: 0.7rem;
+    color: var(--ink);
+    opacity: 0.7;
+}
+
+/* Navigation tabs */
+nav {
     display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.95);
-    border-bottom: 2px solid var(--gold);
-    height: 44px;
+    gap: 6px;
+    padding: 12px 8px;
+    background: rgba(255,255,255,0.9);
+    position: sticky;
+    top: 50px;
+    z-index: 99;
 }
 
 nav a {
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--violet);
-    padding: 6px 16px;
+    padding: 8px 16px;
     border: 2px solid var(--violet);
     border-radius: 30px;
     cursor: pointer;
     transition: all 0.2s;
     font-weight: bold;
+    flex: 1;
+    text-align: center;
+    max-width: 100px;
 }
 
-nav a:hover {
+nav a:hover,
+nav a:active {
     border-color: var(--gold);
     background: rgba(230,180,34,0.1);
 }
@@ -70,69 +96,79 @@ nav a.active {
     color: white;
 }
 
-.emotion-label {
-    position: fixed;
-    top: 52px;
-    left: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 90;
-}
-
-.marker {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--violet);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    font-weight: bold;
-}
-
-.emotion-label h2 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: normal;
-    color: var(--violet);
-}
-
-.tag {
-    position: fixed;
-    top: 56px;
-    right: 12px;
-    font-size: 0.7rem;
-    padding: 4px 12px;
-    border-radius: 20px;
-    background: rgba(92,75,153,0.15);
-    color: var(--violet);
-    z-index: 90;
+/* Content sections */
+main {
+    padding: 16px;
+    padding-bottom: 40px;
 }
 
 section {
     display: none;
-    position: fixed;
-    top: 88px;
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-    overflow: hidden;
 }
 
 section.active {
     display: block;
 }
 
+/* Emotion card */
+.emotion-card {
+    background: white;
+    border: 2px solid var(--violet);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 rgba(92,75,153,0.2);
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.emotion-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--violet-soft);
+}
+
+.marker {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--violet);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.emotion-title {
+    flex: 1;
+}
+
+.emotion-title h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--violet);
+}
+
+.emotion-title .tag {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(92,75,153,0.15);
+    color: var(--violet);
+    display: inline-block;
+    margin-top: 4px;
+}
+
+/* Iframe container */
 .iframe-container {
     width: 100%;
-    height: 100%;
-    border: 2px solid var(--violet);
-    box-shadow: 4px 4px 0 rgba(92,75,153,0.25);
-    background: white;
-    overflow: hidden;
+    height: 50vh;
+    min-height: 300px;
+    max-height: 400px;
+    background: #fafafa;
 }
 
 .iframe-container iframe {
@@ -142,19 +178,78 @@ section.active {
     display: block;
 }
 
-/* Hide elements not needed on HyperPixel */
-.intro,
-.caption,
-.collage,
-.notes,
-.specimen,
-.specimen header {
-    display: none;
+/* Description panel */
+.description-panel {
+    padding: 16px;
+    background: rgba(92,75,153,0.05);
+}
+
+.description-panel p {
+    margin: 0 0 12px 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--ink);
+}
+
+.description-panel .attribution {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--violet);
+    margin: 0;
+}
+
+/* Info section */
+.info-box {
+    background: white;
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.info-box h3 {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    color: var(--gold);
+}
+
+.info-box p {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--ink);
+    opacity: 0.8;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px 16px;
+    font-size: 0.7rem;
+    color: var(--violet);
+    opacity: 0.6;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Touch feedback */
+@media (hover: none) {
+    nav a:active {
+        transform: scale(0.95);
+    }
 }
 </style>
 </head>
 
 <body>
+
+<header>
+    <h1>EMOTION MAP</h1>
+    <p>AI Behavioural Interpretations</p>
+</header>
 
 <nav>
     <a data-target="joy" class="active">Joy</a>
@@ -162,59 +257,111 @@ section.active {
     <a data-target="anger">Anger</a>
 </nav>
 
-<div class="emotion-label">
-    <div class="marker">+</div>
-    <h2 id="current-emotion">Joy</h2>
-</div>
-
-<div class="tag">Basic emotion (Evans)</div>
+<main>
 
 <!-- JOY -->
 <section id="joy" class="active">
-    <div class="iframe-container">
-        <iframe src="joy-overlay.html" frameborder="0"></iframe>
+    <div class="emotion-card">
+        <div class="emotion-header">
+            <div class="marker">+</div>
+            <div class="emotion-title">
+                <h2>Joy</h2>
+                <span class="tag">Basic emotion (Evans)</span>
+            </div>
+        </div>
+        <div class="iframe-container">
+            <iframe src="joy-overlay.html" frameborder="0" loading="lazy"></iframe>
+        </div>
+        <div class="description-panel">
+            <p>The mathematics of positive feedback—what emerges when neural reward cascades into visible motion. Connection spiraling outward, warmth made kinetic.</p>
+            <p class="attribution">Analysis by Claude</p>
+        </div>
+    </div>
+    <div class="info-box">
+        <h3>About This Piece</h3>
+        <p>Part of a systematic investigation of emotions across Ekman's categorizations. Each emotion presents unique challenges and insights for human-AI collaboration.</p>
     </div>
 </section>
 
 <!-- SADNESS -->
 <section id="sadness">
-    <div class="iframe-container">
-        <iframe src="sadness-overlay.html" frameborder="0"></iframe>
+    <div class="emotion-card">
+        <div class="emotion-header">
+            <div class="marker">−</div>
+            <div class="emotion-title">
+                <h2>Sadness</h2>
+                <span class="tag">Basic emotion (Evans)</span>
+            </div>
+        </div>
+        <div class="iframe-container">
+            <iframe src="sadness-overlay.html" frameborder="0" loading="lazy"></iframe>
+        </div>
+        <div class="description-panel">
+            <p>The weight of absence visualized—gravity pulling inward, colors retreating, movement slowing toward stillness. Loss translated into negative space.</p>
+            <p class="attribution">Analysis by Claude</p>
+        </div>
+    </div>
+    <div class="info-box">
+        <h3>About This Piece</h3>
+        <p>Part of a systematic investigation of emotions across Ekman's categorizations. Each emotion presents unique challenges and insights for human-AI collaboration.</p>
     </div>
 </section>
 
 <!-- ANGER -->
 <section id="anger">
-    <div class="iframe-container">
-        <iframe src="anger-overlay.html" frameborder="0"></iframe>
+    <div class="emotion-card">
+        <div class="emotion-header">
+            <div class="marker">!</div>
+            <div class="emotion-title">
+                <h2>Anger</h2>
+                <span class="tag">Basic emotion (Evans)</span>
+            </div>
+        </div>
+        <div class="iframe-container">
+            <iframe src="anger-overlay.html" frameborder="0" loading="lazy"></iframe>
+        </div>
+        <div class="description-panel">
+            <p>Boundary violation made visible—the sharp geometry of defense, energy compressed then released. Heat rising, edges hardening, the body preparing for confrontation.</p>
+            <p class="attribution">Analysis by Claude</p>
+        </div>
+    </div>
+    <div class="info-box">
+        <h3>About This Piece</h3>
+        <p>Part of a systematic investigation of emotions across Ekman's categorizations. Each emotion presents unique challenges and insights for human-AI collaboration.</p>
     </div>
 </section>
-    
+
+</main>
+
+<footer>
+    Emotion Map Project — Human-AI Collaboration
+</footer>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const links = document.querySelectorAll('nav a');
     const sections = document.querySelectorAll('section');
-    const emotionLabel = document.getElementById('current-emotion');
 
     links.forEach(link => {
-    link.addEventListener('click', function() {
-        const target = this.dataset.target;
-        
-        // Stop audio server
-        fetch('http://localhost:8080/stop').catch(e => {});
-        
-        // Tell all iframes to stop their sounds
-        document.querySelectorAll('iframe').forEach(iframe => {
-            try {
-                iframe.contentWindow.postMessage('resetExperience', '*');
-            } catch(e) {}
-        });
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = this.dataset.target;
+            
+            // Tell all iframes to stop their sounds
+            document.querySelectorAll('iframe').forEach(iframe => {
+                try {
+                    iframe.contentWindow.postMessage('resetExperience', '*');
+                } catch(e) {}
+            });
             
             // Hide all sections
             sections.forEach(s => s.classList.remove('active'));
             
             // Show target section
             document.getElementById(target).classList.add('active');
+            
+            // Scroll to top of content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             
             // Force iframe to resize and resume sound after becoming visible
             setTimeout(() => {
@@ -230,9 +377,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update nav
             links.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
-            
-            // Update label
-            emotionLabel.textContent = this.textContent;
         });
     });
 });
